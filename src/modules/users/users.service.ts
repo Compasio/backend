@@ -9,6 +9,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
+import { contains } from 'class-validator';
 
 @Injectable()
 export class UsersService {
@@ -70,6 +71,7 @@ export class UsersService {
     return user;
   }
 
+  //CUIDADO --- APENAS PARA USO DO AUTH POIS ESTA FUNÇÂO RETORNA A PASSWORD
   async getUserByEmail(email: string) {
     const user = await this.prisma.user.findUnique({
       where: {
@@ -80,13 +82,29 @@ export class UsersService {
     return user;
   }
 
-  //TODO --- RESTO DAS FUNÇÕES DE GET
-  async getUserByName(name: string) {
-
+  //TODO --- MELHORAR ESTA FUNÇÃO PARA QUANDO APARECER O NOME COMPLETO DO CARA APARECER NA QUERY 
+  async getUsersByName(name: string) {
+    const userNearest = await this.prisma.user.findMany({
+      where: {
+        OR: [
+          { firstname: { contains: name, mode: 'insensitive' }},
+          { lastname: { contains: name, mode: 'insensitive' }},
+        ]
+      }
+    });
+    if(!userNearest) throw new NotFoundException('ERROR: Nenhum usuário com esse nome');
+    userNearest.forEach(e => delete e.password);
+    return userNearest;
   }
 
-  async getUserByHabilities(hability: string[]) {
-
+  async getUsersByHabilities(hability: Habilities_User[]) {
+    const users = await this.prisma.user.findMany({
+      where: {
+        habilities: {hasEvery: hability},
+      }
+    });
+    if(users[0] === undefined) throw new NotFoundException('ERROR: Nenhum usuário com estas habilidades');
+    return users;
   }
 
   //TODO --- DEIXAR QUE APENAS ADMIN E PRÓPRIO USUÁRIO CONSIGAM DAR UPDATE NA CONTA

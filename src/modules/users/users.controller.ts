@@ -36,7 +36,7 @@ export class UsersController {
   }
 
   @Get('/getAllUsers/:page')
-  @ApiCreatedResponse({description: 'Requisição feita com sucesso', type: CreateUserDto, status: 201})
+  @ApiOkResponse({description: 'Requisição feita com sucesso', type: CreateUserDto, status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'page', schema: { default: 1 } })
   @ApiOperation({summary: 'Retorna uma lista de vinte usuários por página'})
@@ -45,7 +45,7 @@ export class UsersController {
   }
 
   @Get('/getUserById/:id')
-  @ApiCreatedResponse({description: 'Requisição feita com sucesso', type: CreateUserDto, status: 201})
+  @ApiOkResponse({description: 'Requisição feita com sucesso', type: CreateUserDto, status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'id', schema: { default: 1 } })
   @ApiOperation({summary: 'Retorna um usuário pelo seu id'})
@@ -53,18 +53,25 @@ export class UsersController {
     return this.usersService.getUserById(+id);
   }
 
-  @Get('/getUserByName/:name')
-  async getUserByName(@Param('name') name: string) {
-    return this.usersService.getUserById(+name);
+  @Get('/getUsersByName/:name')
+  @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
+  @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
+  @ApiParam({ name: 'name', schema: { default: 'João' } })
+  @ApiOperation({summary: 'Retorna uma lista de usuários pelo nome'})
+  async getUsersByName(@Param('name') name: string) {
+    return this.usersService.getUsersByName(name);
   }
 
-  @Get('/getUserByHabilities/:hability')
-  async getUserByHabilities(@Param('hability') hability: string[]) {
-    return this.usersService.getUserByHabilities(hability);
+  @Post('/getUsersByHabilities/:hability')
+  @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
+  @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
+  @ApiOperation({summary: 'Retorna uma lista de usuários pelas habilidades'})
+  async getUsersByHabilities(@Body() hability: Habilities_User[]) {
+    return this.usersService.getUsersByHabilities(hability);
   }
 
   @Patch('/updateUser/:id')
-  @ApiCreatedResponse({description: 'Requisição feita com sucesso', type: CreateUserDto, status: 201})
+  @ApiOkResponse({description: 'Requisição feita com sucesso', type: UpdateUserDto, status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'id', schema: { default: 1 } })
   @ApiOperation({summary: 'Atualiza informações do usuário com o respectivo id'})
@@ -73,7 +80,7 @@ export class UsersController {
   }
 
   @Delete('/removeUser/:id')
-  @ApiCreatedResponse({description: 'Requisição feita com sucesso', type: CreateUserDto, status: 201})
+  @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'id', schema: { default: 1 } })
   @ApiOperation({summary: 'Remove usuário com o respectivo id'})
