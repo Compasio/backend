@@ -12,3 +12,52 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+
+//========TABELAS========
+
+model User {
+  //TABLE FIELDS
+  id_user Int @id @default(autoincrement())
+  cpf_user String @unique @db.VarChar(11)
+  firstname String @db.VarChar(30)
+  lastname String @db.VarChar(50)
+  email String @unique
+  password String
+  isAdmin Boolean @default(false)
+  profile_picture Bytes?
+  description String? @db.VarChar(200)
+  birthDate DateTime
+
+  //RELATIONS
+  habilities Habilities_User[]
+}
+
+
+//=======================
+
+//=========ENUMS=========
+
+enum Habilities_User {
+  Violao
+  Desenhista
+  Maquiagem
+  Professor
+  TI
+  Baba
+  Cozinheiro
+  //precisamos de mais umas 100 kk
+}
+
+enum Themes_NGO {
+  Animais
+  Necessitados
+  Criancas
+  //precisamos de mais 100 aqui tb
+}
+
+//=======================
+
+
+
+
