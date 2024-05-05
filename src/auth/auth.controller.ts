@@ -23,7 +23,7 @@ export class AuthController {
     constructor(private authService: AuthService, private usersService: UsersService) {}
 
     @Public()
-    @Post('auth/loginUser')
+    @Post('/loginUser')
     @ApiOkResponse({description: 'Login realizado com sucesso', type: LogUserDto, status: 200})
     @ApiOperation({summary: 'Recebe o token de login'})
     async signInUser(@Body() logUserDto: LogUserDto) {
@@ -32,7 +32,7 @@ export class AuthController {
 
     //TODO---FAZER ROTAS AUTH PARA AS ONGS E PARA OS ASSOCIADOS DA ONG
 
-    @Get('auth/profile')
+    @Get('/profile')
     @ApiOkResponse({description: 'Informação encontrada', type: LogUserDto, status: 200})
     @ApiOperation({summary: 'Retorna o perfil que está logado no momento'})
     async getProfile(@Request() req) {

@@ -26,4 +26,17 @@ export class AuthService {
         throw new UnauthorizedException('Senha incorreta');
       }
     }
+
+    //TODO---FAZER AS OUTRAS OPÇÕES DE LOGIN ASSIM QUE OS MÓDULOS ESTIVEREM PRONTOS / TAMBÉM PRECISAMOS FAZER VERIFICAÇÃO EM TODAS AS ROTAS PARA VER SE OS TIPOS DE USUÁRIOS PODEM FAZER
+    async signInOng(email: string, password: string) {
+
+    }
+
+    async signInOngAssociated(email: string, password: string) {
+
+    }
+
+    async signInAdmin(email: string, password: string) {
+
+    }
   }
