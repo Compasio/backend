@@ -18,6 +18,7 @@ export class UpdateUserDto {
 
     @ApiProperty({type: String, description: "Descrição do usuário (tipo uma bio)", example: "Olá meu nome é João tenho 22 anos toco guitarra e adoro ajudar meus casas"})
     @IsString()
+    @IsOptional()
     description: string;
 
     @ApiProperty({ type: String, description: 'Habilidades do Usuário (ENUM com valores pré-determinados)', example: ['Violao', 'Professor']})

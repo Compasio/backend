@@ -9,7 +9,6 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { contains } from 'class-validator';
 
 @Injectable()
 export class UsersService {
@@ -17,7 +16,10 @@ export class UsersService {
   
   async createUser(createUserDto: CreateUserDto) {
     const {email, cpf_user} = createUserDto;
-    const emailExists = await this.prisma.user.findFirst({
+
+    if(cpf_user.length != 11) throw new ConflictException("ERROR: CPF inválido")
+    
+      const emailExists = await this.prisma.user.findFirst({
       where: {
         email,
       },
@@ -31,7 +33,6 @@ export class UsersService {
     if(cpfExists) throw new ConflictException("ERROR: Este CPF já está cadastrado em outra conta");
 
     //TODO --- CHECAR SE O CPF DO CARA REALMENTE EXISTE (PESQUISAR API PRA ISSO)
-    if(createUserDto.cpf_user.length < 11 || createUserDto.cpf_user.length > 11) throw new ConflictException("ERROR: CPF inválido")
 
     const salt = await bcrypt.genSalt();
     const hash: string = await bcrypt.hash(createUserDto.password, salt);

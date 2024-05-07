@@ -25,7 +25,7 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Public()
-  @Post('createUser')
+  @Post('/createUser')
   @ApiCreatedResponse({description: 'Usuário criado com sucesso', type: CreateUserDto, status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiNotAcceptableResponse({description: 'Senha não é forte o suficiente', status: 406})
@@ -36,21 +36,21 @@ export class UsersController {
   }
 
   @Get('/getAllUsers/:page')
-  @ApiOkResponse({description: 'Requisição feita com sucesso', type: CreateUserDto, status: 201})
+  @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'page', schema: { default: 1 } })
   @ApiOperation({summary: 'Retorna uma lista de vinte usuários por página'})
   async getAllUsers(@Param('page') page: number) {
-    return this.usersService.getAllUsers(page);
+    return await this.usersService.getAllUsers(page);
   }
 
   @Get('/getUserById/:id')
-  @ApiOkResponse({description: 'Requisição feita com sucesso', type: CreateUserDto, status: 201})
+  @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'id', schema: { default: 1 } })
   @ApiOperation({summary: 'Retorna um usuário pelo seu id'})
   async getUserById(@Param('id') id: number) {
-    return this.usersService.getUserById(+id);
+    return await this.usersService.getUserById(+id);
   }
 
   @Get('/getUsersByName/:name')
@@ -59,7 +59,7 @@ export class UsersController {
   @ApiParam({ name: 'name', schema: { default: 'João' } })
   @ApiOperation({summary: 'Retorna uma lista de usuários pelo nome'})
   async getUsersByName(@Param('name') name: string) {
-    return this.usersService.getUsersByName(name);
+    return await this.usersService.getUsersByName(name);
   }
 
   @Post('/getUsersByHabilities/:hability')
@@ -67,7 +67,7 @@ export class UsersController {
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiOperation({summary: 'Retorna uma lista de usuários pelas habilidades'})
   async getUsersByHabilities(@Body() hability: Habilities_User[]) {
-    return this.usersService.getUsersByHabilities(hability);
+    return await this.usersService.getUsersByHabilities(hability);
   }
 
   @Patch('/updateUser/:id')
@@ -76,7 +76,7 @@ export class UsersController {
   @ApiParam({ name: 'id', schema: { default: 1 } })
   @ApiOperation({summary: 'Atualiza informações do usuário com o respectivo id'})
   async updateUser(@Param('id') id: number, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.updateUser(+id, updateUserDto);
+    return await this.usersService.updateUser(+id, updateUserDto);
   }
 
   @Delete('/removeUser/:id')
@@ -85,6 +85,6 @@ export class UsersController {
   @ApiParam({ name: 'id', schema: { default: 1 } })
   @ApiOperation({summary: 'Remove usuário com o respectivo id'})
   async removeUser(@Param('id') id: number) {
-    return this.usersService.removeUser(+id);
+    return await this.usersService.removeUser(+id);
   }
 }
