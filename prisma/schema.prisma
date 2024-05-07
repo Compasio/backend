@@ -50,12 +50,12 @@ model Ong {
   //CAMPOS DA TABELA
   id_ong Int @id @default(autoincrement())
   cnpj_ong String @unique @db.VarChar(14)
+  cpf_founder String @db.VarChar(11) @unique
   ong_name String @db.VarChar(50)
-  //ftgs String
   email String @unique @db.VarChar(70)
+  password String
   profile_picture Bytes?
   description String? @db.VarChar(200)
-  //TODO---TERMINAR TABELA ONG E VER COMO VAMOS FAZER COM OS CERTIFICADOS
 
   //RELAÇÕES
   themes Themes_ONG[]
