@@ -20,12 +20,12 @@ async function bootstrap() {
     .setContact('Compasio', 'https://github.com/Compasio', '')
     .setVersion('0.1')
     .addTag('Auth', 'Autenticação do Sistema')
-    .addTag('User', 'Ações de Usuário')
+    .addTag('Voluntier', 'Ações de Voluntários')
     .build();
 
     const document = SwaggerModule.createDocument(app, config);
     SwaggerModule.setup('api', app, document);
 
-  await app.listen(3000);
+  await app.listen(9000);
 }
 bootstrap();

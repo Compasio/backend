@@ -11,32 +11,51 @@ import {
     ApiOperation,
     ApiTags,
   } from '@nestjs/swagger';
-import { UsersService } from '../modules/users/users.service';
 import { AuthService } from './auth.service';
-import { Public } from './public.decorator';
+import { Public } from './decorators/public.decorator';
 import { LogUserDto } from './log.user.dto';
+import { PrismaService } from 'src/db/prisma.service';
+import { UserTypeAuth } from 'src/auth/decorators/userTypeAuth.decorator';
 
 @ApiBearerAuth()
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-    constructor(private authService: AuthService, private usersService: UsersService) {}
+    constructor(
+      private authService: AuthService,
+      private prisma: PrismaService
+    ) {}
 
     @Public()
     @Post('/loginUser')
     @ApiOkResponse({description: 'Login realizado com sucesso', type: LogUserDto, status: 200})
     @ApiOperation({summary: 'Recebe o token de login'})
     async signInUser(@Body() logUserDto: LogUserDto) {
-        return this.authService.signInUser(logUserDto.email, logUserDto.password);
+        return this.authService.signIn(logUserDto.email, logUserDto.password);
     }
 
-    //TODO---FAZER ROTAS AUTH PARA AS ONGS E PARA OS ASSOCIADOS DA ONG
-
+    @UserTypeAuth('admin', 'voluntier', 'ong', 'ongAssociate')
     @Get('/profile')
     @ApiOkResponse({description: 'Informação encontrada', type: LogUserDto, status: 200})
     @ApiOperation({summary: 'Retorna o perfil que está logado no momento'})
     async getProfile(@Request() req) {
         const user = {id: req.user.id,};
-        return await this.usersService.getUserById(user.id);
+        const account = await this.prisma.user.findUnique({
+          where: {
+            id: user.id,
+          },
+          include: {
+            voluntier: true,
+            ong: true,
+            ongAssociated: true,
+          }
+        });
+
+        if(account.voluntier == null) delete account.voluntier;
+        if(account.ong == null) delete account.ong;
+        if(account.ongAssociated == null) delete account.ongAssociated;
+        delete account.password;
+
+        return account;
     }
 }

@@ -18,56 +18,86 @@ datasource db {
 
 model User {
   //CAMPOS DA TABELA
-  id_user Int @id @default(autoincrement())
-  cpf_user String @unique @db.VarChar(11)
+  id Int @id @default(autoincrement())
+  email String @unique
+  password String
+
+  //RELAÇÕES
+  userType UserType @default(voluntier)
+  voluntier Voluntier?
+  ong Ong?
+  ongAssociated OngAssociated?
+
+}
+
+model Voluntier {
+  //CAMPOS DA TABELA
+  id_voluntier Int
+  cpf_voluntier String @unique @db.VarChar(11)
   firstname String @db.VarChar(30)
   lastname String @db.VarChar(50)
-  email String @unique @db.VarChar(70)
-  password String
-  isAdmin Boolean @default(false) //remover isso quando o módulo admin estiver pronto e o login dele também
   profile_picture Bytes?
   description String? @db.VarChar(200)
   birthDate DateTime
 
   //RELAÇÕES
+  user User? @relation(fields: [id_voluntier], references: [id])
   habilities Habilities_User[]
   voluntierRelations VoluntierRelations[]
-  appData UserAppData[]
-}
+  
 
-model UserAppData {
-  //CAMPOS DA TABELA
-  id_user Int
-  //TODO---TERMINAR TABELA USERAPPDATA
-
-  //RELAÇÕES
-  user User         @relation(fields: [id_user], references: [id_user])
-
-  @@id([id_user])
+  @@id([id_voluntier])
 }
 
 model Ong {
-  //CAMPOS DA TABELA
-  id_ong Int @id @default(autoincrement())
-  cnpj_ong String @unique @db.VarChar(14)
-  cpf_founder String @db.VarChar(11) @unique
+  //CAMPOS DA TABELA    
+  id_ong Int
+  cnpj_ong String @unique @db.VarChar(14) @default("00000000000000")
+  cpf_founder String @db.VarChar(11)
   ong_name String @db.VarChar(50)
-  email String @unique @db.VarChar(70)
-  password String
   profile_picture Bytes?
   description String? @db.VarChar(200)
 
   //RELAÇÕES
+  user User @relation(fields: [id_ong], references: [id])
   themes Themes_ONG[]
   voluntierRelations VoluntierRelations[]
   ongAssociates OngAssociated[]
   projects Project[]
+
+  @@id([id_ong])
 }
+
+model OngAssociated {
+  //CAMPOS DA TABELA
+  id_associate Int
+  ong Int
+  firstname String @db.VarChar(50)
+  lastname String @db.VarChar(70)
+
+  //RELAÇÕES
+  user User @relation(fields: [id_associate], references: [id])
+  id_ong Ong @relation(fields: [ong], references: [id_ong])
+  permissions Permissions[]
+
+  @@id([id_associate])
+}
+
+//model UserAppData {
+  //CAMPOS DA TABELA
+//  id_user Int
+  //TODO---TERMINAR TABELA USERAPPDATA
+
+  //RELAÇÕES
+//  user User         @relation(fields: [id_user], references: [id_user])
+
+//  @@id([id_user])
+//}
 
 model VoluntierRelations {
   //CAMPOS DA TABELA
   id_relation Int @id @default(autoincrement())
-  user Int
+  voluntier Int
   ong Int
   project Int //TEMOS QUE DECIDIR SE A ASSOCIAÇÃO A UM PROJETO É OBRIGATÓRIA
   dateStart DateTime
@@ -75,7 +105,7 @@ model VoluntierRelations {
   description String? @db.VarChar(200)
 
   //RELAÇÕES
-  id_user User @relation(fields: [user], references: [id_user])
+  id_voluntier Voluntier @relation(fields: [voluntier], references: [id_voluntier])
   id_ong Ong @relation(fields: [ong], references: [id_ong])
   id_project Project @relation(fields: [project], references: [id_project])
 }
@@ -89,16 +119,6 @@ model Project {
 
   //RELAÇÕES
   voluntierRelations VoluntierRelations[]
-  id_ong Ong @relation(fields: [ong], references: [id_ong])
-}
-
-model OngAssociated {
-  //RELAÇÕES
-  id_associate Int @id @default(autoincrement())
-  ong Int
-  //TODO---TERMINAR TABELA ONGASSOCIATED
-
-  //RELAÇÕES
   id_ong Ong @relation(fields: [ong], references: [id_ong])
 }
 
@@ -128,6 +148,18 @@ model SysLogs {
 //=======================
 
 //=========ENUMS=========
+
+enum UserType {
+  voluntier
+  ong
+  ongAssociated
+  admin
+}
+
+enum Permissions {
+  donation
+  data
+}
 
 enum Habilities_User {
   Violao

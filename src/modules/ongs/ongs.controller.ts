@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { OngsService } from './ongs.service';
 import { CreateOngDto } from './dto/create-ong.dto';
 import { UpdateOngDto } from './dto/update-ong.dto';
-import { Public } from '../../auth/public.decorator';
+import { Public } from '../../auth/decorators/public.decorator';
 import { Themes_ONG } from '@prisma/client';
 import {
   ApiBadRequestResponse,
@@ -17,6 +17,7 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { UserTypeAuth } from 'src/auth/decorators/userTypeAuth.decorator';
 
 @Controller('ongs')
 @ApiBearerAuth()
@@ -35,6 +36,7 @@ export class OngsController {
     return await this.ongsService.createOng(createOngDto);
   }
 
+  @Public()
   @Get('/getAllOngs/:page')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
@@ -44,6 +46,7 @@ export class OngsController {
     return await this.ongsService.getAllOngs(page);
   }
 
+  @UserTypeAuth('admin', 'ong')
   @Get('/getOngById/:id')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
@@ -53,6 +56,7 @@ export class OngsController {
     return await this.ongsService.getOngById(+id);
   }
 
+  @Public()
   @Get('/getOngByName/:name')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
@@ -62,6 +66,7 @@ export class OngsController {
     return await this.ongsService.getOngByName(name)
   }
 
+  @Public()
   @Post('/getOngByTheme/:theme')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
@@ -70,6 +75,7 @@ export class OngsController {
     return await this.ongsService.getOngsByTheme(themes)
   }
 
+  @UserTypeAuth('admin', 'ong')
   @Patch('/updateOng/:id')
   @ApiOkResponse({description: 'Requisição feita com sucesso', type: UpdateOngDto, status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
@@ -79,6 +85,7 @@ export class OngsController {
     return await this.ongsService.updateOng(+id, updateOngDto);
   }
 
+  @UserTypeAuth('admin', 'ong')
   @Delete('/removeOng/:id')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})

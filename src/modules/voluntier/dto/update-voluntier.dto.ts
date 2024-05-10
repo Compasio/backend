@@ -1,11 +1,11 @@
 import { PartialType } from '@nestjs/swagger';
-import { CreateUserDto } from './create-user.dto';
+import { CreateVoluntierDto } from './create-voluntier.dto';
 import { ApiProperty } from '@nestjs/swagger';
 import { Habilities_User } from '@prisma/client';
 import { IsArray, IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 //export class UpdateUserDto extends PartialType(CreateUserDto) 
-export class UpdateUserDto {
+export class UpdateVoluntierDto {
     @ApiProperty({type: String, description: "Primeiro nome do usuário", example: "João"})
     @IsString()
     @IsNotEmpty()

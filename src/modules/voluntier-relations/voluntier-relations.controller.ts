@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { VoluntierRelationsService } from './voluntier-relations.service';
 import { CreateVoluntierRelationDto } from './dto/create-voluntier-relation.dto';
 import { UpdateVoluntierRelationDto } from './dto/update-voluntier-relation.dto';
-import { Public } from '../../auth/public.decorator';
+import { Public } from '../../auth/decorators/public.decorator';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,

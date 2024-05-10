@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Habilities_User } from '@prisma/client';
+import { UserType } from '@prisma/client'
 import {
   IsBoolean,
   IsNotEmpty,
@@ -18,11 +19,11 @@ import {
   IsArray
 } from 'class-validator';
 
-export class CreateUserDto {
+export class CreateVoluntierDto {
     @ApiProperty({type: String, description: "CPF do usuário", example: "12098755403"})
     @IsString()
     @IsNotEmpty()
-    cpf_user: string;
+    cpf_voluntier: string;
 
     @ApiProperty({type: String, description: "Primeiro nome do usuário", example: "João"})
     @IsString()
@@ -45,11 +46,6 @@ export class CreateUserDto {
     @IsStrongPassword()
     @IsNotEmpty()
     password: string;
-
-    @ApiProperty({type: Boolean, description: "Se o usuário é admin", example: false})
-    @IsBoolean()
-    @IsOptional()
-    isAdmin: boolean;
     
     @ApiProperty({type: Buffer, description: "Foto de perfil do usuário", example: "slamano"})
     @IsString()
