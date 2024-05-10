@@ -27,7 +27,6 @@ model User {
   voluntier Voluntier?
   ong Ong?
   ongAssociated OngAssociated?
-
 }
 
 model Voluntier {
@@ -45,7 +44,6 @@ model Voluntier {
   habilities Habilities_User[]
   voluntierRelations VoluntierRelations[]
   
-
   @@id([id_voluntier])
 }
 
