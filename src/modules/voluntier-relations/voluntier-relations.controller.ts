@@ -20,7 +20,7 @@ import {
 
 @Controller('voluntier-relations')
 @ApiBearerAuth()
-@ApiTags('voluntier-relations')
+@ApiTags('Voluntier-Relations')
 export class VoluntierRelationsController {
   constructor(private readonly voluntierRelationsService: VoluntierRelationsService) {}
 
