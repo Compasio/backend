@@ -1,26 +1,178 @@
-import { Injectable } from '@nestjs/common';
 import { CreateOngAssociatedDto } from './dto/create-ong-associated.dto';
 import { UpdateOngAssociatedDto } from './dto/update-ong-associated.dto';
+import { PrismaService } from 'src/db/prisma.service';
+import { Permissions } from '@prisma/client';
+import {
+  ConflictException,
+  Delete,
+  Injectable,
+  NotFoundException,
+  Request
+} from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class OngAssociatedService {
-  create(createOngAssociatedDto: CreateOngAssociatedDto) {
-    return 'This action adds a new ongAssociated';
+  constructor(private prisma: PrismaService) {}
+  
+  async createOngAssociate(createOngAssociatedDto: CreateOngAssociatedDto, ongid: number) {
+    const { email } = createOngAssociatedDto;
+    const emailExists = await this.prisma.user.findFirst({
+      where: {
+        email,
+      },
+    });
+    if(emailExists) throw new ConflictException("ERROR: Este email já está cadastrado em outra conta");
+
+    const salt = await bcrypt.genSalt();
+    const hash: string = await bcrypt.hash(createOngAssociatedDto.password, salt);
+
+    return this.prisma.user.create({
+      data: {
+        email: createOngAssociatedDto.email,
+        password: hash,
+        userType: 'ongAssociated',
+        ongAssociated: {
+          create: {
+            firstname: createOngAssociatedDto.firstname,
+            lastname: createOngAssociatedDto.lastname,
+            ong: ongid,
+          },
+        },
+      },
+      include: {
+        ongAssociated: true,
+      },
+    });
   }
 
-  findAll() {
-    return `This action returns all ongAssociated`;
+  async getOngAssociatesByOng(page: number, ongid: number) {
+    if(page == 0) {
+      const res = await this.prisma.user.findMany({
+        where: {
+          userType: 'ongAssociated',
+          ongAssociated: {ong: ongid},
+        },
+        include: {ongAssociated: true}
+      });
+      res.forEach(e => {
+        delete e.password;
+        delete e.ongAssociated.id_associate;
+      });
+      return res;
+    } else if(page == 1) {
+      const res = await this.prisma.user.findMany({
+        take: 20,
+        where: {
+          userType: 'ongAssociated',
+          ongAssociated: {ong: ongid},
+        }, 
+        include: {
+          ongAssociated: true,
+        },
+      });
+      res.forEach(e => {
+        delete e.password;
+        delete e.ongAssociated.id_associate;
+      });
+      return res;
+    } else {
+      const res = await this.prisma.user.findMany({
+        take: 20,
+        skip: (page - 1) * 20,
+        where: {
+          userType: 'ongAssociated',
+          ongAssociated: {ong: ongid},
+        },
+        include: {ongAssociated: true},
+      });
+      res.forEach(e => {
+        delete e.password;
+        delete e.ongAssociated.id_associate;
+      });
+      return res;
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} ongAssociated`;
+  async getOngAssociateById(id: number) {
+    const associate = await this.prisma.user.findUnique({
+      where: {
+        id,
+        userType: 'ongAssociated',
+      },
+      include: {
+        ongAssociated: true,
+      },
+    });
+    if(!associate) throw new NotFoundException('ERROR: Voluntário não encontrado');
+    delete associate.password;
+    delete associate.ongAssociated.id_associate;
+    return associate;
   }
 
-  update(id: number, updateOngAssociatedDto: UpdateOngAssociatedDto) {
-    return `This action updates a #${id} ongAssociated`;
+  async getOngAssociatesByPermission(permission: Permissions[], ongid: number) {
+    const associates = await this.prisma.user.findMany({
+      where: {
+        ongAssociated: {
+          ong: ongid,
+          permissions: {hasEvery: permission},
+        },
+      },
+      include: {
+        ongAssociated: true,
+      },
+    });
+    if(associates[0] === undefined) throw new NotFoundException('ERROR: Nenhum associado com estas permissões');
+    associates.forEach(e => {
+      delete e.password;
+      delete e.ongAssociated.id_associate;
+    });
+    return associates;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} ongAssociated`;
+  async updateOngAssociate(id: number, ongid: number, updateOngAssociatedDto: UpdateOngAssociatedDto) {
+    const associate = await this.prisma.ongAssociated.findUnique({
+      where: {
+        id_associate: id,
+        ong: ongid,
+      },
+    });
+
+    if(!associate) throw new NotFoundException("ERROR: Associado não encontrado");
+
+    return this.prisma.ongAssociated.update({
+      data: {
+        ...updateOngAssociatedDto
+      },
+      where: {
+        id_associate: id,
+      },
+    });
+  }
+
+  async removeOngAssociate(id: number, ongid: number) {
+    const associate = await this.prisma.user.findUnique({
+      where: {
+        id,
+        ongAssociated: {ong: ongid}
+      }, 
+    });
+
+    if(!associate) throw new NotFoundException('ERROR: Usuário não encontrado');
+
+    const deleteFromUser = this.prisma.user.delete({
+      where: {
+        id,
+      }
+    });
+    const deleteFromAssociate = this.prisma.ongAssociated.delete({
+      where: {
+        id_associate: id,
+      },
+    });
+
+    await Promise.all([deleteFromUser, deleteFromAssociate]);
+
+    return { success: true };
   }
 }

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Request, UnauthorizedException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Request } from '@nestjs/common';
 import { OngsService } from './ongs.service';
 import { CreateOngDto } from './dto/create-ong.dto';
 import { UpdateOngDto } from './dto/update-ong.dto';
