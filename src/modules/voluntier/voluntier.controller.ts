@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Request } from '@nestjs/common';
 import { VoluntierService } from './voluntier.service';
 import { CreateVoluntierDto } from './dto/create-voluntier.dto';
 import { UpdateVoluntierDto } from './dto/update-voluntier.dto';
@@ -18,12 +18,16 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { UserTypeAuth } from 'src/auth/decorators/userTypeAuth.decorator';
+import { AuthService } from 'src/auth/auth.service';
 
-@Controller('Voluntier')
+@Controller('voluntiers')
 @ApiBearerAuth()
 @ApiTags('Voluntier')
 export class VoluntiersController {
-  constructor(private readonly VoluntiersService: VoluntierService) {}
+  constructor(
+    private readonly VoluntiersService: VoluntierService,
+    private authService: AuthService,
+  ) {}
 
   @Public()
   @Post('/createVoluntier')
@@ -81,7 +85,8 @@ export class VoluntiersController {
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'id', schema: { default: 1 } })
   @ApiOperation({summary: 'Atualiza informações do voluntário com o respectivo id'})
-  async updateVoluntier(@Param('id') id: number, @Body() updateVoluntierDto: UpdateVoluntierDto) {
+  async updateVoluntier(@Param('id') id: number, @Body() updateVoluntierDto: UpdateVoluntierDto, @Request() req) {
+    let confirmPass = await this.authService.checkIdAndAdminStatus(id, req);
     return await this.VoluntiersService.updateVoluntier(+id, updateVoluntierDto);
   }
 
@@ -91,7 +96,8 @@ export class VoluntiersController {
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'id', schema: { default: 1 } })
   @ApiOperation({summary: 'Remove voluntário com o respectivo id'})
-  async removeVoluntier(@Param('id') id: number) {
+  async removeVoluntier(@Param('id') id: number, @Request() req) {
+    let confirmPass = await this.authService.checkIdAndAdminStatus(id, req);
     return await this.VoluntiersService.removeVoluntier(+id);
   }
 }

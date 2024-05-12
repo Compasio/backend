@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Request, UnauthorizedException } from '@nestjs/common';
 import { OngsService } from './ongs.service';
 import { CreateOngDto } from './dto/create-ong.dto';
 import { UpdateOngDto } from './dto/update-ong.dto';
@@ -18,12 +18,16 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { UserTypeAuth } from 'src/auth/decorators/userTypeAuth.decorator';
+import { AuthService } from 'src/auth/auth.service';
 
 @Controller('ongs')
 @ApiBearerAuth()
-@ApiTags('ONG')
+@ApiTags('Ong')
 export class OngsController {
-  constructor(private readonly ongsService: OngsService) {}
+  constructor(
+    private readonly ongsService: OngsService,
+    private authService: AuthService,
+  ) {}
 
   @Public()
   @Post('/createOng')
@@ -81,7 +85,8 @@ export class OngsController {
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'id', schema: { default: 1 } })
   @ApiOperation({summary: 'Atualiza informações da ong com o respectivo id'})
-  async updateOng(@Param('id') id: string, @Body() updateOngDto: UpdateOngDto) {
+  async updateOng(@Param('id') id: number, @Body() updateOngDto: UpdateOngDto, @Request() req) {
+    let confirmPass = await this.authService.checkIdAndAdminStatus(id, req);
     return await this.ongsService.updateOng(+id, updateOngDto);
   }
 
@@ -91,7 +96,8 @@ export class OngsController {
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'id', schema: { default: 1 } })
   @ApiOperation({summary: 'Remove ong com o respectivo id'})
-  removeOng(@Param('id') id: string) {
+  async removeOng(@Param('id') id: number, @Request() req) {
+    let confirmPass = await this.authService.checkIdAndAdminStatus(id, req);
     return this.ongsService.removeOng(+id);
   }
 }

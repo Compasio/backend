@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Habilities_User } from '@prisma/client';
-import { UserType } from '@prisma/client'
 import {
   IsBoolean,
   IsNotEmpty,

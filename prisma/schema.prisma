@@ -57,7 +57,7 @@ model Ong {
   description String? @db.VarChar(200)
 
   //RELAÇÕES
-  user User @relation(fields: [id_ong], references: [id])
+  user User? @relation(fields: [id_ong], references: [id])
   themes Themes_ONG[]
   voluntierRelations VoluntierRelations[]
   ongAssociates OngAssociated[]
@@ -126,14 +126,6 @@ model Project {
 // model DonationHistory {}
 
 // model Donationoptions {}
-
-model Admin {
-  //CAMPOS DA TABELA
-  id_admin Int @id @default(autoincrement())
-  //TODO---TERMINAR TABELA ADMIN
-
-  //RELAÇÕES
-}
 
 model SysLogs {
   //CAMPOS DA TABELA

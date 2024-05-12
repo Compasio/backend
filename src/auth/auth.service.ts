@@ -38,4 +38,15 @@ export class AuthService {
       return user;
   }
 
+  async checkIdAndAdminStatus(userid: number, req) {
+    const userRequest = {id: req.user.id, userType: req.user.userType};
+    console.log(userid, userRequest)
+    if(userRequest.userType === 'admin') {
+      return true;
+    } else if(userid === userRequest.id) {
+      return true;
+    } else {
+      throw new UnauthorizedException();
+    }
+  }
 }

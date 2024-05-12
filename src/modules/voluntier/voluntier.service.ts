@@ -148,7 +148,6 @@ export class VoluntierService {
     return users;
   }
 
-  //TODO --- DEIXAR QUE APENAS ADMIN E PRÓPRIO USUÁRIO CONSIGAM DAR UPDATE NA CONTA
   async updateVoluntier(id: number, updateUserDto: UpdateVoluntierDto) {
     const user = await this.prisma.voluntier.findUnique({
       where: {
@@ -168,7 +167,6 @@ export class VoluntierService {
     });
   }
 
-  //TODO --- DEIXAR QUE APENAS ADMIN E PRÓPRIO USUÁRIO CONSIGAM DELETAR A CONTA
   async removeVoluntier(id: number) {
     const user = await this.prisma.user.findUnique({
       where: {
@@ -178,18 +176,19 @@ export class VoluntierService {
 
     if(!user) throw new NotFoundException('ERROR: Usuário não encontrado');
 
+    const deleteFromVoluntier = this.prisma.voluntier.delete({
+      where: {
+        id_voluntier: id,
+      }
+    });
+
     const deleteFromUser = this.prisma.user.delete({
       where: {
         id,
       }
     });
-    const deleteFromVoluntier = this.prisma.voluntier.delete({
-      where: {
-        id_voluntier: id,
-      }
-    })
 
-    await Promise.all([deleteFromUser, deleteFromVoluntier]);
+    await Promise.all([deleteFromVoluntier, deleteFromUser]);
 
     return { success: true };
    }

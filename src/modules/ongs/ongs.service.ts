@@ -140,7 +140,6 @@ export class OngsService {
     return ongs;
   }
 
-  //TODO --- DEIXAR QUE APENAS ADMIN E PRÓPRIO USUÁRIO CONSIGAM DAR UPDATE NA CONTA
   async updateOng(id: number, updateOngDto: UpdateOngDto) {
     const ong = await this.prisma.ong.findUnique({
       where: {
@@ -160,28 +159,29 @@ export class OngsService {
     });
   }
 
-  //TODO --- DEIXAR QUE APENAS ADMIN E PRÓPRIO USUÁRIO CONSIGAM DELETAR A CONTA
   async removeOng(id: number) {
     const ong = await this.prisma.user.findUnique({
       where: {
         id,
-      }
+        userType: 'ong',
+      },
     });
 
     if(!ong) throw new NotFoundException("ERROR: Ong não encontrada");
+
+    const deleteFromOng = this.prisma.ong.delete({
+      where: {
+        id_ong: id,
+      }
+    });
 
     const deleteFromUser = this.prisma.user.delete({
       where: {
         id,
       }
     });
-    const deleteFromOng = this.prisma.ong.delete({
-      where: {
-        id_ong: id,
-      }
-    })
 
-    await Promise.all([deleteFromUser, deleteFromOng]);
+    await Promise.all([deleteFromOng, deleteFromUser]);
 
     return { success: true };
   }
