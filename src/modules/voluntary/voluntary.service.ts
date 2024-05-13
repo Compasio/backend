@@ -1,6 +1,6 @@
 import { PrismaService } from '../../db/prisma.service';
-import { CreateVoluntierDto } from './dto/create-voluntier.dto';
-import { UpdateVoluntierDto } from './dto/update-voluntier.dto';
+import { CreateVoluntaryDto } from './dto/create-voluntary.dto';
+import { UpdateVoluntaryDto } from './dto/update-voluntary.dto';
 import { Habilities_User } from '@prisma/client';
 import {
   ConflictException,
@@ -11,22 +11,22 @@ import {
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
-export class VoluntierService {
+export class VoluntaryService {
   constructor(private prisma: PrismaService) {}
   
-  async createVoluntier(createVoluntierDto: CreateVoluntierDto) {
-    const {email, cpf_voluntier} = createVoluntierDto;
+  async createVoluntary(createVoluntaryDto: CreateVoluntaryDto) {
+    const {email, cpf_voluntary} = createVoluntaryDto;
 
-    if(cpf_voluntier.length != 11) throw new ConflictException("ERROR: CPF inválido")
+    if(cpf_voluntary.length != 11) throw new ConflictException("ERROR: CPF inválido")
     
     const emailExists = await this.prisma.user.findFirst({
       where: {
         email,
       },
     });
-    const cpfExists = await this.prisma.voluntier.findFirst({
+    const cpfExists = await this.prisma.voluntary.findFirst({
       where: {
-        cpf_voluntier,
+        cpf_voluntary,
       },
     });
     if(emailExists) throw new ConflictException("ERROR: Este email já está cadastrado em outra conta");
@@ -35,139 +35,135 @@ export class VoluntierService {
     //TODO --- CHECAR SE O CPF DO CARA REALMENTE EXISTE (PESQUISAR API PRA ISSO)
 
     const salt = await bcrypt.genSalt();
-    const hash: string = await bcrypt.hash(createVoluntierDto.password, salt);
+    const hash: string = await bcrypt.hash(createVoluntaryDto.password, salt);
 
     return this.prisma.user.create({
       data: {
-        email: createVoluntierDto.email,
+        email: createVoluntaryDto.email,
         password: hash,
-        userType: 'voluntier',
-        voluntier: {
+        userType: 'voluntary',
+        voluntary: {
           create: 
             { 
-              cpf_voluntier: createVoluntierDto.cpf_voluntier,
-              firstname: createVoluntierDto.firstname,
-              lastname: createVoluntierDto.lastname,
-              profile_picture: createVoluntierDto.profile_picture,
-              description: createVoluntierDto.description,
-              birthDate: createVoluntierDto.birthDate,
-              habilities: createVoluntierDto.habilities,
+              cpf_voluntary: createVoluntaryDto.cpf_voluntary,
+              fullname: createVoluntaryDto.fullname,
+              profile_picture: createVoluntaryDto.profile_picture,
+              description: createVoluntaryDto.description,
+              birthDate: createVoluntaryDto.birthDate,
+              habilities: createVoluntaryDto.habilities,
             },
         },
       },
       include: {
-        voluntier: true,
+        voluntary: true,
       },
     })
 }
 
 
-  async getAllVoluntiers(page: number) {
+  async getAllVoluntarys(page: number) {
     if(page == 0) {
-      const res = await this.prisma.user.findMany({where: {userType: 'voluntier'}, include: {voluntier: true}});
+      const res = await this.prisma.user.findMany({where: {userType: 'voluntary'}, include: {voluntary: true}});
       res.forEach(e => {
         delete e.password;
-        delete e.voluntier.id_voluntier;
+        delete e.voluntary.id_voluntary;
       });
       return res;
     } else if(page == 1) {
-      const res = await this.prisma.user.findMany({take: 20, where: {userType: 'voluntier'}, include: {voluntier: true}}, );
+      const res = await this.prisma.user.findMany({take: 20, where: {userType: 'voluntary'}, include: {voluntary: true}}, );
       res.forEach(e => {
         delete e.password;
-        delete e.voluntier.id_voluntier;
+        delete e.voluntary.id_voluntary;
       });
       return res;
     } else {
-      const res = await this.prisma.user.findMany({take: 20, skip: (page - 1) * 20, where: {userType: 'voluntier'}, include: {voluntier: true}});
+      const res = await this.prisma.user.findMany({take: 20, skip: (page - 1) * 20, where: {userType: 'voluntary'}, include: {voluntary: true}});
       res.forEach(e => {
         delete e.password;
-        delete e.voluntier.id_voluntier;
+        delete e.voluntary.id_voluntary;
       });
       return res;
     }
   }
 
-  async getVoluntierById(id: number) {
+  async getVoluntaryById(id: number) {
     const user = await this.prisma.user.findUnique({
       where: {
         id,
-        userType: 'voluntier'
+        userType: 'voluntary'
       },
       include: {
-        voluntier: true,
+        voluntary: true,
       },
     });
     if(!user) throw new NotFoundException('ERROR: Voluntário não encontrado');
     delete user.password;
-    delete user.voluntier.id_voluntier;
+    delete user.voluntary.id_voluntary;
     return user;
   }
 
-
-  //TODO --- MELHORAR ESTA FUNÇÃO PARA QUANDO APARECER O NOME COMPLETO DO CARA APARECER NA QUERY 
-  async getVoluntiersByName(name: string) {
+  async getVoluntarysByName(name: string) {
     const userNearest = await this.prisma.user.findMany({
       where: {
-        voluntier: {
+        voluntary: {
           OR: [
-            { firstname: { contains: name, mode: 'insensitive' }},
-            { lastname: { contains: name, mode: 'insensitive' }},
+            { fullname: { contains: name, mode: 'insensitive' }},
           ]
         }
       },
       include: {
-        voluntier: true,
+        voluntary: true,
       }
     });
 
     if(!userNearest) throw new NotFoundException('ERROR: Nenhum usuário com esse nome');
     userNearest.forEach(e => {
       delete e.password;
-      delete e.voluntier.id_voluntier;
+      delete e.voluntary.id_voluntary;
     });
 
     return userNearest;
   }
 
-  async getVoluntiersByHabilities(hability: Habilities_User[]) {
+  async getVoluntarysByHabilities(hability: Habilities_User[]) {
     const users = await this.prisma.user.findMany({
         where: {
-          voluntier: {
+          voluntary: {
               habilities: {hasEvery: hability},
           }
         },
         include: {
-          voluntier: true,
+          voluntary: true,
         }
     });
     if(users[0] === undefined) throw new NotFoundException('ERROR: Nenhum usuário com estas habilidades');
     users.forEach(e => {
       delete e.password;
-      delete e.voluntier.id_voluntier;
+      delete e.voluntary.id_voluntary;
     });
     return users;
   }
 
-  async updateVoluntier(id: number, updateUserDto: UpdateVoluntierDto) {
-    const user = await this.prisma.voluntier.findUnique({
+  async updateVoluntary(id: number, updateUserDto: UpdateVoluntaryDto) {
+    const user = await this.prisma.voluntary.findUnique({
       where: {
-        id_voluntier: id,
+        id_voluntary: id,
       }
     })
     
     if(!user) throw new NotFoundException('ERROR: Usuário não encontrado');
     
-    return this.prisma.voluntier.update({
+    return this.prisma.voluntary.update({
       data: {
         ...updateUserDto
       },
       where: {
-        id_voluntier: id,
+        id_voluntary: id,
       }
     });
   }
 
-  async removeVoluntier(id: number) {
+  async removeVoluntary(id: number) {
     const user = await this.prisma.user.findUnique({
       where: {
         id,
@@ -176,9 +172,9 @@ export class VoluntierService {
 
     if(!user) throw new NotFoundException('ERROR: Usuário não encontrado');
 
-    const deleteFromVoluntier = this.prisma.voluntier.delete({
+    const deleteFromVoluntary = this.prisma.voluntary.delete({
       where: {
-        id_voluntier: id,
+        id_voluntary: id,
       }
     });
 
@@ -188,7 +184,7 @@ export class VoluntierService {
       }
     });
 
-    await Promise.all([deleteFromVoluntier, deleteFromUser]);
+    await Promise.all([deleteFromVoluntary, deleteFromUser]);
 
     return { success: true };
    }

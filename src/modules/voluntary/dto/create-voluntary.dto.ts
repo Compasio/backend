@@ -18,21 +18,16 @@ import {
   IsArray
 } from 'class-validator';
 
-export class CreateVoluntierDto {
+export class CreateVoluntaryDto {
     @ApiProperty({type: String, description: "CPF do usuário", example: "12098755403"})
     @IsString()
     @IsNotEmpty()
-    cpf_voluntier: string;
+    cpf_voluntary: string;
 
-    @ApiProperty({type: String, description: "Primeiro nome do usuário", example: "João"})
+    @ApiProperty({type: String, description: "Nome completo do voluntário", example: "João Silveira Silva Silva Pinto"})
     @IsString()
     @IsNotEmpty()
-    firstname: string;
-
-    @ApiProperty({type: String, description: "Nome do meio e último nome do usuário", example: "da Silveira Silva"})
-    @IsString()
-    @IsNotEmpty()
-    lastname: string;
+    fullname: string;
 
     @ApiProperty({type: String, description: "Email do usuário", example: "joaosilveirasilva@gmail.com"})
     @IsString()

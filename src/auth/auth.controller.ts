@@ -34,7 +34,7 @@ export class AuthController {
         return this.authService.signIn(logUserDto.email, logUserDto.password);
     }
 
-    @UserTypeAuth('admin', 'voluntier', 'ong', 'ongAssociate')
+    @UserTypeAuth('admin', 'voluntary', 'ong', 'ongAssociate')
     @Get('/profile')
     @ApiOkResponse({description: 'Informação encontrada', type: LogUserDto, status: 200})
     @ApiOperation({summary: 'Retorna o perfil que está logado no momento'})
@@ -45,13 +45,13 @@ export class AuthController {
             id: user.id,
           },
           include: {
-            voluntier: true,
+            voluntary: true,
             ong: true,
             ongAssociated: true,
           }
         });
 
-        if(account.voluntier == null) delete account.voluntier;
+        if(account.voluntary == null) delete account.voluntary;
         if(account.ong == null) delete account.ong;
         if(account.ongAssociated == null) delete account.ongAssociated;
         delete account.password;
