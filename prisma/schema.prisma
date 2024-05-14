@@ -12,3 +12,186 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+
+//========TABELAS========
+
+model User {
+  //CAMPOS DA TABELA
+  id Int @id @default(autoincrement())
+  email String @unique
+  password String
+
+  //RELAÇÕES
+  userType UserType @default(voluntary)
+  voluntary Voluntary?
+  ong Ong?
+  ongAssociated OngAssociated?
+}
+
+model Voluntary {
+  //CAMPOS DA TABELA
+  id_voluntary Int
+  cpf_voluntary String @unique @db.VarChar(11)
+  fullname String @db.VarChar(100)
+  profile_picture Bytes?
+  description String? @db.VarChar(200)
+  birthDate DateTime
+
+  //RELAÇÕES
+  user User? @relation(fields: [id_voluntary], references: [id])
+  habilities Habilities_User[]
+  voluntaryRelations VoluntaryRelations[]
+  
+  @@id([id_voluntary])
+}
+
+model Ong {
+  //CAMPOS DA TABELA    
+  id_ong Int
+  cnpj_ong String @unique @db.VarChar(14) @default("00000000000000")
+  cpf_founder String @db.VarChar(11)
+  ong_name String @db.VarChar(50)
+  profile_picture Bytes?
+  description String? @db.VarChar(200)
+
+  //RELAÇÕES
+  user User? @relation(fields: [id_ong], references: [id])
+  themes Themes_ONG[]
+  voluntaryRelations VoluntaryRelations[]
+  ongAssociates OngAssociated[]
+  projects Project[]
+
+  @@id([id_ong])
+}
+
+model OngAssociated {
+  //CAMPOS DA TABELA
+  id_associate Int
+  ong Int
+  firstname String @db.VarChar(50)
+  lastname String @db.VarChar(70)
+
+  //RELAÇÕES
+  user User @relation(fields: [id_associate], references: [id])
+  id_ong Ong @relation(fields: [ong], references: [id_ong])
+  permissions Permissions[]
+
+  @@id([id_associate])
+}
+
+//model UserAppData {
+  //CAMPOS DA TABELA
+//  id_user Int
+  //TODO---TERMINAR TABELA USERAPPDATA
+
+  //RELAÇÕES
+//  user User         @relation(fields: [id_user], references: [id_user])
+
+//  @@id([id_user])
+//}
+
+model VoluntaryRelations {
+  //CAMPOS DA TABELA
+  id_relation Int @id @default(autoincrement())
+  voluntary Int
+  ong Int
+  project Int //OPCIONAL - COLOCAR NULL NA REQUISIÇÃO (TEM QUE TESTAR ISSO KK)
+  dateStart DateTime
+  dateEnding DateTime
+  description String? @db.VarChar(200)
+
+  //RELAÇÕES
+  id_voluntary Voluntary @relation(fields: [voluntary], references: [id_voluntary])
+  id_ong Ong @relation(fields: [ong], references: [id_ong])
+  id_project Project @relation(fields: [project], references: [id_project])
+}
+
+model Project {
+  //CAMPOS DA TABELA
+  id_project Int @id @default(autoincrement())
+  ong Int
+  project_name String @db.VarChar(50)
+  description String @db.VarChar(200)
+
+  //RELAÇÕES
+  voluntaryRelations VoluntaryRelations[]
+  theme Themes_ONG[]
+  id_ong Ong @relation(fields: [ong], references: [id_ong])
+}
+
+model CrowdFunding {
+  //CAMPOS DA TABELA
+  id_crowdfunding Int @id @default(autoincrement()) 
+  project Int
+  neededValue Float
+  collectedValue Float
+
+  //RELAÇÕES
+  donationHistory DonationHistory[]
+}
+
+//TEMOS QUE VER SE ESSAS TABELAS SÂO REALMENTE NECESSÁRIAS OU SE PODEMOS FAZER ELAS COMO CAMPOS EM OUTRAS TABELAS
+// model NeededItems {}
+
+model DonationHistory {
+  //CAMPOS DA TABELA
+  id_donation Int @id @default(autoincrement())
+  voluntary Int
+  crowdfunding Int //OPCIONAL - COLOCAR NULL NA REQUISIÇÃO (TEM QUE TESTAR ISSO KK)
+  value Float
+
+  //RELAÇÕES
+  id_crowdfunding CrowdFunding @relation(fields: [crowdfunding], references: [id_crowdfunding])
+}
+
+
+model SysLogs {
+  //CAMPOS DA TABELA
+  log_time DateTime @id @default(now())
+  //TODO---TERMINAR TABELA SYSLOGS
+
+  //RELAÇÕES
+}
+
+//=======================
+
+//=========ENUMS=========
+
+enum UserType {
+  voluntary
+  ong
+  ongAssociated
+  admin
+}
+
+enum Permissions {
+  donation
+  voluntary
+  projects
+  total
+}
+
+enum Habilities_User {
+  Violao
+  Desenhista
+  Maquiagem
+  Professor
+  TI
+  Baba
+  Cozinheiro
+  //precisamos de mais umas 100 kk
+}
+
+enum Themes_ONG {
+  Animais
+  Necessitados
+  Criancas
+  //precisamos de mais 100 aqui tb
+}
+
+//=======================
+
+
+
+
