@@ -5,5 +5,6 @@ import { SysController } from './sys.controller';
 @Module({
   controllers: [SysController],
   providers: [SysService],
+  exports: [SysService],
 })
 export class SysModule {}
