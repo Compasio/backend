@@ -17,7 +17,7 @@ export class VoluntaryService {
   async createVoluntary(createVoluntaryDto: CreateVoluntaryDto) {
     const {email, cpf_voluntary} = createVoluntaryDto;
 
-    if(cpf_voluntary.length != 11) throw new ConflictException("ERROR: CPF inválido")
+    if(cpf_voluntary.length != 11 || /^\d+$/.test(cpf_voluntary) == false) throw new ConflictException("ERROR: CPF inválido")
     
     const emailExists = await this.prisma.user.findFirst({
       where: {
