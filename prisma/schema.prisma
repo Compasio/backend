@@ -96,7 +96,7 @@ model VoluntaryRelations {
   id_relation Int @id @default(autoincrement())
   voluntary Int
   ong Int
-  project Int //OPCIONAL - COLOCAR NULL NA REQUISIÇÃO (TEM QUE TESTAR ISSO KK)
+  project Int?
   dateStart DateTime
   dateEnding DateTime
   description String? @db.VarChar(200)
@@ -104,7 +104,7 @@ model VoluntaryRelations {
   //RELAÇÕES
   id_voluntary Voluntary @relation(fields: [voluntary], references: [id_voluntary])
   id_ong Ong @relation(fields: [ong], references: [id_ong])
-  id_project Project @relation(fields: [project], references: [id_project])
+  id_project Project? @relation(fields: [project], references: [id_project])
 }
 
 model Project {
