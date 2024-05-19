@@ -43,12 +43,9 @@ banco de dados: DATABASE_URL="postgresql://postgres:senai@localhost:5432/postgre
 6-No seu terminal, insira o comando 'npx prisma migrate dev'. Insira 'y' ou 'yes' quando pedido e dê o nome que quiser para a migração.
 Este comando serve para atualizar seu banco de dados PostgreSQL com a configuração de tabelas mais recente.
 
-7-No seu terminal, insira o comando 'npx prisma db seed'. Este comando roda um arquivo inserindo o usuário admin principal
-da página como primeiro usuário no banco de dados. O email padrão é compassioAdm@compassio.com.br e a senha padrão é admin123;
+7-No seu terminal, insira o comando 'npm run start:dev'. Este comando inicia o servidor Nest, aguarde até a verificação inicial terminar;
 
-8-No seu terminal, insira o comando 'npm run start:dev'. Este comando inicia o servidor Nest, aguarde até a verificação inicial terminar;
-
-9-Em seu browser de preferência, acesse o link localhost:9000/api. Neste link você pode acessar as APIs pela interface Swagger.
+8-Em seu browser de preferência, acesse o link localhost:9000/api. Neste link você pode acessar as APIs pela interface Swagger.
 
 =====================================================================================================================================================
 
@@ -68,7 +65,7 @@ com um dos quatro tipos de usuários:
 
 O usuário admin é o único que pode fazer requisições para qualquer API. Todos os outros tem limites de acesso.
 
-Para logar no sistema, você pode utilizar o usuário admin padrão (item 7 da parte 2 deste guia) ou criar um usuário de um dos tipos que você precisa,
+Para logar no sistema, você pode utilizar o usuário admin padrão (email: compassioAdm@compassio.com.br senha: admin123) ou criar um usuário de um dos tipos que você precisa,
 e então, seguir estes passos:
 
 1-Clique na rota /auth/loginUser;
@@ -111,7 +108,7 @@ mudança e do porquê da mudança
 
 -Se o erro foi resultado de alguma mudança feita por conta própria na base de código, seu report não será considerado
 
--Qualquer tentativa de alteração na base de código e commitar para qualquer branch do projeto sem autorização de um membro do time de Backend do time da 
+-Qualquer tentativa de alteração na base de código e commitar para qualquer branch do projeto sem autorização de um membro do time de Backend da 
 Compassio acarretará no bloqueio de acesso e possível banimento do projeto
 
 
