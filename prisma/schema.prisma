@@ -112,7 +112,7 @@ model Project {
   id_project Int @id @default(autoincrement())
   ong Int
   project_name String @db.VarChar(50)
-  description String @db.VarChar(200)
+  description String? @db.VarChar(200)
 
   //RELAÇÕES
   voluntaryRelations VoluntaryRelations[]
