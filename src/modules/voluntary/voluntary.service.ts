@@ -17,7 +17,7 @@ export class VoluntaryService {
   async createVoluntary(createVoluntaryDto: CreateVoluntaryDto) {
     const {email, cpf_voluntary} = createVoluntaryDto;
 
-    if(cpf_voluntary.length != 11) throw new ConflictException("ERROR: CPF inválido")
+    if(cpf_voluntary.length != 11 || /^\d+$/.test(cpf_voluntary) == false) throw new ConflictException("ERROR: CPF inválido")
     
     const emailExists = await this.prisma.user.findFirst({
       where: {
@@ -62,28 +62,52 @@ export class VoluntaryService {
 
 
   async getAllVoluntarys(page: number) {
+    let res;
     if(page == 0) {
-      const res = await this.prisma.user.findMany({where: {userType: 'voluntary'}, include: {voluntary: true}});
-      res.forEach(e => {
-        delete e.password;
-        delete e.voluntary.id_voluntary;
-      });
-      return res;
-    } else if(page == 1) {
-      const res = await this.prisma.user.findMany({take: 20, where: {userType: 'voluntary'}, include: {voluntary: true}}, );
-      res.forEach(e => {
-        delete e.password;
-        delete e.voluntary.id_voluntary;
-      });
-      return res;
-    } else {
-      const res = await this.prisma.user.findMany({take: 20, skip: (page - 1) * 20, where: {userType: 'voluntary'}, include: {voluntary: true}});
-      res.forEach(e => {
-        delete e.password;
-        delete e.voluntary.id_voluntary;
-      });
-      return res;
+      res = await this.prisma.user.findMany({
+        where: {
+          userType: 'voluntary'
+        }, 
+        include: {
+          voluntary: {
+            include: {   
+              voluntaryRelations: true,
+            }
+          } 
+        }},
+      );
+    } 
+    
+    else if(page == 1) {
+      res = await this.prisma.user.findMany({
+        take: 20,
+        where: {
+          userType: 'voluntary'
+        },
+        include: {
+          voluntary: true
+        }}, 
+      );
+    } 
+    
+    else {
+      res = await this.prisma.user.findMany({
+        take: 20,
+        skip: (page - 1) * 20,
+        where: {
+          userType: 'voluntary'
+        },
+        include: {
+          voluntary: true
+        }},
+      );
     }
+    
+    res.forEach(e => {
+      delete e.password;
+      delete e.voluntary.id_voluntary;
+    });
+    return res;
   }
 
   async getVoluntaryById(id: number) {
