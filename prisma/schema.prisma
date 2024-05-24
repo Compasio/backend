@@ -42,6 +42,7 @@ model Voluntary {
   user User? @relation(fields: [id_voluntary], references: [id])
   habilities Habilities_User[]
   voluntaryRelations VoluntaryRelations[]
+  relationRequests RelationRequests[]
   
   @@id([id_voluntary])
 }
@@ -61,6 +62,7 @@ model Ong {
   voluntaryRelations VoluntaryRelations[]
   ongAssociates OngAssociated[]
   projects Project[]
+  relationRequests RelationRequests[]
 
   @@id([id_ong])
 }
@@ -107,6 +109,21 @@ model VoluntaryRelations {
   id_project Project? @relation(fields: [project], references: [id_project])
 }
 
+model RelationRequests {
+  //CAMPOS DA TABELA
+  voluntary Int
+  ong Int
+  project Int?
+  userTypeWhoRequested UserType
+
+  //RELAÇÕES
+  id_voluntary Voluntary @relation(fields: [voluntary], references: [id_voluntary])
+  id_ong Ong @relation(fields: [ong], references: [id_ong])
+  id_project Project? @relation(fields: [project], references: [id_project])
+
+  @@id([voluntary, ong])
+}
+
 model Project {
   //CAMPOS DA TABELA
   id_project Int @id @default(autoincrement())
@@ -116,6 +133,7 @@ model Project {
 
   //RELAÇÕES
   voluntaryRelations VoluntaryRelations[]
+  relationRequests RelationRequests[]
   theme Themes_ONG[]
   id_ong Ong @relation(fields: [ong], references: [id_ong])
 }

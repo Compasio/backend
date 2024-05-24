@@ -9,21 +9,6 @@ import {
 } from 'class-validator';
 
 export class CreateVoluntaryRelationDto {
-    @ApiProperty({type: Number, description: "Id do Voluntário", example: 1})
-    @IsNumber()
-    @IsNotEmpty()
-    voluntary: number;
-
-    @ApiProperty({type: Number, description: "Id da Ong", example: 1})
-    @IsNumber()
-    @IsNotEmpty()
-    ong: number;
-
-    @ApiProperty({type: Number, description: "Id do projeto", example: 1})
-    @IsNumber()
-    @IsOptional()
-    project: number;
-
     @ApiProperty({type: Date, description: "Data de início", example: "2024-05-04T00:00:00.000Z"})
     @IsDateString()
     @IsNotEmpty()

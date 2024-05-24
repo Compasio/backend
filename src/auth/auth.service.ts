@@ -1,4 +1,5 @@
 import {
+  ConflictException,
     Injectable,
     NotFoundException,
     UnauthorizedException,
@@ -48,5 +49,19 @@ export class AuthService {
     } else {
       throw new UnauthorizedException();
     }
+  }
+
+  async checkIfOngAssociateIsFromOng(ong: number, req) {
+    let id = req.user.id;
+    const associate = await this.prisma.ongAssociated.findUnique({
+      where: {
+        id_associate: id,
+        ong,
+      },
+    });
+    console.log(associate)
+    if(!associate) throw new UnauthorizedException();
+    return true;
+    //TODO --- CHECAR PERMISSÔES DO ASSOCIADO
   }
 }
