@@ -7,6 +7,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from 'src/db/prisma.service';
+import { Permissions } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -41,7 +42,6 @@ export class AuthService {
 
   async checkIdAndAdminStatus(userid: number, req) {
     const userRequest = {id: req.user.id, userType: req.user.userType};
-    console.log(userid, userRequest)
     if(userRequest.userType === 'admin') {
       return true;
     } else if(userid === userRequest.id) {
@@ -51,7 +51,7 @@ export class AuthService {
     }
   }
 
-  async checkIfOngAssociateIsFromOng(ong: number, req) {
+  async checkIfOngAssociateIsFromOngAndItsPermission(ong: number, req, permissions: Permissions) {
     let id = req.user.id;
     const associate = await this.prisma.ongAssociated.findUnique({
       where: {
@@ -59,9 +59,12 @@ export class AuthService {
         ong,
       },
     });
-    console.log(associate)
+
     if(!associate) throw new UnauthorizedException();
+
+    let associatePermissions = associate.permissions;
+    if(associatePermissions.includes(permissions) == false) throw new UnauthorizedException("ERROR: você não tem permissão para executar esta ação");
+    
     return true;
-    //TODO --- CHECAR PERMISSÔES DO ASSOCIADO
   }
 }

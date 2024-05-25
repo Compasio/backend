@@ -46,7 +46,7 @@ export class VoluntaryRelationsController {
       let confirmPass = await this.authService.checkIdAndAdminStatus(ong, req);
     } 
     else if(type == 'ongAssociated') {
-      let confirmPass = await this.authService.checkIfOngAssociateIsFromOng(ong, req);
+      let confirmPass = await this.authService.checkIfOngAssociateIsFromOngAndItsPermission(ong, req, 'voluntary');
     }
     else {
       let confirmPass = await this.authService.checkIdAndAdminStatus(voluntary, req);
@@ -66,7 +66,7 @@ export class VoluntaryRelationsController {
       let confirmPass = await this.authService.checkIdAndAdminStatus(ong, req);
     } 
     else if(type == 'ongAssociated') {
-      let confirmPass = await this.authService.checkIfOngAssociateIsFromOng(ong, req);
+      let confirmPass = await this.authService.checkIfOngAssociateIsFromOngAndItsPermission(ong, req, 'voluntary');
     }
     else {
       let confirmPass = await this.authService.checkIdAndAdminStatus(voluntary, req);
@@ -85,7 +85,7 @@ export class VoluntaryRelationsController {
       let confirmPass = await this.authService.checkIdAndAdminStatus(ong, req);
     } 
     else if(type == 'ongAssociated') {
-      let confirmPass = await this.authService.checkIfOngAssociateIsFromOng(ong, req);
+      let confirmPass = await this.authService.checkIfOngAssociateIsFromOngAndItsPermission(ong, req, 'voluntary');
     }
     else {
       let confirmPass = await this.authService.checkIdAndAdminStatus(voluntary, req);

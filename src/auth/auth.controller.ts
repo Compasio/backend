@@ -34,7 +34,7 @@ export class AuthController {
         return this.authService.signIn(logUserDto.email, logUserDto.password);
     }
 
-    @UserTypeAuth('admin', 'voluntary', 'ong', 'ongAssociate')
+    @UserTypeAuth('admin', 'voluntary', 'ong', 'ongAssociated')
     @Get('/profile')
     @ApiOkResponse({description: 'Informação encontrada', type: LogUserDto, status: 200})
     @ApiOperation({summary: 'Retorna o perfil que está logado no momento'})

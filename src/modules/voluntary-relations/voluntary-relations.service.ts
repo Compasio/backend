@@ -25,7 +25,6 @@ export class VoluntaryRelationsService {
     if(!voluntaryExists) throw new ConflictException("ERROR: Voluntário não existe");
     if(!ongExists) throw new ConflictException("ERROR: Ong não existe");
 
-    console.log(project)
     if(project != null || project != undefined) {
       const projectExists = await this.prisma.project.findFirst({
         where: {
@@ -241,7 +240,7 @@ export class VoluntaryRelationsService {
       },
     });
     if(!relation) throw new NotFoundException("ERROR: Relação não encontrada");
-    console.log(typeof relation)
+
     return relation;
   }
 
