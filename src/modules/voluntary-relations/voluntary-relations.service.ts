@@ -44,7 +44,7 @@ export class VoluntaryRelationsService {
     });
   }
 
-  async acceptVoluntaryRelation(voluntary: number, ong: number, userType: UserType, idOfWhoMadeRequest: number, createvoluntaryRelationDto: CreateVoluntaryRelationDto) {
+  async acceptVoluntaryRelation(voluntary: number, ong: number, userType: UserType, createvoluntaryRelationDto: CreateVoluntaryRelationDto) {
     const requestExists = await this.prisma.relationRequests.findUnique({
       where: {
         voluntary_ong: {

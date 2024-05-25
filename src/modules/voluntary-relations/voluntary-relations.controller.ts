@@ -61,7 +61,6 @@ export class VoluntaryRelationsController {
   @ApiOperation({summary: 'Aceita uma relação de voluntario'})
   async acceptVoluntaryRelation(@Param('ong') ong: number, @Param('voluntary') voluntary: number, @Body() createvoluntaryRelationDto: CreateVoluntaryRelationDto, @Request() req) {
     let type = req.user.userType;
-    let id = req.user.id;
     if(type == 'ong') {
       let confirmPass = await this.authService.checkIdAndAdminStatus(ong, req);
     } 
@@ -71,7 +70,7 @@ export class VoluntaryRelationsController {
     else {
       let confirmPass = await this.authService.checkIdAndAdminStatus(voluntary, req);
     }
-    return this.voluntaryRelationsService.acceptVoluntaryRelation(voluntary, ong, type, id, createvoluntaryRelationDto);
+    return this.voluntaryRelationsService.acceptVoluntaryRelation(voluntary, ong, type, createvoluntaryRelationDto);
   }
 
   @UserTypeAuth('admin', 'ong', 'voluntary', 'ongAssociated')
