@@ -67,9 +67,10 @@ export class OngAssociatedController {
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiOperation({summary: 'Retorna uma lista de associados pelas permissões'})
-  async getOngAssociatesByPermission(@Param('ongid') ongid: number, @Body() permission: Permissions[], @Request() req) {
+  @ApiParam({ name: 'page', schema: { default: 1 } })
+  async getOngAssociatesByPermission(@Param('page') page: number, @Param('ongid') ongid: number, @Body() permission: Permissions[], @Request() req) {
     let confirmPass = await this.authService.checkIdAndAdminStatus(ongid, req);
-    return await this.ongAssociatedService.getOngAssociatesByPermission(permission, ongid);
+    return await this.ongAssociatedService.getOngAssociatesByPermission(page, permission, ongid);
   }
   
   @UserTypeAuth('admin', 'ong')

@@ -63,6 +63,8 @@ export class VoluntaryService {
 
   async getAllVoluntarys(page: number) {
     let res;
+    let count = await this.prisma.user.count({where:{userType: 'voluntary'}});
+
     if(page == 0) {
       res = await this.prisma.user.findMany({
         where: {
@@ -107,7 +109,8 @@ export class VoluntaryService {
       delete e.password;
       delete e.voluntary.id_voluntary;
     });
-    return res;
+
+    return {"response": res, "totalCount": count};
   }
 
   async getVoluntaryById(id: number) {
@@ -149,8 +152,12 @@ export class VoluntaryService {
     return userNearest;
   }
 
-  async getVoluntarysByHabilities(hability: Habilities_User[]) {
-    const users = await this.prisma.user.findMany({
+  async getVoluntarysByHabilities(page: number, hability: Habilities_User[]) {
+    let res;
+    let count = await this.prisma.user.count({where:{voluntary:{habilities: {hasEvery: hability}}}});
+
+    if(page == 0) {
+      res = await this.prisma.user.findMany({
         where: {
           voluntary: {
               habilities: {hasEvery: hability},
@@ -159,13 +166,42 @@ export class VoluntaryService {
         include: {
           voluntary: true,
         }
-    });
-    if(users[0] === undefined) throw new NotFoundException('ERROR: Nenhum usuário com estas habilidades');
-    users.forEach(e => {
+      });
+    }
+    else if(page == 1) {
+      res = await this.prisma.user.findMany({
+        where: {
+          voluntary: {
+              habilities: {hasEvery: hability},
+          }
+        },
+        include: {
+          voluntary: true,
+        },
+        take: 20,
+      });
+    }
+    else {
+      res = await this.prisma.user.findMany({
+        where: {
+          voluntary: {
+              habilities: {hasEvery: hability},
+          }
+        },
+        include: {
+          voluntary: true,
+        },
+        take: 20,
+        skip: (page - 1) * 20,
+      });
+    }
+    
+    if(res[0] === undefined) throw new NotFoundException('ERROR: Nenhum usuário com estas habilidades');
+    res.forEach(e => {
       delete e.password;
       delete e.voluntary.id_voluntary;
     });
-    return users;
+    return {"response": res, "totalCount": count};
   }
 
   async updateVoluntary(id: number, updateUserDto: UpdateVoluntaryDto) {

@@ -144,24 +144,56 @@ export class OngsService {
     return ongNearest;
   }
 
-  async getOngsByTheme(themes: Themes_ONG[]) {
-    const ongs = await this.prisma.user.findMany({
-      where: {
-        ong: {
-          themes: {hasEvery: themes},
-        } 
-      },
-      include: {
-        ong: true,
-      }
-    });
+  async getOngsByTheme(page: number, themes: Themes_ONG[]) {
+    let res;
+    let count = await this.prisma.user.count({where:{ong:{themes: {hasEvery: themes}}}});
 
-    if(ongs[0] === undefined) throw new NotFoundException('ERROR: Nenhuma Ong com estes temas');
-    ongs.forEach(e => {
+    if(page == 0) {
+      res = await this.prisma.user.findMany({
+        where: {
+          ong: {
+            themes: {hasEvery: themes},
+          } 
+        },
+        include: {
+          ong: true,
+        }
+      });  
+    }
+    else if(page == 1) {
+      res = await this.prisma.user.findMany({
+        where: {
+          ong: {
+            themes: {hasEvery: themes},
+          } 
+        },
+        include: {
+          ong: true,
+        },
+        take: 20,
+      });  
+    }
+    else {
+      res = await this.prisma.user.findMany({
+        where: {
+          ong: {
+            themes: {hasEvery: themes},
+          } 
+        },
+        include: {
+          ong: true,
+        },
+        take: 20,
+        skip: (page - 1) * 20,
+      });  
+    }
+    
+    if(res[0] === undefined) throw new NotFoundException('ERROR: Nenhuma Ong com estes temas');
+    res.forEach(e => {
       delete e.password;
       delete e.ong.id_ong;
     });
-    return ongs;
+    return {"response": res, "totalCount": count};
   }
 
   async updateOng(id: number, updateOngDto: UpdateOngDto) {
