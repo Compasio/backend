@@ -22,10 +22,15 @@ export class CreateDonationDto {
     @ApiProperty({type: Number, description: "ID Do voluntario", example: 1})
     @IsNotEmpty()
     @IsNumber()
-    voluntario: number
+    voluntary: number
 
     @ApiProperty({type: Number, description: "Vaquinha",example: 1})
     @IsOptional()
     @IsNumber()
     crowdfunding : number
+
+    @ApiProperty({type: Number, description: "Valor da doação", example: 1})
+    @IsNotEmpty()
+    @IsNumber()
+    value : number
 }
