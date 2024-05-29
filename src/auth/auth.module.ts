@@ -6,10 +6,11 @@ import { AuthGuard } from './auth.guard';
 import { AuthService } from './auth.service';
 import { jwtSecret } from './constant';
 import { PrismaService } from 'src/db/prisma.service';
+import { EmailAuthService } from './emailAuth/emailAuth.service';
 
 @Module({
   imports: [JwtModule.register({global: true, secret: jwtSecret.secret, signOptions: { expiresIn: '2h' }})],
-  providers: [AuthService, {provide: APP_GUARD, useClass: AuthGuard}, PrismaService],
+  providers: [AuthService, {provide: APP_GUARD, useClass: AuthGuard}, PrismaService, EmailAuthService],
   controllers: [AuthController],
   exports: [AuthService],
 })

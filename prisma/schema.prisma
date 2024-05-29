@@ -172,6 +172,12 @@ model SysLogs {
   //RELAÇÕES
 }
 
+model EmailVerifyCode {
+    code String @id @db.VarChar(6)
+    dto String
+    iv Bytes
+}
+
 //=======================
 
 //=========ENUMS=========

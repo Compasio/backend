@@ -2,13 +2,18 @@ import {
     Body,
     Controller,
     Get,
+    Param,
     Post,
     Request,
   } from '@nestjs/common';
   import {
+    ApiBadRequestResponse,
     ApiBearerAuth,
+    ApiConflictResponse,
+    ApiCreatedResponse,
     ApiOkResponse,
     ApiOperation,
+    ApiParam,
     ApiTags,
   } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
@@ -16,6 +21,7 @@ import { Public } from './decorators/public.decorator';
 import { LogUserDto } from './log.user.dto';
 import { PrismaService } from 'src/db/prisma.service';
 import { UserTypeAuth } from 'src/auth/decorators/userTypeAuth.decorator';
+import { EmailAuthService } from './emailAuth/emailAuth.service';
 
 @ApiBearerAuth()
 @ApiTags('Auth')
@@ -23,7 +29,8 @@ import { UserTypeAuth } from 'src/auth/decorators/userTypeAuth.decorator';
 export class AuthController {
     constructor(
       private authService: AuthService,
-      private prisma: PrismaService
+      private prisma: PrismaService,
+      private emailAuthService: EmailAuthService,
     ) {}
 
     @Public()
@@ -32,6 +39,17 @@ export class AuthController {
     @ApiOperation({summary: 'Recebe o token de login'})
     async signInUser(@Body() logUserDto: LogUserDto) {
         return this.authService.signIn(logUserDto.email, logUserDto.password);
+    }
+
+    @Public()
+    @Post('/verifyUserCreation/:code')
+    @ApiCreatedResponse({description: 'Usuário criado com sucesso', status: 201})
+    @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
+    @ApiConflictResponse({ description: 'Codigo inválido', status: 409})
+    @ApiOperation({summary: 'Registra o voluntário depois de código mandado por email'})
+    @ApiParam({name: 'code', schema: {default: '123456'}})
+    async verifyUserCreation(@Param('code') code: string) {
+      return await this.emailAuthService.verifyUserCreation(code);
     }
 
     @UserTypeAuth('admin', 'voluntary', 'ong', 'ongAssociated')

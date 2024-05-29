@@ -2,6 +2,7 @@ import { PrismaService } from '../../db/prisma.service';
 import { CreateVoluntaryDto } from './dto/create-voluntary.dto';
 import { UpdateVoluntaryDto } from './dto/update-voluntary.dto';
 import { Habilities_User } from '@prisma/client';
+import { EmailAuthService } from 'src/auth/emailAuth/emailAuth.service';
 import {
   ConflictException,
   Delete,
@@ -9,15 +10,20 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class VoluntaryService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private emailAuth: EmailAuthService,
+  ) {}
   
   async createVoluntary(createVoluntaryDto: CreateVoluntaryDto) {
     const {email, cpf_voluntary} = createVoluntaryDto;
 
     if(cpf_voluntary.length != 11 || /^\d+$/.test(cpf_voluntary) == false) throw new ConflictException("ERROR: CPF inválido")
+    
     
     const emailExists = await this.prisma.user.findFirst({
       where: {
@@ -36,29 +42,15 @@ export class VoluntaryService {
 
     const salt = await bcrypt.genSalt();
     const hash: string = await bcrypt.hash(createVoluntaryDto.password, salt);
+    createVoluntaryDto.password = hash;
 
-    return this.prisma.user.create({
-      data: {
-        email: createVoluntaryDto.email,
-        password: hash,
-        userType: 'voluntary',
-        voluntary: {
-          create: 
-            { 
-              cpf_voluntary: createVoluntaryDto.cpf_voluntary,
-              fullname: createVoluntaryDto.fullname,
-              profile_picture: createVoluntaryDto.profile_picture,
-              description: createVoluntaryDto.description,
-              birthDate: createVoluntaryDto.birthDate,
-              habilities: createVoluntaryDto.habilities,
-            },
-        },
-      },
-      include: {
-        voluntary: true,
-      },
-    })
-}
+    const makeVerifyCode = await this.emailAuth.generateAndSendEmailVerifyCode(createVoluntaryDto);
+    if(makeVerifyCode) {
+      return true;
+    } else {
+      throw new Error("Ocorreu um erro, por favor tente novamente");
+    }
+  }
 
 
   async getAllVoluntarys(page: number) {

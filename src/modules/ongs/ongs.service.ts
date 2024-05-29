@@ -1,6 +1,7 @@
 import { CreateOngDto } from './dto/create-ong.dto';
 import { UpdateOngDto } from './dto/update-ong.dto';
 import { PrismaService } from '../../db/prisma.service';
+import { EmailAuthService } from 'src/auth/emailAuth/emailAuth.service';
 import {
   ConflictException,
   Delete,
@@ -12,7 +13,10 @@ import { Themes_ONG } from '@prisma/client';
 
 @Injectable()
 export class OngsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private emailAuth: EmailAuthService,
+  ) {}
 
   async createOng(createOngDto: CreateOngDto) {
     const {email, cpf_founder, cnpj_ong} = createOngDto;
@@ -35,28 +39,36 @@ export class OngsService {
     
     const salt = await bcrypt.genSalt();
     const hash: string = await bcrypt.hash(createOngDto.password, salt);
+    createOngDto.password = hash;
 
-    return this.prisma.user.create({
-      data: {
-        email: createOngDto.email,
-        password: hash,
-        userType: 'ong',
-        ong: {
-          create: 
-            { 
-              cpf_founder: createOngDto.cpf_founder,
-              cnpj_ong: createOngDto.cnpj_ong,
-              ong_name: createOngDto.ong_name,
-              profile_picture: createOngDto.profile_picture,
-              description: createOngDto.description,
-              themes: createOngDto.themes,
-            },
-        },
-      },
-      include: {
-        ong: true,
-      },
-    })
+    const makeVerifyCode = await this.emailAuth.generateAndSendEmailVerifyCode(createOngDto);
+    if(makeVerifyCode) {
+      return true;
+    } else {
+      throw new Error("Ocorreu um erro, por favor tente novamente");
+    }
+
+    // return this.prisma.user.create({
+    //   data: {
+    //     email: createOngDto.email,
+    //     password: hash,
+    //     userType: 'ong',
+    //     ong: {
+    //       create: 
+    //         { 
+    //           cpf_founder: createOngDto.cpf_founder,
+    //           cnpj_ong: createOngDto.cnpj_ong,
+    //           ong_name: createOngDto.ong_name,
+    //           profile_picture: createOngDto.profile_picture,
+    //           description: createOngDto.description,
+    //           themes: createOngDto.themes,
+    //         },
+    //     },
+    //   },
+    //   include: {
+    //     ong: true,
+    //   },
+    // })
   }
 
 
