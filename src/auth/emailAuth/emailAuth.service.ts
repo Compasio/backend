@@ -59,6 +59,7 @@ export class EmailAuthService {
                     code,
                     dto: cryptDto,
                     iv,
+                    createdAt: Date.now(),
                 },
             });
 
