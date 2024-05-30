@@ -40,6 +40,27 @@ export class AuthService {
       return user;
   }
 
+  async getProfile(req) {
+    const user = {id: req.user.id,};
+    const account = await this.prisma.user.findUnique({
+      where: {
+        id: user.id,
+      },
+      include: {
+        voluntary: true,
+        ong: true,
+        ongAssociated: true,
+      }
+    });
+
+    if(account.voluntary == null) delete account.voluntary;
+    if(account.ong == null) delete account.ong;
+    if(account.ongAssociated == null) delete account.ongAssociated;
+    delete account.password;
+
+    return account;
+}
+
   async checkIdAndAdminStatus(userid: number, req) {
     const userRequest = {id: req.user.id, userType: req.user.userType};
     if(userRequest.userType === 'admin') {
