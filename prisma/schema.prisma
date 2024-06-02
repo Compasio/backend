@@ -27,6 +27,24 @@ model User {
   voluntary Voluntary?
   ong Ong?
   ongAssociated OngAssociated?
+  address Address?
+}
+
+model Address {
+  //CAMPOS DA TABELA
+  id_user Int
+  // street String @db.VarChar(50)
+  // neighborhood String @db.VarChar(30)
+  // city String @db.VarChar(30)
+  // state State
+
+  lat String
+  lng String
+
+  //RELAÇÕES
+  user User? @relation(fields: [id_user], references: [id])
+
+  @@id([id_user])
 }
 
 model Voluntary {

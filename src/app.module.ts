@@ -11,9 +11,10 @@ import { SysModule } from './modules/sys/sys.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { CronService } from './cron/cron.service';
 import { OperationsModule } from './cron/functions/operations.module';
+import { MapsModule } from './modules/maps/maps.module';
 
 @Module({
-  imports: [AuthModule, VoluntarysModule, OngsModule, ConfigModule.forRoot(), VoluntaryRelationsModule, OngAssociatedModule, SysModule, ScheduleModule.forRoot(), OperationsModule],
+  imports: [AuthModule, VoluntarysModule, OngsModule, ConfigModule.forRoot(), VoluntaryRelationsModule, OngAssociatedModule, SysModule, ScheduleModule.forRoot(), OperationsModule, MapsModule],
   controllers: [AppController],
   providers: [AppService, CronService],
 })
