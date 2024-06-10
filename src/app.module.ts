@@ -14,7 +14,7 @@ import { OperationsModule } from './cron/functions/operations.module';
 import { MapsModule } from './modules/maps/maps.module';
 
 @Module({
-  imports: [AuthModule, VoluntarysModule, OngsModule, ConfigModule.forRoot(), VoluntaryRelationsModule, OngAssociatedModule, SysModule, ScheduleModule.forRoot(), OperationsModule, MapsModule],
+  imports: [AuthModule, VoluntarysModule, OngsModule, ConfigModule.forRoot({envFilePath: '.env'}), ConfigModule.forRoot({envFilePath: '.debug.env'}), VoluntaryRelationsModule, OngAssociatedModule, SysModule, ScheduleModule.forRoot(), OperationsModule, MapsModule],
   controllers: [AppController],
   providers: [AppService, CronService],
 })

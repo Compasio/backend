@@ -41,34 +41,37 @@ export class OngsService {
     const hash: string = await bcrypt.hash(createOngDto.password, salt);
     createOngDto.password = hash;
 
-    const makeVerifyCode = await this.emailAuth.generateAndSendEmailVerifyCode(createOngDto);
-    if(makeVerifyCode) {
-      return true;
-    } else {
-      throw new Error("Ocorreu um erro, por favor tente novamente");
+    if(process.env.CREATE_USER_WITHOUT_EMAIL_VERIFY == "false") {
+      const makeVerifyCode = await this.emailAuth.generateAndSendEmailVerifyCode(createOngDto);
+      if(makeVerifyCode) {
+        return true;
+      } else {
+        throw new Error("Ocorreu um erro, por favor tente novamente");
+      }
+    } 
+    else {
+      return this.prisma.user.create({
+        data: {
+          email: createOngDto.email,
+          password: hash,
+          userType: 'ong',
+          ong: {
+            create: 
+              { 
+                cpf_founder: createOngDto.cpf_founder,
+                cnpj_ong: createOngDto.cnpj_ong,
+                ong_name: createOngDto.ong_name,
+                profile_picture: createOngDto.profile_picture,
+                description: createOngDto.description,
+                themes: createOngDto.themes,
+              },
+          },
+        },
+        include: {
+          ong: true,
+        },
+      })
     }
-
-    // return this.prisma.user.create({
-    //   data: {
-    //     email: createOngDto.email,
-    //     password: hash,
-    //     userType: 'ong',
-    //     ong: {
-    //       create: 
-    //         { 
-    //           cpf_founder: createOngDto.cpf_founder,
-    //           cnpj_ong: createOngDto.cnpj_ong,
-    //           ong_name: createOngDto.ong_name,
-    //           profile_picture: createOngDto.profile_picture,
-    //           description: createOngDto.description,
-    //           themes: createOngDto.themes,
-    //         },
-    //     },
-    //   },
-    //   include: {
-    //     ong: true,
-    //   },
-    // })
   }
 
 

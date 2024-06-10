@@ -10,7 +10,6 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import * as crypto from 'crypto';
 
 @Injectable()
 export class VoluntaryService {
@@ -44,14 +43,39 @@ export class VoluntaryService {
     const hash: string = await bcrypt.hash(createVoluntaryDto.password, salt);
     createVoluntaryDto.password = hash;
 
-    const makeVerifyCode = await this.emailAuth.generateAndSendEmailVerifyCode(createVoluntaryDto);
-    if(makeVerifyCode) {
-      return true;
-    } else {
-      throw new Error("Ocorreu um erro, por favor tente novamente");
+    if(process.env.CREATE_USER_WITHOUT_EMAIL_VERIFY == "false") {
+      const makeVerifyCode = await this.emailAuth.generateAndSendEmailVerifyCode(createVoluntaryDto);
+      if(makeVerifyCode) {
+        return true;
+      } else {
+        throw new Error("Ocorreu um erro, por favor tente novamente");
+      }
     }
+    else {
+      return this.prisma.user.create({
+        data: {
+          email: createVoluntaryDto.email,
+          password: createVoluntaryDto.password,
+          userType: 'voluntary',
+          voluntary: {
+            create: 
+              { 
+                cpf_voluntary: createVoluntaryDto.cpf_voluntary,
+                fullname: createVoluntaryDto.fullname,
+                profile_picture: createVoluntaryDto.profile_picture,
+                description: createVoluntaryDto.description,
+                birthDate: createVoluntaryDto.birthDate,
+                habilities: createVoluntaryDto.habilities,
+              },
+          },
+        },
+        include: {
+          voluntary: true,
+        },
+      });
+    }
+    
   }
-
 
   async getAllVoluntarys(page: number) {
     let res;
