@@ -1,10 +1,9 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CreateMapDto } from './dto/create-map.dto';
 import { UpdateMapDto } from './dto/update-map.dto';
 import { PrismaService } from 'src/db/prisma.service';
 import { HttpService } from '@nestjs/axios';
 import { catchError, firstValueFrom } from 'rxjs';
-import { error } from 'console';
 import { AxiosError } from 'axios';
 
 @Injectable()
@@ -46,7 +45,7 @@ export class MapsService {
     
   }
 
-  async getAllAddress( page: number) {
+  async getAllAddress(page: number) {
     let requests;
     let count = await this.prisma.address.count({})
 
@@ -56,7 +55,7 @@ export class MapsService {
     
     else if(page == 1){
       requests = await this.prisma.address.findMany({
-
+        take: 20,
       });
     }
     else{
@@ -69,15 +68,47 @@ export class MapsService {
     return{"requests": requests, "totalCount": count};
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} map`;
+  async getAddressFromOng(ongname: string) {
+    const ong = await this.prisma.ong.findMany({
+      where: {
+        OR: [
+          {ong_name: { contains: ongname, mode: 'insensitive' }},
+        ],
+      },
+      take: 10,
+    });
+    
+    if(!ong) throw new NotFoundException("ERROR: ong não encontrada");
+    
+    let coordinates = [];
+    for(let i = 0; i < ong.length; i++) {
+      let id = ong[i].id_ong;
+      const address = await this.prisma.address.findUnique({
+        where: {
+          id_user: id,
+        },
+      });
+      if(!address) continue;
+      coordinates.push({"ongid": id, "ongname": ong[i].ong_name, "lat": address.lat, "lng": address.lng});
+    }
+    if(coordinates[0] == undefined) return[];
+
+    return coordinates;
   }
 
-  update(id: number, updateMapDto: UpdateMapDto) {
-    return `This action updates a #${id} map`;
+  async getOngsByPlace(place: string) {
+
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} map`;
+  async getOngByCoordinate(lat: string, lng: string) {
+
+  }
+
+  async updateAddress(id: number) {
+
+  }
+
+  async deleteAddress(id: number) {
+
   }
 }
