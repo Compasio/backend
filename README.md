@@ -1,11 +1,8 @@
 ======LEIA-ME ANTES DE RODAR O PROJETO======
 
-Este é um guia para rodar e utilizar as APIs providas pelo backend do projeto Compassio. Leia este documento
-se estiver com qualquer dúvida sobre como rodar o projeto, como fazer requisições, entre outros itens. LEIA
-COM ATENÇÃO.
+Este é um guia para rodar e utilizar as APIs providas pelo backend do projeto Compassio. Leia este documento se estiver com qualquer dúvida sobre como rodar o projeto, como fazer requisições, entre outros itens. LEIA COM ATENÇÃO.
 
-
-1) SOFTWARES E PACOTES REQUERIDOS PARA RODAR O PROJETO:
+    SOFTWARES E PACOTES REQUERIDOS PARA RODAR O PROJETO:
 
 -Node.js ^20.0.0
 
@@ -17,10 +14,9 @@ COM ATENÇÃO.
 
 -IDE a sua escolha (preferencialmente Microsoft Visual Studio Code)
 
-
 =====================================================================================================================================================
 
-2) RODANDO O PROJETO PELA PRIMEIRA VEZ:
+    RODANDO O PROJETO PELA PRIMEIRA VEZ:
 
 Após ter clonado o repositório na sua máquina e ter instalado os componentes necessários, siga estes passos:
 
@@ -30,18 +26,11 @@ Após ter clonado o repositório na sua máquina e ter instalado os componentes 
 
 3-No seu terminal, insira o comando 'npm i' e espere as dependências serem instaladas;
 
-4-Na pasta principal do repositório, crie um arquivo com o nome '.env', esse arquivo serve para configurar sua
-conexão com o banco de dados;
+4-Na pasta principal do repositório, crie um arquivo com o nome '.env', esse arquivo serve para configurar sua conexão com o banco de dados;
 
-5-No arquivo .env escreva esta linha e salve, mude os elementos sublinhados dependendo da configuração do seu
-banco de dados: DATABASE_URL="postgresql://postgres:senai@localhost:5432/postgres?schema=public&connection_limit=5"
-                                              |       |           |
-                                              |       |           |
-                                            usuário  senha     porta de conexão
-                                                          (localhost:5432 é a padrão)
+5-No arquivo .env escreva esta linha e salve, mude os elementos sublinhados dependendo da configuração do seu banco de dados: DATABASE_URL="postgresql://postgres:senai@localhost:5432/postgres?schema=public&connection_limit=5" | | | | | | usuário senha porta de conexão (localhost:5432 é a padrão)
 
-6-No seu terminal, insira o comando 'npx prisma migrate dev'. Insira 'y' ou 'yes' quando pedido e dê o nome que quiser para a migração.
-Este comando serve para atualizar seu banco de dados PostgreSQL com a configuração de tabelas mais recente.
+6-No seu terminal, insira o comando 'npx prisma migrate dev'. Insira 'y' ou 'yes' quando pedido e dê o nome que quiser para a migração. Este comando serve para atualizar seu banco de dados PostgreSQL com a configuração de tabelas mais recente.
 
 7-No seu terminal, insira o comando 'npm run start:dev'. Este comando inicia o servidor Nest, aguarde até a verificação inicial terminar;
 
@@ -49,11 +38,9 @@ Este comando serve para atualizar seu banco de dados PostgreSQL com a configura�
 
 =====================================================================================================================================================
 
-3) UTILIZANDO AS APIS COM A INTERFACE DO SWAGGER
+    UTILIZANDO AS APIS COM A INTERFACE DO SWAGGER
 
-O Swagger é um conjunto de ferramentas utilizadas para melhor documentar e interagir com APIs em teste. Nós da Compassio o utilizamos como
-uma maneira fácil de fazer requisições para testes e documentação. Para utilizar a maioria das APIs você precisa estar autenticado no sistema
-com um dos quatro tipos de usuários:
+O Swagger é um conjunto de ferramentas utilizadas para melhor documentar e interagir com APIs em teste. Nós da Compassio o utilizamos como uma maneira fácil de fazer requisições para testes e documentação. Para utilizar a maioria das APIs você precisa estar autenticado no sistema com um dos quatro tipos de usuários:
 
 -Admin
 
@@ -65,8 +52,7 @@ com um dos quatro tipos de usuários:
 
 O usuário admin é o único que pode fazer requisições para qualquer API. Todos os outros tem limites de acesso.
 
-Para logar no sistema, você pode utilizar o usuário admin padrão (email: compassioAdm@compassio.com.br senha: admin123) ou criar um usuário de um dos tipos que você precisa,
-e então, seguir estes passos:
+Para logar no sistema, você pode utilizar o usuário admin padrão (email: compassioAdm@compassio.com.br senha: admin123) ou criar um usuário de um dos tipos que você precisa, e então, seguir estes passos:
 
 1-Clique na rota /auth/loginUser;
 
@@ -88,11 +74,11 @@ Agora você está autorizado a fazer requisições no sistema.
 
 =====================================================================================================================================================
 
-4) LISTA DE USUÁRIOS AUTOZIDADOS POR ROTA
+    LISTA DE USUÁRIOS AUTOZIDADOS POR ROTA
 
 =====================================================================================================================================================
 
-5) BOAS PRÁTICAS E REPORT DE BUGS
+    BOAS PRÁTICAS E REPORT DE BUGS
 
 -Sempre cheque se você tem tudo instalado corretamente antes de rodar o projeto
 
@@ -100,18 +86,13 @@ Agora você está autorizado a fazer requisições no sistema.
 
 -Sempre cheque se o seu usuário está autorizado a fazer a requisição
 
--Para report de bugs, por favor contatar apenas os membros do time de Backend da Compassio, com uma explicação detalhada e um exemplo do erro para
-facilitar o processo
+-Para report de bugs, por favor contatar apenas os membros do time de Backend da Compassio, com uma explicação detalhada e um exemplo do erro para facilitar o processo
 
--Caso tenha sugestões para melhoria das APIs, por favor contatar apenas os membros do time de Backend da Compassio com uma explicação detalhada da
-mudança e do porquê da mudança
+-Caso tenha sugestões para melhoria das APIs, por favor contatar apenas os membros do time de Backend da Compassio com uma explicação detalhada da mudança e do porquê da mudança
 
 -Se o erro foi resultado de alguma mudança feita por conta própria na base de código, seu report não será considerado
 
--Qualquer tentativa de alteração na base de código e commitar para qualquer branch do projeto sem autorização de um membro do time de Backend da 
-Compassio acarretará no bloqueio de acesso e possível banimento do projeto
-
-
+-Qualquer tentativa de alteração na base de código e commitar para qualquer branch do projeto sem autorização de um membro do time de Backend da Compassio acarretará no bloqueio de acesso e possível banimento do projeto
 
 <p align="center">
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>

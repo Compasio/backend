@@ -23,7 +23,6 @@ export class VoluntaryService {
 
     if(cpf_voluntary.length != 11 || /^\d+$/.test(cpf_voluntary) == false) throw new ConflictException("ERROR: CPF inválido")
     
-    
     const emailExists = await this.prisma.user.findFirst({
       where: {
         email,
@@ -79,8 +78,6 @@ export class VoluntaryService {
 
   async getAllVoluntarys(page: number) {
     let res;
-    let count = await this.prisma.user.count({where:{userType: 'voluntary'}});
-
     if(page == 0) {
       res = await this.prisma.user.findMany({
         where: {
@@ -125,8 +122,7 @@ export class VoluntaryService {
       delete e.password;
       delete e.voluntary.id_voluntary;
     });
-
-    return {"response": res, "totalCount": count};
+    return res;
   }
 
   async getVoluntaryById(id: number) {
