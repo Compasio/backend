@@ -30,19 +30,18 @@ export class MapsService {
         catchError((error: AxiosError) => {
           this.logger.error(error.response.data);
           throw 'Erro';
-        })
-      )
-    )
-
+        }),
+      ),
+    );
 
     return this.prisma.address.create({
       data: {
         id_user: id,
+        ...createMapDto,
         lat: data.features[0].geometry.coordinates[1],
         lng: data.features[0].geometry.coordinates[0]
-      }
-    })
-    
+      },
+    });
   }
 
   async getAllAddress(page: number) {
@@ -97,7 +96,48 @@ export class MapsService {
   }
 
   async getOngsByPlace(place: string) {
-
+    const ongs = await this.prisma.address.findMany({
+      where: {
+        OR: [
+          {
+            num: {
+              contains: place, mode: 'insensitive',
+            },
+          },
+          {
+            street: {
+              contains: place, mode: 'insensitive',
+            },
+          },
+          {
+            neighborhood: {
+              contains: place, mode: 'insensitive',
+            },
+          },
+          {
+            city: {
+              contains: place, mode: 'insensitive',
+            },
+          },
+          // {
+          //   state: {
+          //     contains: place, mode: 'insensitive',
+          //   },
+          // },
+          {
+            AND: [
+              { num: { contains: place.split(' ')[0], mode: 'insensitive' } },
+              { street: { contains: place.split(' ')[1], mode: 'insensitive' } },
+              { neighborhood: { contains: place.split(' ')[2], mode: 'insensitive' } },
+              { city: { contains: place.split(' ')[3], mode: 'insensitive' } },
+              //{ state: { contains: place.split(' ')[4], mode: 'insensitive' } },
+            ],
+          },
+        ],
+      },
+      take: 30,
+    });
+    console.log(ongs)
   }
 
   async getOngByCoordinate(lat: string, lng: string) {

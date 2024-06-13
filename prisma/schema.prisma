@@ -38,8 +38,8 @@ model Address {
   neighborhood String @db.VarChar(30)
   city String @db.VarChar(30)
   state State
-  lat String
-  lng String
+  lat Float
+  lng Float
 
   //RELAÇÕES
   user User? @relation(fields: [id_user], references: [id])

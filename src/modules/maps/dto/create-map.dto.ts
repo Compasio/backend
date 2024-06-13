@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { State } from '@prisma/client';
 import {
   IsBoolean,
   IsNotEmpty,
@@ -17,41 +18,12 @@ import {
   IsArray
 } from 'class-validator';
 
-enum State {
-    AC,
-    AL,
-    AP,
-    AM,
-    BA,
-    CE,
-    DF,
-    ES,
-    GO,
-    MA,
-    MT,
-    MS,
-    MG,
-    PA,
-    PB,
-    PR,
-    PE,
-    PI,
-    RR,
-    RO,
-    RJ,
-    RN,
-    RS,
-    SC,
-    SE,
-    TO,
-}
-
 export class CreateMapDto {
 
-  @ApiProperty({type: Number, description: "Numero", example: 36})
-  @IsNumber()
+  @ApiProperty({type: String, description: "Numero", example: "36"})
+  @IsString()
   @IsNotEmpty()
-  num: number;
+  num: string;
 
   @ApiProperty({type: String, description: "Rua, avenida, etc", example: "Avenida Paulista"})
   @IsString()
