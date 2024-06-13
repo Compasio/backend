@@ -3,6 +3,7 @@ import { CreateVoluntaryRelationDto } from './dto/create-voluntary-relation.dto'
 import { UpdateVoluntaryRelationDto } from './dto/update-voluntary-relation.dto';
 import { Public } from '../../auth/decorators/public.decorator';
 import { UserTypeAuth } from 'src/auth/decorators/userTypeAuth.decorator';
+import { AuthService } from 'src/auth/auth.service';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
