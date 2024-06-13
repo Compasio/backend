@@ -33,6 +33,7 @@ model User {
 model Address {
   //CAMPOS DA TABELA
   id_user Int
+  num String
   street String @db.VarChar(50)
   neighborhood String @db.VarChar(30)
   city String @db.VarChar(30)

@@ -7,7 +7,6 @@ import {
   import { Reflector } from '@nestjs/core';
   import { JwtService } from '@nestjs/jwt';
   import { Request } from 'express';
-  import { jwtSecret } from './constant';
   import { IS_PUBLIC_KEY } from './decorators/public.decorator';
   
   @Injectable()
@@ -35,7 +34,7 @@ import {
       }
       try {
         const payload = await this.jwtService.verifyAsync(token, {
-          secret: jwtSecret.secret,
+          secret: process.env.JWTSECRET,
         });
 
         const userRole = payload.userType;
