@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { CreateVoluntaryRelationDto } from './dto/create-voluntary-relation.dto';
 import { UpdateVoluntaryRelationDto } from './dto/update-voluntary-relation.dto';
 import { Public } from '../../auth/decorators/public.decorator';
+import { UserTypeAuth } from 'src/auth/decorators/userTypeAuth.decorator';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
@@ -16,36 +17,75 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { VoluntaryRelationsService } from './voluntary-relations.service';
+import { User } from '../voluntary/entities/user.entity';
 
 
 @Controller('voluntary-relations')
 @ApiBearerAuth()
-@ApiTags('voluntary-Relations')
+@ApiTags('Voluntary-Relations')
 export class VoluntaryRelationsController {
   constructor(private readonly voluntaryRelationsService: VoluntaryRelationsService) {}
 
-  @Post()
-  create(@Body() createvoluntaryRelationDto: CreateVoluntaryRelationDto) {
-    return this.voluntaryRelationsService.create(createvoluntaryRelationDto);
+  @UserTypeAuth('admin', 'voluntary', 'ong', 'ongAssociate')
+  @Post('/createVoluntaryRelation')
+  @ApiCreatedResponse({description: 'Voluntário criado com sucesso', type: CreateVoluntaryRelationDto, status: 201})
+  @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
+  @ApiNotAcceptableResponse({description: 'Senha não é forte o suficiente', status: 406})
+  @ApiConflictResponse({ description: 'voluntário já existente', status: 409})
+  @ApiOperation({summary: 'Cria uma relação entre ong e voluntário'})
+  async createVoluntaryRelation(@Body() createvoluntaryRelationDto: CreateVoluntaryRelationDto) {
+    return this.voluntaryRelationsService.createVoluntaryRelation(createvoluntaryRelationDto);
   }
 
-  @Get()
-  findAll() {
-    return this.voluntaryRelationsService.findAll();
+  @Public()
+  @Get('/getAllRelationsByOng/:ong/:page')
+  @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
+  @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
+  @ApiParam({ name: 'ong', schema: { default: 1 } })
+  @ApiParam({ name: 'page', schema: { default: 1 } })
+  @ApiOperation({summary: 'Retorna uma lista de vinte relações envolvendo a ong enviada por página'})
+  async getAllRelationsByOng(@Param('ong') ong: number, @Param('page') page: number) {
+    return this.voluntaryRelationsService.getAllRelationsByOng(ong, page);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.voluntaryRelationsService.findOne(+id);
+  @Public()
+  @Get('/getAllRelationsByVoluntary/:voluntary/:page')
+  @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
+  @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
+  @ApiParam({ name: 'voluntary', schema: { default: 1 } })
+  @ApiParam({ name: 'page', schema: { default: 1 } })
+  @ApiOperation({summary: 'Retorna uma lista de vinte relações envolvendo o voluntário enviado por página'})
+  async getAllRelationsByVoluntary(@Param('voluntary') voluntary: number, @Param('page') page: number) {
+    return this.voluntaryRelationsService.getAllRelationsByVoluntary(voluntary, page);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updatevoluntaryRelationDto: UpdateVoluntaryRelationDto) {
-    return this.voluntaryRelationsService.update(+id, updatevoluntaryRelationDto);
+  @UserTypeAuth('admin')
+  @Get('/getVoluntaryRelationById/:id')
+  @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
+  @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
+  @ApiParam({ name: 'id', schema: { default: 1 } })
+  @ApiOperation({summary: 'Retorna uma relação pelo seu id'})
+  async getVoluntaryRelationById(@Param('id') id: number) {
+    return this.voluntaryRelationsService.getVoluntaryRelationById(id);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.voluntaryRelationsService.remove(+id);
+  @UserTypeAuth('admin')
+  @Patch('/updateVoluntaryRelation/:id')
+  @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
+  @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
+  @ApiParam({ name: 'id', schema: { default: 1 } })
+  @ApiOperation({summary: 'Update da relação (apenas pode ser feito por admin)'})
+  async updateVoluntaryRelation(@Param('id') id: number, @Body() updatevoluntaryRelationDto: UpdateVoluntaryRelationDto) {
+    return this.voluntaryRelationsService.updateVoluntaryRelation(+id, updatevoluntaryRelationDto);
+  }
+
+  @UserTypeAuth('admin')
+  @Delete('/removeVoluntaryRelation/:id')
+  @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
+  @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
+  @ApiParam({ name: 'id', schema: { default: 1 } })
+  @ApiOperation({summary: 'Remover a relação (apenas pode ser feito por admin)'})
+  async removeVoluntaryRelation(@Param('id') id: number) {
+    return this.voluntaryRelationsService.removeVoluntaryRelation(+id);
   }
 }
