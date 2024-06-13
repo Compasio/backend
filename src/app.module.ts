@@ -7,10 +7,11 @@ import { VoluntarysModule } from './modules/voluntary/voluntary.module';
 import { OngsModule } from './modules/ongs/ongs.module';
 import { VoluntaryRelationsModule } from './modules/voluntary-relations/voluntary-relations.module';
 import { OngAssociatedModule } from './modules/ong-associated/ong-associated.module';
+import { SysModule } from './modules/sys/sys.module';
 
 @Module({
-  imports: [AuthModule, VoluntarysModule, OngsModule, ConfigModule.forRoot(), VoluntaryRelationsModule, OngAssociatedModule],
+  imports: [AuthModule, VoluntarysModule, OngsModule, ConfigModule.forRoot(), VoluntaryRelationsModule, OngAssociatedModule, SysModule],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, CronService],
 })
 export class AppModule {}

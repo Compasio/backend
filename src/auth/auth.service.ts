@@ -1,4 +1,5 @@
 import {
+  ConflictException,
     Injectable,
     NotFoundException,
     UnauthorizedException,
@@ -6,6 +7,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from 'src/db/prisma.service';
+import { Permissions } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -38,9 +40,29 @@ export class AuthService {
       return user;
   }
 
+  async getProfile(req) {
+    const user = {id: req.user.id,};
+    const account = await this.prisma.user.findUnique({
+      where: {
+        id: user.id,
+      },
+      include: {
+        voluntary: true,
+        ong: true,
+        ongAssociated: true,
+      }
+    });
+
+    if(account.voluntary == null) delete account.voluntary;
+    if(account.ong == null) delete account.ong;
+    if(account.ongAssociated == null) delete account.ongAssociated;
+    delete account.password;
+
+    return account;
+}
+
   async checkIdAndAdminStatus(userid: number, req) {
     const userRequest = {id: req.user.id, userType: req.user.userType};
-    console.log(userid, userRequest)
     if(userRequest.userType === 'admin') {
       return true;
     } else if(userid === userRequest.id) {
@@ -48,5 +70,22 @@ export class AuthService {
     } else {
       throw new UnauthorizedException();
     }
+  }
+
+  async checkIfOngAssociateIsFromOngAndItsPermission(ong: number, req, permissions: Permissions) {
+    let id = req.user.id;
+    const associate = await this.prisma.ongAssociated.findUnique({
+      where: {
+        id_associate: id,
+        ong,
+      },
+    });
+
+    if(!associate) throw new UnauthorizedException();
+
+    let associatePermissions = associate.permissions;
+    if(associatePermissions.includes(permissions) == false) throw new UnauthorizedException("ERROR: você não tem permissão para executar esta ação");
+    
+    return true;
   }
 }

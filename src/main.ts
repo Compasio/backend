@@ -26,6 +26,7 @@ async function bootstrap() {
     .addTag('Voluntary-Relations', 'Ações de Relação Entre Voluntários e Ongs')
     .addTag('Projects', 'Ações de Projetos')
     .addTag('Donations', 'Ações de Doações')
+    .addTag('Maps', 'Ações de endereço e api maps')
     .addTag('Sys', 'Ações de Sistema')
     .build();
 

@@ -1,6 +1,7 @@
 import { CreateOngDto } from './dto/create-ong.dto';
 import { UpdateOngDto } from './dto/update-ong.dto';
 import { PrismaService } from '../../db/prisma.service';
+import { EmailAuthService } from 'src/auth/emailAuth/emailAuth.service';
 import {
   ConflictException,
   Delete,
@@ -12,7 +13,10 @@ import { Themes_ONG } from '@prisma/client';
 
 @Injectable()
 export class OngsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private emailAuth: EmailAuthService,
+  ) {}
 
   async createOng(createOngDto: CreateOngDto) {
     const {email, cpf_founder, cnpj_ong} = createOngDto;
@@ -35,28 +39,39 @@ export class OngsService {
     
     const salt = await bcrypt.genSalt();
     const hash: string = await bcrypt.hash(createOngDto.password, salt);
+    createOngDto.password = hash;
 
-    return this.prisma.user.create({
-      data: {
-        email: createOngDto.email,
-        password: hash,
-        userType: 'ong',
-        ong: {
-          create: 
-            { 
-              cpf_founder: createOngDto.cpf_founder,
-              cnpj_ong: createOngDto.cnpj_ong,
-              ong_name: createOngDto.ong_name,
-              profile_picture: createOngDto.profile_picture,
-              description: createOngDto.description,
-              themes: createOngDto.themes,
-            },
+    if(process.env.CREATE_USER_WITHOUT_EMAIL_VERIFY == "false") {
+      const makeVerifyCode = await this.emailAuth.generateAndSendEmailVerifyCode(createOngDto);
+      if(makeVerifyCode) {
+        return true;
+      } else {
+        throw new Error("Ocorreu um erro, por favor tente novamente");
+      }
+    } 
+    else {
+      return this.prisma.user.create({
+        data: {
+          email: createOngDto.email,
+          password: hash,
+          userType: 'ong',
+          ong: {
+            create: 
+              { 
+                cpf_founder: createOngDto.cpf_founder,
+                cnpj_ong: createOngDto.cnpj_ong,
+                ong_name: createOngDto.ong_name,
+                profile_picture: createOngDto.profile_picture,
+                description: createOngDto.description,
+                themes: createOngDto.themes,
+              },
+          },
         },
-      },
-      include: {
-        ong: true,
-      },
-    })
+        include: {
+          ong: true,
+        },
+      })
+    }
   }
 
 
@@ -120,24 +135,56 @@ export class OngsService {
     return ongNearest;
   }
 
-  async getOngsByTheme(themes: Themes_ONG[]) {
-    const ongs = await this.prisma.user.findMany({
-      where: {
-        ong: {
-          themes: {hasEvery: themes},
-        } 
-      },
-      include: {
-        ong: true,
-      }
-    });
+  async getOngsByTheme(page: number, themes: Themes_ONG[]) {
+    let res;
+    let count = await this.prisma.user.count({where:{ong:{themes: {hasEvery: themes}}}});
 
-    if(ongs[0] === undefined) throw new NotFoundException('ERROR: Nenhuma Ong com estes temas');
-    ongs.forEach(e => {
+    if(page == 0) {
+      res = await this.prisma.user.findMany({
+        where: {
+          ong: {
+            themes: {hasEvery: themes},
+          } 
+        },
+        include: {
+          ong: true,
+        }
+      });  
+    }
+    else if(page == 1) {
+      res = await this.prisma.user.findMany({
+        where: {
+          ong: {
+            themes: {hasEvery: themes},
+          } 
+        },
+        include: {
+          ong: true,
+        },
+        take: 20,
+      });  
+    }
+    else {
+      res = await this.prisma.user.findMany({
+        where: {
+          ong: {
+            themes: {hasEvery: themes},
+          } 
+        },
+        include: {
+          ong: true,
+        },
+        take: 20,
+        skip: (page - 1) * 20,
+      });  
+    }
+    
+    if(res[0] === undefined) throw new NotFoundException('ERROR: Nenhuma Ong com estes temas');
+    res.forEach(e => {
       delete e.password;
       delete e.ong.id_ong;
     });
-    return ongs;
+    return {"response": res, "totalCount": count};
   }
 
   async updateOng(id: number, updateOngDto: UpdateOngDto) {

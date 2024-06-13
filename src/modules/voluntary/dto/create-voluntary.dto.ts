@@ -56,7 +56,7 @@ export class CreateVoluntaryDto {
     @IsOptional()
     description: string;
 
-    @ApiProperty({ type: String, description: 'Habilidades do Usuário (ENUM com valores pré-determinados)', example: ['Violao', 'Professor']})
+    @ApiProperty({ type: String, description: 'Habilidades do Usuário (ENUM com valores pré-determinados)', example: ['LIDERANCA', 'INICIATIVA']})
     @IsOptional()
     @IsArray()
     habilities?: Habilities_User[];
