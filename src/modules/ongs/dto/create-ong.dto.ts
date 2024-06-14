@@ -56,7 +56,7 @@ export class CreateOngDto {
     @IsOptional()
     profile_picture: Buffer;
 
-    @ApiProperty({ type: String, description: 'Áreas que a ong atua', example: ['Animais', 'Criancas']})
+    @ApiProperty({ type: String, description: 'Áreas que a ong atua', example: ['EDUCACAO', 'SAUDE']})
     @IsOptional()
     @IsArray()
     themes?: Themes_ONG[];

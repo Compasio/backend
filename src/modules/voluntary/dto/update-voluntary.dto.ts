@@ -16,7 +16,7 @@ export class UpdateVoluntaryDto {
     @IsOptional()
     description: string;
 
-    @ApiProperty({ type: String, description: 'Habilidades do Usuário (ENUM com valores pré-determinados)', example: ['Violao', 'Professor']})
+    @ApiProperty({ type: String, description: 'Habilidades do Usuário (ENUM com valores pré-determinados)', example: ['INICIATIVA', 'LIDERANCA']})
     @IsOptional()
     @IsArray()
     habilities?: Habilities_User[];

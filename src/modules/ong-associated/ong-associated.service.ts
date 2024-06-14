@@ -110,24 +110,59 @@ export class OngAssociatedService {
     return associate;
   }
 
-  async getOngAssociatesByPermission(permission: Permissions[], ongid: number) {
-    const associates = await this.prisma.user.findMany({
-      where: {
-        ongAssociated: {
-          ong: ongid,
-          permissions: {hasEvery: permission},
+  async getOngAssociatesByPermission(page: number, permission: Permissions[], ongid: number) {
+    let res;
+    let count = await this.prisma.user.count({where:{ongAssociated:{permissions: {hasEvery: permission}}}});
+    
+    if(page == 0) {
+      res = await this.prisma.user.findMany({
+        where: {
+          ongAssociated: {
+            ong: ongid,
+            permissions: {hasEvery: permission},
+          },
         },
-      },
-      include: {
-        ongAssociated: true,
-      },
-    });
-    if(associates[0] === undefined) throw new NotFoundException('ERROR: Nenhum associado com estas permissões');
-    associates.forEach(e => {
+        include: {
+          ongAssociated: true,
+        },
+      });
+    }
+    else if(page == 1) {
+      res = await this.prisma.user.findMany({
+        where: {
+          ongAssociated: {
+            ong: ongid,
+            permissions: {hasEvery: permission},
+          },
+        },
+        include: {
+          ongAssociated: true,
+        },
+        take: 20,
+      });
+    }
+    else {
+      res = await this.prisma.user.findMany({
+        where: {
+          ongAssociated: {
+            ong: ongid,
+            permissions: {hasEvery: permission},
+          },
+        },
+        include: {
+          ongAssociated: true,
+        },
+        take: 20,
+        skip: (page - 1) * 20,
+      });
+    }
+    
+    if(res[0] === undefined) throw new NotFoundException('ERROR: Nenhum associado com estas permissões');
+    res.forEach(e => {
       delete e.password;
       delete e.ongAssociated.id_associate;
     });
-    return associates;
+    return res;
   }
 
   async updateOngAssociate(id: number, ongid: number, updateOngAssociatedDto: UpdateOngAssociatedDto) {
@@ -159,19 +194,20 @@ export class OngAssociatedService {
     });
 
     if(!associate) throw new NotFoundException('ERROR: Usuário não encontrado');
-
-    const deleteFromUser = this.prisma.user.delete({
-      where: {
-        id,
-      }
-    });
+    
     const deleteFromAssociate = this.prisma.ongAssociated.delete({
       where: {
         id_associate: id,
       },
     });
 
-    await Promise.all([deleteFromUser, deleteFromAssociate]);
+    const deleteFromUser = this.prisma.user.delete({
+      where: {
+        id,
+      }
+    });
+
+    await Promise.all([deleteFromAssociate, deleteFromUser]);
 
     return { success: true };
   }

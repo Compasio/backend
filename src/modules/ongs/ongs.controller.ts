@@ -75,8 +75,9 @@ export class OngsController {
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiOperation({summary: 'Retorna uma lista de ongs pelos temas'})
-  async getOngsByTheme(@Body() themes: Themes_ONG[]) {
-    return await this.ongsService.getOngsByTheme(themes)
+  @ApiParam({ name: 'page', schema: { default: 1 } })
+  async getOngsByTheme(@Param('page') page: number, @Body() themes: Themes_ONG[]) {
+    return await this.ongsService.getOngsByTheme(page, themes)
   }
 
   @UserTypeAuth('admin', 'ong')

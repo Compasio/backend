@@ -71,12 +71,14 @@ export class VoluntarysController {
   }
 
   @Public()
-  @Post('/getVoluntarysByHabilities/:hability')
+  @Post('/getVoluntarysByHabilities')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
+  @ApiParam({ name: 'page', schema: { default: 1 } })
   @ApiOperation({summary: 'Retorna uma lista de voluntários pelas habilidades'})
-  async getvoluntarysByHabilities(@Body() hability: Habilities_User[]) {
-    return await this.voluntarysService.getVoluntarysByHabilities(hability);
+  async getvoluntarysByHabilities(@Param('page') page: number, @Body() hability: Habilities_User[]) {
+    console.log(page)
+    return await this.voluntarysService.getVoluntarysByHabilities(page, hability);
   }
 
   @UserTypeAuth('admin', 'voluntary')

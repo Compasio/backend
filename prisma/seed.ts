@@ -5,11 +5,11 @@ const prisma = new PrismaClient();
 
 async function generateAdminUser() {
     const salt = await bcrypt.genSalt();
-    const hash: string = await bcrypt.hash('admin123', salt);
+    const hash: string = await bcrypt.hash(process.env.EMAILPASS, salt);
 
     await prisma.user.create({
         data: {
-            email: 'compassioAdm@compassio.com.br',
+            email: process.env.EMAIL,
             password: hash,
             userType: 'admin'
         }

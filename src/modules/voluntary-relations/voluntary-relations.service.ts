@@ -1,13 +1,14 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CreateVoluntaryRelationDto } from './dto/create-voluntary-relation.dto';
 import { UpdateVoluntaryRelationDto } from './dto/update-voluntary-relation.dto';
 import { PrismaService } from 'src/db/prisma.service';
+import { User, UserType } from '@prisma/client';
 
 @Injectable()
 export class VoluntaryRelationsService {
   constructor(private prisma: PrismaService) {}
 
-  async requestVoluntaryRelation(voluntary: number, ong: number, project: number) {
+  async requestVoluntaryRelation(voluntary: number, ong: number, project: number, userType: UserType) {
     const voluntaryExists = await this.prisma.user.findFirst({
       where: {
         id: voluntary,
@@ -31,36 +32,97 @@ export class VoluntaryRelationsService {
         },
       });
       if(!projectExists) throw new ConflictException("ERROR: Projeto não existe");
-    }
+    } 
 
-    return this.prisma.relationWaitingList.create({
+    return this.prisma.relationRequests.create({
       data: {
         voluntary,
         ong,
         project,
+        userTypeWhoRequested: userType,
       },
     });
   }
 
-  async getAllWaitingRelationsByOng(ong: number, page: number) {
-    let res;
-    let totalCount = await this.prisma.relationWaitingList.count({where: {ong}});
+  async acceptVoluntaryRelation(voluntary: number, ong: number, userType: UserType, createvoluntaryRelationDto: CreateVoluntaryRelationDto) {
+    const requestExists = await this.prisma.relationRequests.findUnique({
+      where: {
+        voluntary_ong: {
+          voluntary,
+          ong,
+        },
+      },
+    });
+
+    if(!requestExists) throw new NotFoundException("ERROR: request não existe");
+    if(requestExists.userTypeWhoRequested == userType) throw new UnauthorizedException();
+
+    const createVoluntaryRelation = await this.prisma.voluntaryRelations.create({
+      data: {
+        voluntary,
+        ong,
+        project: requestExists.project,
+        ...createvoluntaryRelationDto,
+      },
+    });
+
+    const delFromRequestList = await this.prisma.relationRequests.delete({
+      where: {
+        voluntary_ong: {
+          voluntary,
+          ong,
+        },
+      },
+    });
+
+    await Promise.all([createVoluntaryRelation, delFromRequestList]);
+
+    return { success: true };
+  }
+
+  async refuseVoluntaryRelation(voluntary: number, ong: number) {
+    const requestExists = await this.prisma.relationRequests.findUnique({
+      where: {
+        voluntary_ong: {
+          voluntary,
+          ong,
+        },
+      },
+    });
+
+    if(!requestExists) throw new NotFoundException("ERROR: request não existe");
+
+    return this.prisma.relationRequests.delete({
+      where: {
+        voluntary_ong: {
+          voluntary,
+          ong,
+        },
+      },
+    });
+  }
+
+  async getAllRequestsByOng(ong: number, page: number) {
+    let requests;
+    let count = await this.prisma.voluntaryRelations.count({where: {ong}});
 
     if(page == 0) {
-      res = await this.prisma.relationWaitingList.findMany({
+      requests = await this.prisma.relationRequests.findMany({
         where: {
           ong,
-        }
+        },
       });
-    } else if(page == 1) {
-      res = await this.prisma.relationWaitingList.findMany({
+    } 
+    else if(page == 1) {
+      requests = await this.prisma.relationRequests.findMany({
         where: {
           ong,
         },
         take: 20,
       });
-    } else {
-      res = await this.prisma.relationWaitingList.findMany({
+    }
+    else {
+      requests = await this.prisma.relationRequests.findMany({
         where: {
           ong,
         },
@@ -68,71 +130,48 @@ export class VoluntaryRelationsService {
         skip: (page - 1) * 20,
       });
     }
+
+    if(requests[0] == undefined) return [];
+    return {"requests": requests, "totalCount": count};
   }
 
-  async getAllWaitingRelationsByVoluntary() {
+  async getAllRequestsByVoluntary(page: number, voluntary: number) {
+    let requests;
+    let count = await this.prisma.voluntaryRelations.count({where: {voluntary}});
 
-  }
-
-  async aproveVoluntierRelation(voluntary: number, ong: number, aproved: boolean) {
-    const exists = await this.prisma.relationWaitingList.findUnique({
-      where: {
-        voluntary,
-        ong,
-      }
-    });
-
-    if(aproved) {
-      const create = await this.createVoluntaryRelation();
-      const delWait = await this.prisma.relationWaitingList.delete({
+    if(page == 0) {
+      requests = await this.prisma.relationRequests.findMany({
         where: {
           voluntary,
-          ong,
-        }
-      })
-      return create;
-    } else {
-
-    }
-  }
-
-  async createVoluntaryRelation(createvoluntaryRelationDto: CreateVoluntaryRelationDto) {
-    const { voluntary, ong, project } = createvoluntaryRelationDto;
-    const voluntaryExists = await this.prisma.user.findFirst({
-      where: {
-        id: voluntary,
-        userType: "voluntary",
-      },
-    });
-    const ongExists = await this.prisma.user.findFirst({
-      where: {
-        id: ong,
-        userType: "ong",
-      },
-    });
-
-    if(!voluntaryExists) throw new ConflictException("ERROR: Voluntário não existe");
-    if(!ongExists) throw new ConflictException("ERROR: Ong não existe");
-
-    if(project != null || project != undefined) {
-      const projectExists = await this.prisma.project.findFirst({
-        where: {
-          id_project: project,
         },
       });
-      if(!projectExists) throw new ConflictException("ERROR: Projeto não existe");
-    }   
+    } 
+    else if(page == 1) {
+      requests = await this.prisma.relationRequests.findMany({
+        where: {
+          voluntary,
+        },
+        take: 20,
+      });
+    }
+    else {
+      requests = await this.prisma.relationRequests.findMany({
+        where: {
+          voluntary,
+        },
+        take: 20,
+        skip: (page - 1) * 20,
+      });
+    }
 
-    return this.prisma.voluntaryRelations.create({
-      data: {
-        ...createvoluntaryRelationDto,
-      },
-    });
+    if(requests[0] == undefined) return [];
+    return {"requests": requests, "totalCount": count};
   }
 
   async getAllRelationsByVoluntary(voluntary: number, page: number) {
     let relations;
-    let count = await this.prisma.voluntaryRelations.count({where: {voluntary}})
+    let count = await this.prisma.voluntaryRelations.count({where: {voluntary}});
+    
     if(page == 0) {
       relations = await this.prisma.voluntaryRelations.findMany({
         where: {
@@ -201,7 +240,7 @@ export class VoluntaryRelationsService {
       },
     });
     if(!relation) throw new NotFoundException("ERROR: Relação não encontrada");
-    console.log(typeof relation)
+
     return relation;
   }
 

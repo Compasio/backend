@@ -27,6 +27,24 @@ model User {
   voluntary Voluntary?
   ong Ong?
   ongAssociated OngAssociated?
+  address Address?
+}
+
+model Address {
+  //CAMPOS DA TABELA
+  id_user Int
+  num String
+  street String @db.VarChar(50)
+  neighborhood String @db.VarChar(30)
+  city String @db.VarChar(30)
+  state State
+  lat Float
+  lng Float
+
+  //RELAÇÕES
+  user User? @relation(fields: [id_user], references: [id])
+
+  @@id([id_user])
 }
 
 model Voluntary {
@@ -41,8 +59,8 @@ model Voluntary {
   //RELAÇÕES
   user User? @relation(fields: [id_voluntary], references: [id])
   habilities Habilities_User[]
-  relationWaitingList RelationWaitingList[]
   voluntaryRelations VoluntaryRelations[]
+  relationRequests RelationRequests[]
   
   @@id([id_voluntary])
 }
@@ -59,10 +77,11 @@ model Ong {
   //RELAÇÕES
   user User? @relation(fields: [id_ong], references: [id])
   themes Themes_ONG[]
-  relationWaitingList RelationWaitingList[]
   voluntaryRelations VoluntaryRelations[]
   ongAssociates OngAssociated[]
   projects Project[]
+  relationRequests RelationRequests[]
+  neededItems NeededItems[]
 
   @@id([id_ong])
 }
@@ -93,20 +112,6 @@ model OngAssociated {
 //  @@id([id_user])
 //}
 
-model RelationWaitingList {
-  //CAMPOS DA TABELA
-  voluntary Int
-  ong Int
-  project Int?
-
-  //RELAÇÕES
-  id_voluntary Voluntary @relation(fields: [voluntary], references: [id_voluntary])
-  id_ong Ong @relation(fields: [ong], references: [id_ong])
-  id_project Project? @relation(fields: [project], references: [id_project])
-
-  @@id([voluntary, ong])
-}
-
 model VoluntaryRelations {
   //CAMPOS DA TABELA
   id_relation Int @id @default(autoincrement())
@@ -123,6 +128,21 @@ model VoluntaryRelations {
   id_project Project? @relation(fields: [project], references: [id_project])
 }
 
+model RelationRequests {
+  //CAMPOS DA TABELA
+  voluntary Int
+  ong Int
+  project Int?
+  userTypeWhoRequested UserType
+
+  //RELAÇÕES
+  id_voluntary Voluntary @relation(fields: [voluntary], references: [id_voluntary])
+  id_ong Ong @relation(fields: [ong], references: [id_ong])
+  id_project Project? @relation(fields: [project], references: [id_project])
+
+  @@id([voluntary, ong])
+}
+
 model Project {
   //CAMPOS DA TABELA
   id_project Int @id @default(autoincrement())
@@ -132,7 +152,7 @@ model Project {
 
   //RELAÇÕES
   voluntaryRelations VoluntaryRelations[]
-  relationWaitingList RelationWaitingList[]
+  relationRequests RelationRequests[]
   theme Themes_ONG[]
   id_ong Ong @relation(fields: [ong], references: [id_ong])
 }
@@ -162,6 +182,18 @@ model DonationHistory {
   id_crowdfunding CrowdFunding? @relation(fields: [crowdfunding], references: [id_crowdfunding])
 }
 
+model NeededItems {
+  id Int @id @default(autoincrement())
+  ong Int
+  itemName String @db.VarChar(50)
+  description String
+  itemClass ItemClass
+  itemPhoto Bytes
+  quantity Int
+  
+  id_ong Ong @relation(fields: [ong], references: [id_ong])
+}
+
 
 model SysLogs {
   //CAMPOS DA TABELA
@@ -169,6 +201,13 @@ model SysLogs {
   //TODO---TERMINAR TABELA SYSLOGS
 
   //RELAÇÕES
+}
+
+model EmailVerifyCode {
+    code String @id @db.VarChar(6)
+    dto String
+    iv Bytes
+    createdAt BigInt
 }
 
 //=======================
@@ -189,24 +228,250 @@ enum Permissions {
   total
 }
 
+enum ItemClass {
+  ROUPAS
+  ALIMENTOS
+  BEBIDAS
+  BRINQUEDOS
+  UTENSILIOS
+  MOVEIS
+  OUTROS
+}
+
+enum State {
+  AC
+  AL
+  AP
+  AM
+  BA
+  CE
+  DF
+  ES
+  GO
+  MA
+  MT
+  MS
+  MG
+  PA
+  PB
+  PR
+  PE
+  PI
+  RJ
+  RN
+  RS
+  RO
+  RR
+  SC
+  SP
+  SE
+  TO
+}
+
 enum Habilities_User {
-  Violao
-  Desenhista
-  Maquiagem
-  Professor
-  TI
-  Baba
-  Cozinheiro
-  //precisamos de mais umas 100 kk
+  COMUNICACAO_EFICAZ
+  HABILIDADE_INTERPESSOAL
+  ESCUTA_ATIVA
+  EMPATIA
+  TRABALHO_EM_EQUIPE
+  LIDERANCA
+  RESOLUCAO_DE_CONFLITOS
+  FACILITACAO_DE_GRUPOS
+  MEDIACAO
+  NEGOCIACAO
+  CONSTRUCAO_DE_REDE_DE_CONTATOS
+  APRESENTACAO_EM_PUBLICO
+  PROATIVIDADE
+  RESPONSABILIDADE
+  COMPROMETIMENTO
+  PONTUALIDADE
+  CONFIABILIDADE
+  FLEXIBILIDADE
+  ADAPTABILIDADE
+  CRIATIVIDADE
+  INICIATIVA
+  MOTIVACAO
+  AUTOCONHECIMENTO
+  RESILIENCIA
+  GESTAO_DO_TEMPO
+  ORGANIZACAO
+  ATENCAO_AOS_DETALHES
+  PENSAMENTO_CRITICO
+  SOLUCAO_DE_PROBLEMAS
+  TOMA_DE_DECISAO
+  INFORMATICA
+  INTERNET
+  REDES_SOCIAIS
+  MARKETING_DIGITAL
+  DESIGN_GRAFICO
+  EDICAO_DE_VIDEO
+  FOTOGRAFIA
+  TRADUCAO
+  INTERPRETACAO
+  PRIMEIROS_SOCORROS
+  ENFERMAGEM
+  EDUCACAO
+  PEDAGOGIA
+  PSICOLOGIA
+  DIREITO
+  CONTABILIDADE
+  ADMINISTRACAO
+  FINANCAS
+  LOGISTICA
+  AGRONOMIA
+  VETERINARIA
+  MEIO_AMBIENTE
+  DESENVOLVIMENTO_SUSTENTAVEL
+  ATUALIDADES
+  CULTURA_GERAL
+  DIVERSIDADE
+  INCLUSAO
+  SUSTENTABILIDADE
+  DIREITOS_HUMANOS
+  CIDADANIA
+  VOLUNTARIADO
+  SETOR_SOCIAL
+  TERCEIRO_SETOR
+  ONGS
+  PORTUGUES
+  INGLES
+  ESPANHOL
+  OUTROS_IDIOMAS
+  RELACOES_PUBLICAS
+  CAPTACAO_DE_RECURSOS
+  GESTAO_DE_PROJETOS
+  COORDENACAO_DE_EVENTOS
+  GERENCIAMENTO_DE_CRISES
+  TREINAMENTO
+  MENTORIA
+  CONSULTORIA
+  AUDITORIA
+  ANALISE_DE_DADOS
+  PESQUISA
+  ADVOCACIA
+  SOCIOLOGIA
+  ANTROPOLOGIA
+  MEDICINA
+  FISIOTERAPIA
+  TERAPIA_OCUPACIONAL
+  EDUCACAO_FISICA
+  BIOLOGIA
+  ECOLOGIA
+  ARTES
+  ARTESANATO
+  MUSICA
+  TEATRO
+  DANCA
+  ESCULTURA
+  PINTURA
+  ILUSTRACAO
+  ESCRITA_CREATIVA
+  LITERATURA
+  BIBLIOTECONOMIA
+  ARQUIVOLOGIA
 }
 
 enum Themes_ONG {
-  Animais
-  Necessitados
-  Criancas
-  //precisamos de mais 100 aqui tb
+  EDUCACAO
+  SAUDE
+  ALIMENTACAO
+  MORADIA
+  MEIO_AMBIENTE
+  DIREITOS_HUMANOS
+  ANIMAIS
+  CRIANCAS
+  ADOLESCENTES
+  IDOSOS
+  MULHERES
+  IMIGRANTES
+  REFUGIADOS
+  DESASTRES_NATURAIS
+  AJUDA_HUMANITARIA
+  DEFICIENCIA
+  REABILITACAO
+  EDUCACAO_INCLUSIVA
+  CULTURA
+  ARTE
+  ESPORTE
+  LAZER
+  EMPREGABILIDADE
+  FORMACAO_PROFISSIONAL
+  ORIENTACAO_PROFISSIONAL
+  DESENVOLVIMENTO_COMUNITARIO
+  DEFESA_CIVIL
+  SEGURANCA_ALIMENTAR
+  HIGIENE
+  SANEAMENTO_BASICO
+  SAUDE_MENTAL
+  APOIO_PSICOLOGICO
+  PREVENCAO_DE_DOENCAS
+  PROMOCAO_DA_SAUDE
+  ATENDIMENTO_ODONTOLOGICO
+  CIDADANIA
+  PARTICIPACAO_POLITICA
+  DEFESA_DOS_DIREITOS
+  EDUCACAO_AMBIENTAL
+  SUSTENTABILIDADE
+  CONSERVACAO
+  PRESERVACAO
+  RESGATE_DE_ANIMAIS
+  ADOTACAO_DE_ANIMAIS
+  PROTECAO_DE_ANIMAIS
+  AGRICULTURA_SUSTENTAVEL
+  HORTAS_COMUNITARIAS
+  PERMACULTURA
+  RECICLAGEM
+  REDUCAO_DE_RESIDUOS
+  TECNOLOGIA
+  INOVACAO
+  INCLUSAO_DIGITAL
+  EDUCACAO_FINANCEIRA
+  PLANEJAMENTO_FAMILIAR
+  SEGURANCA
+  DEFESA_DA_INFANCIA
+  COMBATE_AO_TRABALHO_INFANTIL
+  PROTECAO_AO_CONSUMIDOR
+  COMBATE_AO_RACISMO
+  COMBATE_AO_PRECONCEITO
+  PROMOCAO_DA_IGUALDADE
+  TURISMO_SUSTENTAVEL
+  DESENVOLVIMENTO_TURISTICO
+  TURISMO_COMUNITARIO
+  HABITACAO_POPULAR
+  URBANISMO
+  PLANEJAMENTO_URBANO
+  TRANSPORTE
+  MOBILIDADE_URBANA
+  VOLUNTARIADO_CORPORATIVO
+  ENGAJAMENTO_COMUNITARIO
+  FORMACAO_DE_LIDERANCAS
+  JOVENS
+  REINSERCAO_SOCIAL
+  EDUCACAO_DE_JOVENS_E_ADULTOS
+  ALFABETIZACAO
+  PREPARACAO_PARA_O_ENEM
+  CURSINHO_POPULAR
+  EDUCACAO_A_DISTANCIA
+  ATENDIMENTO_SOCIAL
+  SERVICO_SOCIAL
+  ASSISTENCIA_JURIDICA
+  CAPTACAO_DE_RECURSOS
+  TRANSPARENCIA
+  BOAS_PRATICAS
+  GESTAO_DE_PROJETOS
+  MONITORAMENTO_E_AVALIACAO
+  PESQUISA_SOCIAL
+  ADVOCACY
+  CAMPANHAS
+  COMUNICACAO
+  MARKETING
+  MOBILIZACAO
+  PARCERIAS
+  COOPERACAO_INTERNACIONAL
+  INTERCAMBIO_CULTURAL
+  FESTIVAIS
+  EVENTOS_CULTURAIS
 }
-
 //=======================
 
 
