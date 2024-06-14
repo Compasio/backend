@@ -16,8 +16,8 @@ export class ProjectsController {
   }
 
   @Get()
-  findAll(page: number) {
-    return this.projectsService.findAll(page);
+  findAll() {
+    return this.projectsService.findAll(1);
   }
 
   @Get(':id')
