@@ -76,22 +76,46 @@ export class OngsService {
 
 
   async getAllOngs(page: number) {
+    let res;
     if(page == 0) {
-      const res = await this.prisma.user.findMany({where: {userType: 'ong'}, include: {ong: true}});
-      res.forEach(e => delete e.password);
-      res.forEach(e => delete e.ong.id_ong);
-      return res;
-    } else if(page == 1) {
-      const res = await this.prisma.user.findMany({take: 20, where: {userType: 'ong'}, include: {ong: true}});
-      res.forEach(e => delete e.password);
-      res.forEach(e => delete e.ong.id_ong);
-      return res;
-    } else {
-      const res = await this.prisma.user.findMany({take: 20, skip: (page - 1) * 20, where: {userType: 'ong'}, include: {ong: true}});
-      res.forEach(e => delete e.password);
-      res.forEach(e => delete e.ong.id_ong);
-      return res;
+      res = await this.prisma.user.findMany({
+        where: {
+          userType: 'ong'
+        },
+        include: {
+          ong: true,
+        },
+      });
+    } 
+    
+    else if(page == 1) {
+      res = await this.prisma.user.findMany({
+        take: 20,
+        where: {
+          userType: 'ong',
+        },
+        include: {
+          ong: true,
+        }},
+      );
+    } 
+    
+    else {
+      res = await this.prisma.user.findMany({
+        take: 20,
+        skip: (page - 1) * 20,
+        where: {
+          userType: 'ong',
+        },
+        include: {
+          ong: true,
+        }},
+      );
     }
+
+    res.forEach(e => delete e.password);
+    res.forEach(e => delete e.ong.id_ong);
+    return res;
   }
 
   async getOngById(id: number) {
