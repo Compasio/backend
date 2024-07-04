@@ -136,6 +136,28 @@ export class VoluntaryRelationsController {
     return this.voluntaryRelationsService.getAllRelationsByOng(ong, page);
   }
 
+  @UserTypeAuth('admin', 'ong', 'ongAssociated')
+  @Get('/getAllRequestsByProject/:page/:project')
+  @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
+  @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
+  @ApiParam({ name: 'project', schema: { default: 1 } })
+  @ApiParam({ name: 'page', schema: { default: 1 } })
+  @ApiOperation({summary: 'Retorna uma lista de vinte relações envolvendo o projeto enviado por página'})
+  async getAllRequestsByProject(@Param('page') page: number, @Param('project') project: number) {
+    return this.voluntaryRelationsService.getAllRequestsByProject(page, project);
+  }
+
+  @Public()
+  @Get('/getAllRelationsByProject/:page/:project')
+  @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
+  @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
+  @ApiParam({ name: 'project', schema: { default: 1 } })
+  @ApiParam({ name: 'page', schema: { default: 1 } })
+  @ApiOperation({summary: 'Retorna uma lista de vinte relações envolvendo o projeto enviado por página'})
+  async getAllRelationsByProject(@Param('page') page: number, @Param('project') project: number) {
+    return this.voluntaryRelationsService.getAllRelationsByProject(page, project);
+  }
+
   @UserTypeAuth('admin')
   @Get('/getVoluntaryRelationById/:id')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})

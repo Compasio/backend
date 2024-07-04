@@ -14,9 +14,10 @@ import { OperationsModule } from './cron/functions/operations.module';
 import { MapsModule } from './modules/maps/maps.module';
 import { DonationsModule } from './modules/donations/donations.module';
 import { ProjectsModule } from './modules/projects/projects.module';
+import { CrowdfundingsModule } from './modules/crowdfundings/crowdfundings.module';
 
 @Module({
-  imports: [AuthModule, VoluntarysModule, OngsModule, ConfigModule.forRoot({envFilePath: '.env'}), ConfigModule.forRoot({envFilePath: '.debug.env'}), VoluntaryRelationsModule, OngAssociatedModule, SysModule, ScheduleModule.forRoot(), OperationsModule, MapsModule, DonationsModule, ProjectsModule],
+  imports: [AuthModule, VoluntarysModule, OngsModule, ConfigModule.forRoot({envFilePath: '.env'}), ConfigModule.forRoot({envFilePath: '.debug.env'}), VoluntaryRelationsModule, OngAssociatedModule, SysModule, ScheduleModule.forRoot(), OperationsModule, MapsModule, DonationsModule, ProjectsModule, CrowdfundingsModule],
   controllers: [AppController],
   providers: [AppService, CronService],
 })

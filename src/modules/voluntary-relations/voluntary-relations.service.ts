@@ -104,7 +104,7 @@ export class VoluntaryRelationsService {
 
   async getAllRequestsByOng(ong: number, page: number) {
     let requests;
-    let count = await this.prisma.voluntaryRelations.count({where: {ong}});
+    let count = await this.prisma.relationRequests.count({where: {ong}});
 
     if(page == 0) {
       requests = await this.prisma.relationRequests.findMany({
@@ -137,7 +137,7 @@ export class VoluntaryRelationsService {
 
   async getAllRequestsByVoluntary(page: number, voluntary: number) {
     let requests;
-    let count = await this.prisma.voluntaryRelations.count({where: {voluntary}});
+    let count = await this.prisma.relationRequests.count({where: {voluntary}});
 
     if(page == 0) {
       requests = await this.prisma.relationRequests.findMany({
@@ -231,6 +231,74 @@ export class VoluntaryRelationsService {
 
     if(relations[0] == undefined) return [];
     return {"relations": relations, "totalCount": count};
+  }
+
+  async getAllRequestsByProject(page: number, project: number) {
+    let res;
+    let count = await this.prisma.relationRequests.count({where: {project}});
+
+    if(count == 0) return [];
+
+    if(page == 0) {
+      res = await this.prisma.relationRequests.findMany({
+        where: {
+          project,
+        },
+      });
+    }
+    else if(page == 1) {
+      res = await this.prisma.relationRequests.findMany({
+        where: {
+          project,
+        },
+        take: 20,
+      });
+    }
+    else {
+      res = await this.prisma.relationRequests.findMany({
+        where: {
+          project,
+        },
+        take: 20,
+        skip: (page - 1) * 20
+      });
+    }
+
+    return {"relations": res, "totalCount": count};
+  }
+
+  async getAllRelationsByProject(page: number, project: number) {
+    let res;
+    let count = await this.prisma.voluntaryRelations.count({where: {project}});
+
+    if(count == 0) return [];
+
+    if(page == 0) {
+      res = await this.prisma.voluntaryRelations.findMany({
+        where: {
+          project,
+        },
+      });
+    }
+    else if(page == 1) {
+      res = await this.prisma.voluntaryRelations.findMany({
+        where: {
+          project,
+        },
+        take: 20,
+      });
+    }
+    else {
+      res = await this.prisma.voluntaryRelations.findMany({
+        where: {
+          project,
+        },
+        take: 20,
+        skip: (page - 1) * 20,
+      });
+    }
+
+    return {"relations": res, "totalCount": count};
   }
 
   async getVoluntaryRelationById(id: number) {
