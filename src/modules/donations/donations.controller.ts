@@ -10,14 +10,14 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 export class DonationsController {
   constructor(private readonly donationsService: DonationsService) {}
 
-  @Post()
-  create(@Body() createDonationDto: CreateDonationDto) {
-    return this.donationsService.create(createDonationDto);
+  @Post('/createDonation')
+  async createDonation(@Body() createDonationDto: CreateDonationDto) {
+    return this.donationsService.createDonation(createDonationDto);
   }
 
   @Get()
-  findAll() {
-    return this.donationsService.findAll();
+  async getAllDonationsByOng(@Param('page') page: number) {
+    return this.donationsService.getAllDonationsByOng();
   }
 
   @Get(':id')
