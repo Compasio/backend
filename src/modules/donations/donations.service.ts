@@ -45,19 +45,15 @@ export class DonationsService {
     })
   }
 
-  async getAllDonationsByOng(page: number, ong: number, date: string = "") {
-    let data = date
-    if(data == "") {
-      data = undefined;
-    }
+  async getAllDonationsByOng(page: number, ong: number, date: string = undefined) {
     let res;
-    let count = await this.prisma.donationHistory.count({where: {ong, date: data}});
+    let count = await this.prisma.donationHistory.count({where: {ong, date}});
 
     if(page == 0) {
       res = await this.prisma.donationHistory.findMany({
         where: {
           ong,
-          date: data,
+          date,
         },
       });
     }
@@ -66,7 +62,7 @@ export class DonationsService {
       res = await this.prisma.donationHistory.findMany({
         where: {
           ong,
-          date: data,
+          date,
         },
         take: 20,
       });
@@ -76,7 +72,7 @@ export class DonationsService {
       res = await this.prisma.donationHistory.findMany({
         where: {
           ong,
-          date: data,
+          date,
         },
         take:20,
         skip:(page - 1 ) * 20,
@@ -86,19 +82,15 @@ export class DonationsService {
     return {"response": res, "count": count};
   }
 
-  async getAllDonationsByVoluntary(page: number, voluntary: number, date: string = "") {
-    let data = date
-    if(data == "") {
-      data = undefined;
-    }
+  async getAllDonationsByVoluntary(page: number, voluntary: number, date: string = undefined) {
     let res;
-    let count = await this.prisma.donationHistory.count({where: {voluntary, date: data}});
+    let count = await this.prisma.donationHistory.count({where: {voluntary, date}});
 
     if(page == 0) {
       res = await this.prisma.donationHistory.findMany({
         where: {
           voluntary,
-          date: data,
+          date,
         },
       });
     }
@@ -107,7 +99,7 @@ export class DonationsService {
       res = await this.prisma.donationHistory.findMany({
         where: {
           voluntary,
-          date: data,
+          date,
         },
         take: 20,
       });
@@ -117,7 +109,7 @@ export class DonationsService {
       res = await this.prisma.donationHistory.findMany({
         where: {
           voluntary,
-          date: data,
+          date,
         },
         take:20,
         skip:(page - 1 ) * 20,
@@ -127,19 +119,14 @@ export class DonationsService {
     return {"response": res, "count": count};
   }
 
-  async getAllDonationsByCrowdfunding(page: number, crowdfunding: number, date: string = "") {
-    let data = date
-    if(data == "") {
-      data = undefined;
-    }
+  async getAllDonationsByCrowdfunding(page: number, crowdfunding: number, date: string = undefined) {
     let res;
-    let count = await this.prisma.donationHistory.count({where: {crowdfunding, date: data}});
+    let count = await this.prisma.donationHistory.count({where: {crowdfunding, date}});
 
     if(page == 0) {
       res = await this.prisma.donationHistory.findMany({
         where: {
           crowdfunding,
-          date: data,
         },
       });
     }
@@ -148,7 +135,6 @@ export class DonationsService {
       res = await this.prisma.donationHistory.findMany({
         where: {
           crowdfunding,
-          date: data,
         },
         take: 20,
       });
@@ -158,7 +144,7 @@ export class DonationsService {
       res = await this.prisma.donationHistory.findMany({
         where: {
           crowdfunding,
-          date: data,
+          date,
         },
         take:20,
         skip:(page - 1 ) * 20,
@@ -177,18 +163,4 @@ export class DonationsService {
     if(!donation) throw new NotFoundException("ERROR:Doação não encontrada");
     return donation;
   }
-
-  // async remove(id: number) {
-  //   const donation = await this.prisma.donationHistory.findUnique({
-  //     where:{
-  //       id_donation: id,
-  //     },
-  //   });
-  //   if(!donation)throw new ConflictException("ERROR:Doação não encontrada")
-  //     return this.prisma.donationHistory.delete({
-  //   where: {
-  //     id_donation: id,
-  //   },
-  //   });
-  // }
 }

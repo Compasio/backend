@@ -180,6 +180,7 @@ model DonationHistory {
   crowdfunding Int?
   ong Int?
   value Float
+  date DateTime @default(now())
 
   //RELAÇÕES
   id_crowdfunding CrowdFunding? @relation(fields: [crowdfunding], references: [id_crowdfunding])
