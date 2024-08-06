@@ -77,7 +77,6 @@ export class VoluntarysController {
   @ApiParam({ name: 'page', schema: { default: 1 } })
   @ApiOperation({summary: 'Retorna uma lista de voluntários pelas habilidades'})
   async getvoluntarysByHabilities(@Param('page') page: number, @Body() hability: Habilities_User[]) {
-    console.log(page)
     return await this.voluntarysService.getVoluntarysByHabilities(page, hability);
   }
 

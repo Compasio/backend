@@ -161,9 +161,11 @@ model Project {
 model CrowdFunding {
   //CAMPOS DA TABELA
   id_crowdfunding Int @id @default(autoincrement()) 
+  title String @db.VarChar(70)
+  description String? @db.VarChar(150)
   project Int
   neededValue Float
-  collectedValue Float
+  collectedValue Float @default(0)
   isClosed Boolean @default(false)
 
   //RELAÇÕES
