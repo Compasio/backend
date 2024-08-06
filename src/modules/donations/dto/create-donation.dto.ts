@@ -24,6 +24,11 @@ export class CreateDonationDto {
     @IsNumber()
     voluntary: number
 
+    @ApiProperty({type: Number, description: "Ong", example: 1})
+    @IsOptional()
+    @IsNumber()
+    ong: number
+
     @ApiProperty({type: Number, description: "Vaquinha",example: 1})
     @IsOptional()
     @IsNumber()

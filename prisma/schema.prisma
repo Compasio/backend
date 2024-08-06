@@ -68,7 +68,7 @@ model Voluntary {
 model Ong {
   //CAMPOS DA TABELA    
   id_ong Int
-  cnpj_ong String @unique @db.VarChar(14) @default("00000000000000")
+  cnpj_ong String @unique @db.VarChar(14)
   cpf_founder String @db.VarChar(11)
   ong_name String @db.VarChar(50)
   profile_picture Bytes?
@@ -82,6 +82,7 @@ model Ong {
   projects Project[]
   relationRequests RelationRequests[]
   neededItems NeededItems[]
+  donationHistory DonationHistory[]
 
   @@id([id_ong])
 }
@@ -163,6 +164,7 @@ model CrowdFunding {
   project Int
   neededValue Float
   collectedValue Float
+  isClosed Boolean @default(false)
 
   //RELAÇÕES
   donationHistory DonationHistory[]
@@ -176,10 +178,13 @@ model DonationHistory {
   id_donation Int @id @default(autoincrement())
   voluntary Int
   crowdfunding Int?
+  ong Int?
   value Float
+  date DateTime @default(now())
 
   //RELAÇÕES
   id_crowdfunding CrowdFunding? @relation(fields: [crowdfunding], references: [id_crowdfunding])
+  id_ong Ong? @relation(fields: [ong], references: [id_ong])
 }
 
 model NeededItems {
