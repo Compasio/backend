@@ -1,5 +1,6 @@
 import { CreateAdminDto } from './dto/create-admin.dto';
 import { PrismaService } from '../../db/prisma.service';
+import { Habilities_User } from '@prisma/client';
 import {
   ConflictException,
   Delete,
@@ -31,6 +32,14 @@ export class SysService {
         userType: 'admin',
       },
     });
+  }
+
+  async getVoluntaryHabilities() {
+    let hab: string[] = [];
+    for (let i of Object.entries(Habilities_User)) {
+      hab.push(i[0]);
+    }
+    return {"habilities": hab};
   }
 
   findAll() {

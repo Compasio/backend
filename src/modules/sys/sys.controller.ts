@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { SysService } from './sys.service';
 import { CreateAdminDto } from './dto/create-admin.dto';
+import { Public } from 'src/auth/decorators/public.decorator';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
@@ -33,6 +34,13 @@ export class SysController {
   @ApiOperation({summary: 'Cria um admin'})
   async createAdmin(@Body() createAdminDto: CreateAdminDto) {
     return this.sysService.createAdmin(createAdminDto);
+  }
+
+  @Public()
+  @Get('/getVoluntaryHabilities')
+  @ApiOperation({summary: 'Retornar enum de habilidades de usuários'})
+  async getVoluntaryHabilities() {
+    return this.sysService.getVoluntaryHabilities();
   }
 
   @Get()
