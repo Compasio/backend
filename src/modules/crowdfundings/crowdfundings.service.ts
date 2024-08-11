@@ -34,19 +34,64 @@ export class CrowdfundingsService {
     return {"response": res, "count": count};
   }
 
-  async getCrowdfundingsByTitle(title: string, page: number) {
-    return `This action returns all crowdfundings`;
+  async getCrowdfundingsByTitle(title: string) {
+    const crowdNearest = await this.prisma.crowdFunding.findMany({
+      where: {
+        OR: [
+          {title: {contains: title, mode: 'insensitive'}},
+        ],
+      },
+    });
+
+    if(!crowdNearest) throw new NotFoundException('ERROR: Nenhuma vaquinha com esse título');
+    return crowdNearest;
   }
 
   async getCrowdfundingById(id: number) {
-    return `This action returns a #${id} crowdfunding`;
+    const crowdFunding = await this.prisma.crowdFunding.findUnique({
+      where: {
+        id_crowdfunding: id,
+      },
+    });
+    if(!crowdFunding) throw new NotFoundException("ERROR: Vaquinha não encontrada");
+    return crowdFunding;
   }
 
   async updateCrowdfundingNeededValue(id: number, newValue: number) {
-    return `This action updates a #${id} crowdfunding`;
+    const crowdfunding = await this.prisma.crowdFunding.findUnique({
+      where: {
+        id_crowdfunding: id,
+      },
+    });
+
+    if(!crowdfunding) throw new NotFoundException("ERROR: Vaquinha não encontrada");
+
+    return this.prisma.crowdFunding.update({
+      data: {
+        neededValue: newValue,
+      },
+      where: {
+        id_crowdfunding: id,
+      },
+    });
   }
 
   async closeCrowdfunding(id: number) {
+    const crowdfunding = await this.prisma.crowdFunding.findUnique({
+      where: {
+        id_crowdfunding: id,
+      },
+    });
 
+    if(!crowdfunding) throw new NotFoundException("ERROR: Vaquinha não encontrada");
+
+    return this.prisma.crowdFunding.update({
+      data: {
+        isClosed: true,
+      },
+      where: {
+        id_crowdfunding: id,
+      },
+    });
   }
 }

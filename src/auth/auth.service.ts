@@ -88,4 +88,42 @@ export class AuthService {
     
     return true;
   }
+
+  async checkProjectOwnershipForCrowdfunding(req, id: number = null, project: number = null) {
+    let proj: number;
+
+    if(project != null) {
+      proj = project;
+    }
+    else if (id != null) {
+      const checkCrowd = await this.prisma.crowdFunding.findUnique({
+        where: {
+          id_crowdfunding: id,
+        },
+      });
+
+      if(!checkCrowd) throw new NotFoundException('vaquinha não encontrada');
+
+      proj = checkCrowd.project;
+    }
+    else {
+      throw new UnauthorizedException();
+    }
+    
+
+    const checkOwnership = await this.prisma.project.findUnique({
+      where: {
+        id_project: proj,
+      },
+    });
+  
+    if(!checkOwnership) throw new NotFoundException('projeto não encontrado');
+
+    let requester = req.user.id;
+    let ong = checkOwnership.ong;
+
+    if(ong != requester) throw new UnauthorizedException("ERROR: você não tem permissão para executar esta ação");
+
+    return true;    
+  }
 }
