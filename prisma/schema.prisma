@@ -118,7 +118,7 @@ model VoluntaryRelations {
   voluntary   Int
   ong         Int
   project     Int?
-  dateStart   String
+  dateStart   String?
   dateEnding  String?
   description String? @db.VarChar(200)
 
