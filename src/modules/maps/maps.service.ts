@@ -36,7 +36,6 @@ export class MapsService {
 
     return this.prisma.address.create({
       data: {
-        id_user: id,
         ...createMapDto,
         lat: data.features[0].geometry.coordinates[1],
         lng: data.features[0].geometry.coordinates[0]
@@ -140,6 +139,7 @@ export class MapsService {
     console.log(ongs)
   }
 
+  //TODO --- TODAS ESSAS FUNÇÕES
   async getOngByCoordinate(lat: string, lng: string) {
 
   }

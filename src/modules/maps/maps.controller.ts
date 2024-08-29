@@ -29,14 +29,13 @@ export class MapsController {
     ) {}
 
   @UserTypeAuth('admin', 'ong')
-  @Post('registerAddress/:id')
+  @Post('registerAddress')
   @ApiCreatedResponse({description: 'Endereço requisitado com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiOperation({summary: 'Registrar endereço'})
-  @ApiParam({ name: 'id', type: Number, description: 'user id' })
-  async registerAddress(@Param('id') id: number, @Body() createMapDto: CreateMapDto, @Request() req) {
-    let confirmPass = await this.authService.checkIdAndAdminStatus(id, req);
-    return this.mapsService.registerAddress(id, createMapDto);
+  async registerAddress(@Body() createMapDto: CreateMapDto, @Request() req) {
+    let confirmPass = await this.authService.checkIdAndAdminStatus(createMapDto.id_user, req);
+    return this.mapsService.registerAddress(createMapDto.id_user, createMapDto);
   }
 
   @Public()
