@@ -1,22 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Habilities_User } from '@prisma/client';
 import {
-  IsBoolean,
   IsNotEmpty,
-  IsNumber,
   IsOptional,
   IsString,
   IsStrongPassword,
   IsEmail,
-  IsJSON,
-  ValidateNested,
-  IsDate,
   IsDateString,
-  IsUrl,
-  isNumber,
-  isNotEmpty,
   IsArray
-} from 'class-validator';
+} from "class-validator";
 
 export class CreateVoluntaryDto {
     @ApiProperty({type: String, description: "CPF do usuário", example: "12098755403"})
@@ -46,10 +38,10 @@ export class CreateVoluntaryDto {
     @IsOptional()
     profile_picture: Buffer;
 
-    @ApiProperty({type: Date, description: "Data de nascimento usuário", example: "2003-09-21T18:19:31.966Z"})
+    @ApiProperty({type: String, description: "Data de nascimento usuário", example: "2003-09-21"})
     @IsDateString()
     @IsNotEmpty()
-    birthDate: Date;
+    birthDate: string;
 
     @ApiProperty({type: String, description: "Descrição do usuário (tipo uma bio)", example: "Olá meu nome é João tenho 22 anos toco guitarra e adoro ajudar meus casas"})
     @IsString()

@@ -6,18 +6,19 @@ import {
   IsString,
   IsDate,
   IsDateString,
-} from 'class-validator';
+  IsISO8601
+} from "class-validator";
 
 export class CreateVoluntaryRelationDto {
-    @ApiProperty({type: Date, description: "Data de início", example: "2024-05-04T00:00:00.000Z"})
-    @IsDateString()
-    @IsNotEmpty()
-    dateStart: Date;
 
-    @ApiProperty({type: Date, description: "Data de fim", example: "2024-05-05T00:00:00.000Z"})
-    @IsDateString()
+    @ApiProperty({type: String, description: "Data de início", example: "2024-05-04"})
     @IsNotEmpty()
-    dateEnding: Date;
+    dateStart: string;
+
+    @ApiProperty({type: String, description: "Data de fim", example: "2024-05-05"})
+    @IsDateString()
+    @IsOptional()
+    dateEnding: string;
 
     @ApiProperty({type: String, description: "Descrição opcional da relação", example: "Ajudou na cura de refugiados"})
     @IsString()
