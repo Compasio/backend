@@ -8,6 +8,7 @@ import {
   } from '@nestjs/common';
 import { PrismaService } from 'src/db/prisma.service';
 import * as crypto from 'crypto';
+import { CodeDto } from "./code-dto";
 
 @Injectable()
 export class EmailAuthService {
@@ -72,12 +73,9 @@ export class EmailAuthService {
             
     }
 
-    /* 
-    ======TODO======
-    -CRIAR FLAG PARA NÃO PRECISAR VERIFICAR EMAIL EM TESTES
-    
-    */
-    async verifyUserCreation(code: string) {
+    async verifyUserCreation(codeDto: CodeDto) {
+        const { code } = codeDto;
+
         if(code.length !== 6 || /^\d+$/.test(code) == false) throw new ConflictException("Codigo Inválido");
         const verify = await this.prisma.emailVerifyCode.findUnique({
             where: {

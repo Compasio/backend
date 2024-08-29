@@ -27,15 +27,15 @@ export class OngAssociatedController {
   ) {}
 
   @UserTypeAuth('admin', 'ong')
+  @Post('createOngAssociate')
   @ApiCreatedResponse({description: 'Associado criado com sucesso', type: CreateOngAssociatedDto, status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiNotAcceptableResponse({description: 'Senha não é forte o suficiente', status: 406})
   @ApiConflictResponse({ description: 'Associado já existente', status: 409})
   @ApiOperation({summary: 'Cria um associado'})
-  @Post('createOngAssociate/:ongid')
-  async createOngAssociate(@Body() createOngAssociatedDto: CreateOngAssociatedDto, @Param('ongid') ongid: number, @Request() req) {
-    let confirmPass = await this.authService.checkIdAndAdminStatus(ongid, req);
-    return this.ongAssociatedService.createOngAssociate(createOngAssociatedDto, ongid);
+  async createOngAssociate(@Body() createOngAssociatedDto: CreateOngAssociatedDto, @Request() req) {
+    let confirmPass = await this.authService.checkIdAndAdminStatus(createOngAssociatedDto.ongid, req);
+    return this.ongAssociatedService.createOngAssociate(createOngAssociatedDto);
   }
 
   @UserTypeAuth('admin', 'ong')

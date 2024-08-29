@@ -19,6 +19,10 @@ import {
 } from 'class-validator';
 
 export class CreateMapDto {
+  @ApiProperty({type: Number, description: "User", example: 1})
+  @IsNumber()
+  @IsNotEmpty()
+  id_user: number;
 
   @ApiProperty({type: String, description: "Numero", example: "36"})
   @IsString()

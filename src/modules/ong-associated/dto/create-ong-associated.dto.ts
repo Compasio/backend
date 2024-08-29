@@ -19,6 +19,12 @@ import {
 } from 'class-validator';
 
 export class CreateOngAssociatedDto {
+
+    @ApiProperty({type: Number, description: "Ong", example: 1})
+    @IsNumber()
+    @IsNotEmpty()
+    ongid: number;
+
     @ApiProperty({type: String, description: "Primeiro nome do associado", example: "João"})
     @IsString()
     @IsNotEmpty()

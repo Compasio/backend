@@ -146,7 +146,6 @@ export class VoluntaryRelationsService {
     let requests;
     let count = await this.prisma.relationRequests.count({where: {voluntary}});
 
-    console.log(voluntary)
     if(page == 0) {
       requests = await this.prisma.relationRequests.findMany({
         where: {
@@ -171,7 +170,6 @@ export class VoluntaryRelationsService {
         skip: (page - 1) * 20,
       });
     }
-    console.log(requests)
 
     if(requests[0] == undefined) return [];
     return {"requests": requests, "totalCount": count};

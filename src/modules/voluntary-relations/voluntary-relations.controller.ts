@@ -46,7 +46,7 @@ export class VoluntaryRelationsController {
   }
 
   @UserTypeAuth('admin', 'ong', 'voluntary', 'ongAssociated')
-  @Post('acceptVoluntaryRelation/:ong/:voluntary')
+  @Post('acceptVoluntaryRelation')
   @ApiCreatedResponse({description: 'Relação aceitada com sucesso', status: 201, type: CreateVoluntaryRelationDto})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiOperation({summary: 'Aceita uma relação de voluntario'})
@@ -65,7 +65,7 @@ export class VoluntaryRelationsController {
   }
 
   @UserTypeAuth('admin', 'ong', 'voluntary', 'ongAssociated')
-  @Delete('refuseVoluntaryRelation/:ong/:voluntary')
+  @Post('refuseVoluntaryRelation')
   @ApiCreatedResponse({description: 'Relação recusada com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiOperation({summary: 'Recusa uma relação de voluntario'})
