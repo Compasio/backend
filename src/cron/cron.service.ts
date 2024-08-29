@@ -19,5 +19,16 @@ export class CronService {
         }
         this.logger.debug("deleteExpiredEmailCodes executado");
     }
+
+    @Cron(CronExpression.EVERY_3_HOURS)
+    async clearTokenBlackList() {
+        try {
+            const execute = await this.operations.clearTokenBlackList();
+        }
+        catch(e) {
+            this.logger.debug("Ocorreu um erro:" + e);
+        }
+        this.logger.debug("clearTokenBlackList executado");
+    }
     
 }

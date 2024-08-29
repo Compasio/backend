@@ -18,5 +18,16 @@ export class OperationsService {
                 }
             }
         });
-    }   
+    }
+
+    async clearTokenBlackList() {
+        try {
+            const delRecords = await this.prisma.$executeRawUnsafe('DELETE FROM "TokenBlackList"');
+            console.log(delRecords)
+            return true
+        } catch (error) {
+            console.log(error)
+            return error;
+        }
+    }
 }
