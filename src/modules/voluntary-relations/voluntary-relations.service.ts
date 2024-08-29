@@ -1,14 +1,17 @@
 import { ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CreateVoluntaryRelationDto } from './dto/create-voluntary-relation.dto';
+import { RequestRelationDto} from "./dto/request-relation.dto";
 import { UpdateVoluntaryRelationDto } from './dto/update-voluntary-relation.dto';
 import { PrismaService } from 'src/db/prisma.service';
-import { User, UserType } from '@prisma/client';
+import { UserType } from '@prisma/client';
 
 @Injectable()
 export class VoluntaryRelationsService {
   constructor(private prisma: PrismaService) {}
 
-  async requestVoluntaryRelation(voluntary: number, ong: number, project: number, userType: UserType) {
+  async requestVoluntaryRelation(dto: RequestRelationDto, userType: UserType) {
+    const { voluntary, ong, project } = dto;
+
     const voluntaryExists = await this.prisma.user.findFirst({
       where: {
         id: voluntary,
@@ -44,7 +47,9 @@ export class VoluntaryRelationsService {
     });
   }
 
-  async acceptVoluntaryRelation(voluntary: number, ong: number, userType: UserType, createvoluntaryRelationDto: CreateVoluntaryRelationDto) {
+  async acceptVoluntaryRelation(createvoluntaryRelationDto: CreateVoluntaryRelationDto, userType: UserType,) {
+    const {voluntary, ong} = createvoluntaryRelationDto;
+
     const requestExists = await this.prisma.relationRequests.findUnique({
       where: {
         voluntary_ong: {

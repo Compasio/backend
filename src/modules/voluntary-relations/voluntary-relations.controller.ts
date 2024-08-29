@@ -7,17 +7,14 @@ import { AuthService } from 'src/auth/auth.service';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
-  ApiConflictResponse,
   ApiCreatedResponse,
-  ApiNotAcceptableResponse,
-  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiParam,
   ApiTags,
-  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { VoluntaryRelationsService } from './voluntary-relations.service';
+import { RequestRelationDto } from "./dto/request-relation.dto";
 
 
 @Controller('voluntary-relations')
@@ -30,51 +27,45 @@ export class VoluntaryRelationsController {
   ) {}
 
   @UserTypeAuth('admin', 'ong', 'voluntary', 'ongAssociated')
-  @Post('/requestVoluntaryRelation/:ong/:voluntary/:project')
-  @ApiCreatedResponse({description: 'Relação requisitada com sucesso', status: 201})
+  @Post('requestVoluntaryRelation')
+  @ApiCreatedResponse({description: 'Relação requisitada com sucesso', status: 201, type: RequestRelationDto})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiOperation({summary: 'Requisita uma relação de voluntario'})
-  @ApiParam({ name: 'ong', type: Number, description: 'id da ong' })
-  @ApiParam({ name: 'voluntary', type: Number, description: 'id do voluntario' })
-  @ApiParam({ name: 'project', type: Number, required: false, description: 'id do projeto (opcional)' })
-  async requestVoluntaryRelation(@Param('ong') ong: number, @Param('voluntary') voluntary: number, @Request() req, @Param('project') project?: number,) {
-    if(!project) {
-      project = null;
-    }
+  async requestVoluntaryRelation(@Body() dto: RequestRelationDto, @Request() req) {
     let type = req.user.userType;
     if(type == 'ong') {
-      let confirmPass = await this.authService.checkIdAndAdminStatus(ong, req);
+      let confirmPass = await this.authService.checkIdAndAdminStatus(dto.ong, req);
     } 
     else if(type == 'ongAssociated') {
-      let confirmPass = await this.authService.checkIfOngAssociateIsFromOngAndItsPermission(ong, req, 'voluntary');
+      let confirmPass = await this.authService.checkIfOngAssociateIsFromOngAndItsPermission(dto.ong, req, 'voluntary');
     }
     else {
-      let confirmPass = await this.authService.checkIdAndAdminStatus(voluntary, req);
+      let confirmPass = await this.authService.checkIdAndAdminStatus(dto.voluntary, req);
     }
-    return this.voluntaryRelationsService.requestVoluntaryRelation(voluntary, ong, project, type);
+    return this.voluntaryRelationsService.requestVoluntaryRelation(dto, type);
   }
 
   @UserTypeAuth('admin', 'ong', 'voluntary', 'ongAssociated')
-  @Post('/acceptVoluntaryRelation/:ong/:voluntary')
-  @ApiCreatedResponse({description: 'Relação aceitada com sucesso', status: 201})
+  @Post('acceptVoluntaryRelation/:ong/:voluntary')
+  @ApiCreatedResponse({description: 'Relação aceitada com sucesso', status: 201, type: CreateVoluntaryRelationDto})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiOperation({summary: 'Aceita uma relação de voluntario'})
-  async acceptVoluntaryRelation(@Param('ong') ong: number, @Param('voluntary') voluntary: number, @Body() createvoluntaryRelationDto: CreateVoluntaryRelationDto, @Request() req) {
+  async acceptVoluntaryRelation(@Body() createvoluntaryRelationDto: CreateVoluntaryRelationDto, @Request() req) {
     let type = req.user.userType;
     if(type == 'ong') {
-      let confirmPass = await this.authService.checkIdAndAdminStatus(ong, req);
+      let confirmPass = await this.authService.checkIdAndAdminStatus(createvoluntaryRelationDto.ong, req);
     } 
     else if(type == 'ongAssociated') {
-      let confirmPass = await this.authService.checkIfOngAssociateIsFromOngAndItsPermission(ong, req, 'voluntary');
+      let confirmPass = await this.authService.checkIfOngAssociateIsFromOngAndItsPermission(createvoluntaryRelationDto.ong, req, 'voluntary');
     }
     else {
-      let confirmPass = await this.authService.checkIdAndAdminStatus(voluntary, req);
+      let confirmPass = await this.authService.checkIdAndAdminStatus(createvoluntaryRelationDto.voluntary, req);
     }
-    return this.voluntaryRelationsService.acceptVoluntaryRelation(voluntary, ong, type, createvoluntaryRelationDto);
+    return this.voluntaryRelationsService.acceptVoluntaryRelation(createvoluntaryRelationDto, type);
   }
 
   @UserTypeAuth('admin', 'ong', 'voluntary', 'ongAssociated')
-  @Delete('/refuseVoluntaryRelation/:ong/:voluntary')
+  @Delete('refuseVoluntaryRelation/:ong/:voluntary')
   @ApiCreatedResponse({description: 'Relação recusada com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiOperation({summary: 'Recusa uma relação de voluntario'})
@@ -93,7 +84,7 @@ export class VoluntaryRelationsController {
   }
 
   @UserTypeAuth('admin', 'ong', 'ongAssociated')
-  @Get('/getAllRequestsByOng/:page/:ong')
+  @Get('getAllRequestsByOng/:page/:ong')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'ong', schema: { default: 1 } })
@@ -104,7 +95,7 @@ export class VoluntaryRelationsController {
   }
 
   @UserTypeAuth('admin', 'voluntary')
-  @Get('/getAllRequestsByVoluntary/:voluntary/:page')
+  @Get('getAllRequestsByVoluntary/:voluntary/:page')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'voluntary', schema: { default: 1 } })
@@ -115,7 +106,7 @@ export class VoluntaryRelationsController {
   }
 
   @Public()
-  @Get('/getAllRelationsByVoluntary/:voluntary/:page')
+  @Get('getAllRelationsByVoluntary/:voluntary/:page')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'voluntary', schema: { default: 1 } })
@@ -126,7 +117,7 @@ export class VoluntaryRelationsController {
   }
 
   @Public()
-  @Get('/getAllRelationsByOng/:ong/:page')
+  @Get('getAllRelationsByOng/:ong/:page')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'ong', schema: { default: 1 } })
@@ -137,7 +128,7 @@ export class VoluntaryRelationsController {
   }
 
   @UserTypeAuth('admin', 'ong', 'ongAssociated')
-  @Get('/getAllRequestsByProject/:page/:project')
+  @Get('getAllRequestsByProject/:page/:project')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'project', schema: { default: 1 } })
@@ -148,7 +139,7 @@ export class VoluntaryRelationsController {
   }
 
   @Public()
-  @Get('/getAllRelationsByProject/:page/:project')
+  @Get('getAllRelationsByProject/:page/:project')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'project', schema: { default: 1 } })
@@ -159,7 +150,7 @@ export class VoluntaryRelationsController {
   }
 
   @UserTypeAuth('admin')
-  @Get('/getVoluntaryRelationById/:id')
+  @Get('getVoluntaryRelationById/:id')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'id', schema: { default: 1 } })
@@ -169,7 +160,7 @@ export class VoluntaryRelationsController {
   }
 
   @UserTypeAuth('admin')
-  @Patch('/updateVoluntaryRelation/:id')
+  @Patch('updateVoluntaryRelation/:id')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'id', schema: { default: 1 } })
@@ -179,7 +170,7 @@ export class VoluntaryRelationsController {
   }
 
   @UserTypeAuth('admin')
-  @Delete('/removeVoluntaryRelation/:id')
+  @Delete('removeVoluntaryRelation/:id')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'id', schema: { default: 1 } })
