@@ -8,10 +8,15 @@ import {
   import { JwtService } from '@nestjs/jwt';
   import { Request } from 'express';
   import { IS_PUBLIC_KEY } from './decorators/public.decorator';
+import { PrismaService } from '../db/prisma.service';
   
   @Injectable()
   export class AuthGuard implements CanActivate {
-    constructor(private jwtService: JwtService, private reflector: Reflector) {}
+    constructor(
+      private jwtService: JwtService,
+      private reflector: Reflector,
+      private prisma: PrismaService,
+    ) {}
   
     async canActivate(context: ExecutionContext): Promise<boolean> {
       const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
@@ -32,6 +37,12 @@ import {
       if (!token) {
         throw new UnauthorizedException();
       }
+
+      const checkBlackList = await this.checkTokenBlackList(token);
+      if(checkBlackList) {
+        throw new UnauthorizedException();
+      }
+
       try {
         const payload = await this.jwtService.verifyAsync(token, {
           secret: process.env.JWTSECRET,
@@ -43,6 +54,7 @@ import {
         if(!match) {
           throw new UnauthorizedException();
         }
+
 
         request['user'] = payload;
       } catch {
@@ -58,5 +70,14 @@ import {
 
     private matchUserTypeFromHeader(types: string[], currentUserType: string) {
       return types.some((type) => type === currentUserType);
+    }
+
+    private async checkTokenBlackList(token: string) {
+      const check = await this.prisma.tokenBlackList.findUnique({
+        where: {
+          token,
+        },
+      });
+      return check ? true : false;
     }
   }

@@ -2,7 +2,6 @@ import {
     Body,
     Controller,
     Get,
-    Param,
     Post,
     Request,
   } from '@nestjs/common';
@@ -13,7 +12,6 @@ import {
     ApiCreatedResponse,
     ApiOkResponse,
     ApiOperation,
-    ApiParam,
     ApiTags,
   } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
@@ -40,6 +38,17 @@ export class AuthController {
     @ApiOperation({summary: 'Recebe o token de login'})
     async signInUser(@Body() logUserDto: LogUserDto) {
         return this.authService.signIn(logUserDto.email, logUserDto.password);
+    }
+
+
+    @UserTypeAuth('admin', 'voluntary', 'ong', 'ongAssociated')
+    @Post('logoutUser')
+    @ApiOkResponse({description: 'Logout realizado com sucesso', status: 200})
+    @ApiOperation({summary: 'Faz logout do usuário, esta rota coloca tokens usados ' +
+        'por usuários que fizeram logout na blacklist, é preciso também deletar o token na' +
+        'client side'})
+    async singOut(@Request() req) {
+      return this.authService.singOut(req.get('authorization'));
     }
 
     @Public()

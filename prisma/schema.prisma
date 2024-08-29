@@ -13,6 +13,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+
 //========TABELAS========
 
 model User {
@@ -213,6 +214,10 @@ model EmailVerifyCode {
   dto       String
   iv        Bytes
   createdAt BigInt
+}
+
+model TokenBlackList {
+  token String @id
 }
 
 //=======================

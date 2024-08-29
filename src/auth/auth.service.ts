@@ -1,5 +1,4 @@
 import {
-  ConflictException,
     Injectable,
     NotFoundException,
     UnauthorizedException,
@@ -28,6 +27,16 @@ export class AuthService {
       } else {
         throw new UnauthorizedException('Senha incorreta');
       }
+    }
+
+    async singOut(bearer: string) {
+      let token = bearer.split(' ')[1];
+      const addTokenToBlackList = await this.prisma.tokenBlackList.create({
+        data: {
+          token,
+        },
+      });
+      if(addTokenToBlackList) return true;
     }
 
     async getUserByEmail(email: string) {
