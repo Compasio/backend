@@ -1,26 +1,97 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCrowdfundingDto } from './dto/create-crowdfunding.dto';
-import { UpdateCrowdfundingDto } from './dto/update-crowdfunding.dto';
+import { PrismaService } from 'src/db/prisma.service';
 
 @Injectable()
 export class CrowdfundingsService {
-  create(createCrowdfundingDto: CreateCrowdfundingDto) {
-    return 'This action adds a new crowdfunding';
+  constructor(private prisma: PrismaService) {}
+
+  async createCrowdfunding(createCrowdfundingDto: CreateCrowdfundingDto) {
+    const { project, neededValue } = createCrowdfundingDto;
+    const projectExists = await this.prisma.project.findUnique({
+      where: {
+        id_project: project,
+      },
+    });
+    if(!projectExists) throw new NotFoundException("ERRO: projeto não encontrado");
+    if(neededValue < 0 || neededValue > 9999999) throw new ConflictException("ERRO: valor inválido");
+    return this.prisma.crowdFunding.create({
+      data: {
+        ...createCrowdfundingDto,
+      },
+    });
   }
 
-  findAll() {
-    return `This action returns all crowdfundings`;
+  async getCrowdfundingByProject(project: number) {
+    const projectExists = await this.prisma.project.findUnique({
+      where: {
+        id_project: project,
+      },
+    });
+    if(!projectExists) throw new NotFoundException("ERRO: projeto não encontrado");
+    const count = await this.prisma.crowdFunding.count({where: {project}});
+    const res = await this.prisma.crowdFunding.findMany({where: {project}});
+    return {"response": res, "count": count};
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} crowdfunding`;
+  async getCrowdfundingsByTitle(title: string) {
+    const crowdNearest = await this.prisma.crowdFunding.findMany({
+      where: {
+        OR: [
+          {title: {contains: title, mode: 'insensitive'}},
+        ],
+      },
+    });
+
+    if(!crowdNearest) throw new NotFoundException('ERROR: Nenhuma vaquinha com esse título');
+    return crowdNearest;
   }
 
-  update(id: number, updateCrowdfundingDto: UpdateCrowdfundingDto) {
-    return `This action updates a #${id} crowdfunding`;
+  async getCrowdfundingById(id: number) {
+    const crowdFunding = await this.prisma.crowdFunding.findUnique({
+      where: {
+        id_crowdfunding: id,
+      },
+    });
+    if(!crowdFunding) throw new NotFoundException("ERROR: Vaquinha não encontrada");
+    return crowdFunding;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} crowdfunding`;
+  async updateCrowdfundingNeededValue(id: number, newValue: number) {
+    const crowdfunding = await this.prisma.crowdFunding.findUnique({
+      where: {
+        id_crowdfunding: id,
+      },
+    });
+
+    if(!crowdfunding) throw new NotFoundException("ERROR: Vaquinha não encontrada");
+
+    return this.prisma.crowdFunding.update({
+      data: {
+        neededValue: newValue,
+      },
+      where: {
+        id_crowdfunding: id,
+      },
+    });
+  }
+
+  async closeCrowdfunding(id: number) {
+    const crowdfunding = await this.prisma.crowdFunding.findUnique({
+      where: {
+        id_crowdfunding: id,
+      },
+    });
+
+    if(!crowdfunding) throw new NotFoundException("ERROR: Vaquinha não encontrada");
+
+    return this.prisma.crowdFunding.update({
+      data: {
+        isClosed: true,
+      },
+      where: {
+        id_crowdfunding: id,
+      },
+    });
   }
 }

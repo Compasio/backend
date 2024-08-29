@@ -2,7 +2,16 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBadRequestResponse,
+  ApiBearerAuth, ApiConflictResponse,
+  ApiCreatedResponse,
+  ApiNotAcceptableResponse, ApiOkResponse, ApiOperation, ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
+import { CreateVoluntaryDto } from '../voluntary/dto/create-voluntary.dto';
+import { Public } from '../../auth/decorators/public.decorator';
+import { UserTypeAuth } from '../../auth/decorators/userTypeAuth.decorator';
 
 @Controller('projects')
 @ApiBearerAuth()
@@ -10,28 +19,74 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 export class ProjectsController {
   constructor(private readonly projectsService: ProjectsService) {}
 
-  @Post()
-  create(@Body() createProjectDto: CreateProjectDto) {
-    return this.projectsService.create(createProjectDto);
+  @Public()
+  @Post('/createProject')
+  @ApiCreatedResponse({description: 'Projeto criado com sucesso', type: CreateVoluntaryDto, status: 201})
+  @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
+  @ApiConflictResponse({ description: 'Projeto já existente', status: 409})
+  @ApiOperation({summary: 'Cria um projeto'})
+  async createProject(@Body() createProjectDto: CreateProjectDto) {
+    return this.projectsService.createProject(createProjectDto);
   }
 
-  @Get()
-  findAll() {
-    return this.projectsService.findAll(1);
+  @Public()
+  @Get('/getAllProjectsByOng/:ong/:page')
+  @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
+  @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
+  @ApiParam({ name: 'page', schema: { default: 1 } })
+  @ApiParam({ name: 'ong', schema: { default: 1 } })
+  @ApiOperation({summary: 'Retorna uma lista de vinte projetos por página por ong'})
+  async getAllProjectsByOng(@Param('ong') ong: number, @Param('page') page: number) {
+    return this.projectsService.getAllProjectsByOng(ong, page);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.projectsService.findOne(+id);
+  @Public()
+  @Get('/getAllProjects/:page')
+  @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
+  @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
+  @ApiParam({ name: 'page', schema: { default: 1 } })
+  @ApiOperation({summary: 'Retorna uma lista de vinte projetos por página'})
+  async getAllProjects(@Param('page') page: number) {
+    return this.projectsService.getAllProjects(page);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProjectDto: UpdateProjectDto) {
-    return this.projectsService.update(+id, updateProjectDto);
+  @Public()
+  @Get('/getProjectById/:id')
+  @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
+  @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
+  @ApiParam({ name: 'id', schema: { default: 1 } })
+  @ApiOperation({summary: 'Retorna um projeto pelo seu id'})
+  async getProjectById(@Param('id') id: number) {
+    return this.projectsService.getProjectById(id);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.projectsService.remove(+id);
+  @Public()
+  @Get('/getProjectsByName/:name')
+  @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
+  @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
+  @ApiParam({ name: 'name', schema: { default: '' } })
+  @ApiOperation({summary: 'Retorna uma lista de vinte voluntários por página'})
+  async getProjectsByName(@Param('name') name: string) {
+    return this.projectsService.getProjectsByName(name);
+  }
+
+  @UserTypeAuth('admin', 'ong', 'ongAssociated')
+  @Patch('/updateProject/:id')
+  @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
+  @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
+  @ApiParam({ name: 'id', schema: { default: 1 } })
+  @ApiOperation({summary: 'Atualiza um projeto'})
+  async updateProject(@Param('id') id: number, @Body() updateProjectDto: UpdateProjectDto) {
+    return this.projectsService.updateProject(id, updateProjectDto);
+  }
+
+  @UserTypeAuth('admin', 'ong', 'ongAssociated')
+  @Delete('/deleteProject/:id')
+  @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
+  @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
+  @ApiParam({ name: 'id', schema: { default: 1 } })
+  @ApiOperation({summary: 'Deleta um projeto e os crowdfundings atrelados'})
+  async deleteProject(@Param('id') id: number) {
+    return this.projectsService.deleteProject(id);
   }
 }

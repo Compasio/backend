@@ -15,7 +15,6 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { User } from '../voluntary/entities/user.entity';
 
 @Controller('donations')
 @ApiBearerAuth()

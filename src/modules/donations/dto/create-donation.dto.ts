@@ -1,5 +1,4 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Permissions } from '@prisma/client';
 import {
   IsBoolean,
   IsNotEmpty,

@@ -1,6 +1,5 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateDonationDto } from './dto/create-donation.dto';
-import { UpdateDonationDto } from './dto/update-donation.dto';
 import { PrismaService } from 'src/db/prisma.service';
 
 @Injectable()
@@ -26,6 +25,16 @@ export class DonationsService {
         },
       });
       if(!crowdfundingExists) throw new ConflictException("ERROR: vaquinha não existe");
+      
+      let val = crowdfundingExists.collectedValue + createDonationDto.value;
+      await this.prisma.crowdFunding.update({
+        data: {
+          collectedValue: val,
+        },
+        where: {
+          id_crowdfunding: crowdfunding,
+        },
+      });
     }
 
     if(ong != undefined) {
@@ -36,7 +45,6 @@ export class DonationsService {
       });
       if(!ongExists) throw new ConflictException("ERROR: vaquinha não existe");  
     }
-
 
     return this.prisma.donationHistory.create({
       data:{
