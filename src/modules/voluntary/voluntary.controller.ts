@@ -10,12 +10,10 @@ import {
   ApiConflictResponse,
   ApiCreatedResponse,
   ApiNotAcceptableResponse,
-  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiParam,
   ApiTags,
-  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { UserTypeAuth } from 'src/auth/decorators/userTypeAuth.decorator';
 import { AuthService } from 'src/auth/auth.service';
@@ -30,18 +28,18 @@ export class VoluntarysController {
   ) {}
 
   @Public()
-  @Post('/createVoluntary')
+  @Post('createVoluntary')
   @ApiCreatedResponse({description: 'Voluntário criado com sucesso', type: CreateVoluntaryDto, status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiNotAcceptableResponse({description: 'Senha não é forte o suficiente', status: 406})
   @ApiConflictResponse({ description: 'voluntário já existente', status: 409})
   @ApiOperation({summary: 'Cria um voluntário'})
-  async createvoluntary(@Body() createvoluntaryDto: CreateVoluntaryDto) {
+  async createVoluntary(@Body() createvoluntaryDto: CreateVoluntaryDto) {
     return await this.voluntarysService.createVoluntary(createvoluntaryDto);
   }
 
   @Public()
-  @Get('/getAllVoluntarys/:page')
+  @Get('getAllVoluntarys/:page')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'page', schema: { default: 1 } })
@@ -51,7 +49,7 @@ export class VoluntarysController {
   }
 
   @UserTypeAuth('admin', 'voluntary')
-  @Get('/getVoluntaryById/:id')
+  @Get('getVoluntaryById/:id')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'id', schema: { default: 1 } })
@@ -61,7 +59,7 @@ export class VoluntarysController {
   }
 
   @Public()
-  @Get('/getVoluntarysByName/:name')
+  @Get('getVoluntarysByName/:name')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'name', schema: { default: 'João' } })
@@ -71,7 +69,7 @@ export class VoluntarysController {
   }
 
   @Public()
-  @Post('/getVoluntarysByHabilities')
+  @Post('getVoluntarysByHabilities')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'page', schema: { default: 1 } })
@@ -81,7 +79,7 @@ export class VoluntarysController {
   }
 
   @UserTypeAuth('admin', 'voluntary')
-  @Patch('/updateVoluntary/:id')
+  @Patch('updateVoluntary/:id')
   @ApiOkResponse({description: 'Requisição feita com sucesso', type: UpdateVoluntaryDto, status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'id', schema: { default: 1 } })
@@ -92,7 +90,7 @@ export class VoluntarysController {
   }
 
   @UserTypeAuth('admin', 'voluntary')
-  @Delete('/removeVoluntary/:id')
+  @Delete('removeVoluntary/:id')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'id', schema: { default: 1 } })

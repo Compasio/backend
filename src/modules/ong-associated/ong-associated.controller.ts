@@ -2,7 +2,6 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Request } from '@nes
 import { OngAssociatedService } from './ong-associated.service';
 import { CreateOngAssociatedDto } from './dto/create-ong-associated.dto';
 import { UpdateOngAssociatedDto } from './dto/update-ong-associated.dto';
-import { Public } from '../../auth/decorators/public.decorator';
 import { Permissions } from '@prisma/client';
 import {
   ApiBadRequestResponse,
@@ -10,12 +9,10 @@ import {
   ApiConflictResponse,
   ApiCreatedResponse,
   ApiNotAcceptableResponse,
-  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiParam,
   ApiTags,
-  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { UserTypeAuth } from 'src/auth/decorators/userTypeAuth.decorator';
 import { AuthService } from 'src/auth/auth.service';
@@ -35,7 +32,7 @@ export class OngAssociatedController {
   @ApiNotAcceptableResponse({description: 'Senha não é forte o suficiente', status: 406})
   @ApiConflictResponse({ description: 'Associado já existente', status: 409})
   @ApiOperation({summary: 'Cria um associado'})
-  @Post('/createOngAssociate/:ongid')
+  @Post('createOngAssociate/:ongid')
   async createOngAssociate(@Body() createOngAssociatedDto: CreateOngAssociatedDto, @Param('ongid') ongid: number, @Request() req) {
     let confirmPass = await this.authService.checkIdAndAdminStatus(ongid, req);
     return this.ongAssociatedService.createOngAssociate(createOngAssociatedDto, ongid);
@@ -46,7 +43,7 @@ export class OngAssociatedController {
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'page', schema: { default: 1 } })
   @ApiOperation({summary: 'Retorna uma lista de vinte associados da ong por página'})
-  @Get('/getOngAssociatesByOng/:page/:ongid')
+  @Get('getOngAssociatesByOng/:page/:ongid')
   async getOngAssociatesByOng(@Param('page') page: number, @Param('ongid') ongid: number, @Request() req) {
     let confirmPass = await this.authService.checkIdAndAdminStatus(ongid, req);
     return this.ongAssociatedService.getOngAssociatesByOng(page, ongid);
@@ -57,13 +54,13 @@ export class OngAssociatedController {
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'id', schema: { default: 1 } })
   @ApiOperation({summary: 'Retorna um associado pelo seu id'})
-  @Get('/getOngAssociateById/:id')
+  @Get('getOngAssociateById/:id')
   async getOngAssociateById(@Param('id') id: string) {
     return this.ongAssociatedService.getOngAssociateById(+id);
   }
 
   @UserTypeAuth('admin', 'ong')
-  @Post('/getOngAssociatesByPermission/:ongid/:permission')
+  @Post('getOngAssociatesByPermission/:ongid/:permission')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiOperation({summary: 'Retorna uma lista de associados pelas permissões'})
@@ -74,7 +71,7 @@ export class OngAssociatedController {
   }
   
   @UserTypeAuth('admin', 'ong')
-  @Patch('/updateOngAssociate/:id/:ongid')
+  @Patch('updateOngAssociate/:id/:ongid')
   @ApiOkResponse({description: 'Requisição feita com sucesso', type: UpdateOngAssociatedDto, status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'id', schema: { default: 1 } })
@@ -85,7 +82,7 @@ export class OngAssociatedController {
   }
 
   @UserTypeAuth('admin', 'ong')
-  @Delete('/removeOngAssociate/:id/:ongid')
+  @Delete('removeOngAssociate/:id/:ongid')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'id', schema: { default: 1 } })

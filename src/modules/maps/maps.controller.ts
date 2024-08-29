@@ -29,7 +29,7 @@ export class MapsController {
     ) {}
 
   @UserTypeAuth('admin', 'ong')
-  @Post('/registerAddress/:id')
+  @Post('registerAddress/:id')
   @ApiCreatedResponse({description: 'Endereço requisitado com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiOperation({summary: 'Registrar endereço'})
@@ -40,7 +40,7 @@ export class MapsController {
   }
 
   @Public()
-  @Get('/getAllAddress/:page')
+  @Get('getAllAddress/:page')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'page', schema: { default: 1 } })
@@ -50,7 +50,7 @@ export class MapsController {
   }
 
   @Public()
-  @Get('/getAddressFromOng/:ongname')
+  @Get('getAddressFromOng/:ongname')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'ongname', schema: { default: "example" } })

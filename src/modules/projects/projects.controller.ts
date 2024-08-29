@@ -6,7 +6,9 @@ import {
   ApiBadRequestResponse,
   ApiBearerAuth, ApiConflictResponse,
   ApiCreatedResponse,
-  ApiNotAcceptableResponse, ApiOkResponse, ApiOperation, ApiParam,
+  ApiOkResponse,
+  ApiOperation,
+  ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
 import { CreateVoluntaryDto } from '../voluntary/dto/create-voluntary.dto';
@@ -20,7 +22,7 @@ export class ProjectsController {
   constructor(private readonly projectsService: ProjectsService) {}
 
   @Public()
-  @Post('/createProject')
+  @Post('createProject')
   @ApiCreatedResponse({description: 'Projeto criado com sucesso', type: CreateVoluntaryDto, status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiConflictResponse({ description: 'Projeto já existente', status: 409})
@@ -30,7 +32,7 @@ export class ProjectsController {
   }
 
   @Public()
-  @Get('/getAllProjectsByOng/:ong/:page')
+  @Get('getAllProjectsByOng/:ong/:page')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'page', schema: { default: 1 } })
@@ -41,7 +43,7 @@ export class ProjectsController {
   }
 
   @Public()
-  @Get('/getAllProjects/:page')
+  @Get('getAllProjects/:page')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'page', schema: { default: 1 } })
@@ -51,7 +53,7 @@ export class ProjectsController {
   }
 
   @Public()
-  @Get('/getProjectById/:id')
+  @Get('getProjectById/:id')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'id', schema: { default: 1 } })
@@ -61,7 +63,7 @@ export class ProjectsController {
   }
 
   @Public()
-  @Get('/getProjectsByName/:name')
+  @Get('getProjectsByName/:name')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'name', schema: { default: '' } })
@@ -71,7 +73,7 @@ export class ProjectsController {
   }
 
   @UserTypeAuth('admin', 'ong', 'ongAssociated')
-  @Patch('/updateProject/:id')
+  @Patch('updateProject/:id')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'id', schema: { default: 1 } })
@@ -81,7 +83,7 @@ export class ProjectsController {
   }
 
   @UserTypeAuth('admin', 'ong', 'ongAssociated')
-  @Delete('/deleteProject/:id')
+  @Delete('deleteProject/:id')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'id', schema: { default: 1 } })

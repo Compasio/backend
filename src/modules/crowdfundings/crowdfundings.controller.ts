@@ -9,13 +9,10 @@ import {
   ApiBearerAuth,
   ApiConflictResponse,
   ApiCreatedResponse,
-  ApiNotAcceptableResponse,
-  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiParam,
   ApiTags,
-  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 
 @Controller('crowdfundings')
@@ -28,7 +25,7 @@ export class CrowdfundingsController {
   ) {}
 
   @UserTypeAuth('admin', 'ong', 'ongAssociated')
-  @Post('/createCrowdfunding')
+  @Post('createCrowdfunding')
   @ApiCreatedResponse({description: 'Vaquinha criada com sucesso', type: CreateCrowdfundingDto, status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiConflictResponse({ description: 'vaquinha já existente', status: 409})
@@ -40,7 +37,7 @@ export class CrowdfundingsController {
   }
 
   @Public()
-  @Get('/getCrowdfundingByProject/:project')
+  @Get('getCrowdfundingByProject/:project')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'project', schema: { default: 1 } })
@@ -50,7 +47,7 @@ export class CrowdfundingsController {
   }
 
   @UserTypeAuth('admin', 'ong', 'ongAssociated')
-  @Get('/getCrowdfundingById/:id')
+  @Get('getCrowdfundingById/:id')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'id', schema: { default: 1 } })
@@ -60,7 +57,7 @@ export class CrowdfundingsController {
   }
 
   @Public()
-  @Get('/getCrowdfundingsByTitle/:title')
+  @Get('getCrowdfundingsByTitle/:title')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'title', schema: { default: 'Ajuda nacional' } })
@@ -70,7 +67,7 @@ export class CrowdfundingsController {
   }
 
   @UserTypeAuth('admin', 'ong', 'ongAssociated')
-  @Patch('/updateCrowdfundingNeededValue/:id')
+  @Patch('updateCrowdfundingNeededValue/:id')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'id', schema: { default: 1 } })
@@ -81,7 +78,7 @@ export class CrowdfundingsController {
   }
 
   @UserTypeAuth('admin', 'ong', 'ongAssociated')
-  @Patch('/closeCrowdfunding/:id')
+  @Patch('closeCrowdfunding/:id')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'id', schema: { default: 1 } })

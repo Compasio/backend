@@ -34,7 +34,7 @@ export class AuthController {
     ) {}
 
     @Public()
-    @Post('/loginUser')
+    @Post('loginUser')
     @ApiOkResponse({description: 'Login realizado com sucesso', type: LogUserDto, status: 200})
     @ApiOperation({summary: 'Recebe o token de login'})
     async signInUser(@Body() logUserDto: LogUserDto) {
@@ -42,7 +42,7 @@ export class AuthController {
     }
 
     @Public()
-    @Post('/verifyUserCreation/:code')
+    @Post('verifyUserCreation/:code')
     @ApiCreatedResponse({description: 'Usuário criado com sucesso', status: 201})
     @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
     @ApiConflictResponse({ description: 'Codigo inválido', status: 409})
@@ -53,7 +53,7 @@ export class AuthController {
     }
 
     @UserTypeAuth('admin', 'voluntary', 'ong', 'ongAssociated')
-    @Get('/profile')
+    @Get('profile')
     @ApiOkResponse({description: 'Informação encontrada', type: LogUserDto, status: 200})
     @ApiOperation({summary: 'Retorna o perfil que está logado no momento'})
     async getProfile(@Request() req) {

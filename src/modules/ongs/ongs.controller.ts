@@ -10,12 +10,10 @@ import {
   ApiConflictResponse,
   ApiCreatedResponse,
   ApiNotAcceptableResponse,
-  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiParam,
   ApiTags,
-  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { UserTypeAuth } from 'src/auth/decorators/userTypeAuth.decorator';
 import { AuthService } from 'src/auth/auth.service';
@@ -30,7 +28,7 @@ export class OngsController {
   ) {}
 
   @Public()
-  @Post('/createOng')
+  @Post('createOng')
   @ApiCreatedResponse({description: 'Ong criada com sucesso', type: CreateOngDto, status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiNotAcceptableResponse({description: 'Senha não é forte o suficiente', status: 406})
@@ -41,7 +39,7 @@ export class OngsController {
   }
 
   @Public()
-  @Get('/getAllOngs/:page')
+  @Get('getAllOngs/:page')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'page', schema: { default: 1 } })
@@ -51,7 +49,7 @@ export class OngsController {
   }
 
   @UserTypeAuth('admin', 'ong')
-  @Get('/getOngById/:id')
+  @Get('getOngById/:id')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'id', schema: { default: 1 } })
@@ -61,7 +59,7 @@ export class OngsController {
   }
 
   @Public()
-  @Get('/getOngByName/:name')
+  @Get('getOngByName/:name')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'name', schema: { default: 'João' } })
@@ -71,7 +69,7 @@ export class OngsController {
   }
 
   @Public()
-  @Post('/getOngByTheme/:theme')
+  @Post('getOngByTheme/:theme')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiOperation({summary: 'Retorna uma lista de ongs pelos temas'})
@@ -81,7 +79,7 @@ export class OngsController {
   }
 
   @UserTypeAuth('admin', 'ong')
-  @Patch('/updateOng/:id')
+  @Patch('updateOng/:id')
   @ApiOkResponse({description: 'Requisição feita com sucesso', type: UpdateOngDto, status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'id', schema: { default: 1 } })
@@ -92,7 +90,7 @@ export class OngsController {
   }
 
   @UserTypeAuth('admin', 'ong')
-  @Delete('/removeOng/:id')
+  @Delete('removeOng/:id')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'id', schema: { default: 1 } })
