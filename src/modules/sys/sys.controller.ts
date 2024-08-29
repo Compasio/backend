@@ -26,7 +26,7 @@ export class SysController {
   constructor(private readonly sysService: SysService) {}
 
   @UserTypeAuth('admin')
-  @Post('/createAdmin')
+  @Post('createAdmin')
   @ApiCreatedResponse({description: 'Admin criado com sucesso', type: CreateAdminDto, status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiNotAcceptableResponse({description: 'Senha não é forte o suficiente', status: 406})
@@ -37,24 +37,24 @@ export class SysController {
   }
 
   @Public()
-  @Get('/getVoluntaryHabilities')
+  @Get('getVoluntaryHabilities')
   @ApiOperation({summary: 'Retornar enum de habilidades de usuários'})
   async getVoluntaryHabilities() {
     return this.sysService.getVoluntaryHabilities();
   }
 
-  @Get()
-  findAll() {
-    return this.sysService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.sysService.findOne(+id);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.sysService.remove(+id);
-  }
+  // @Get()
+  // findAll() {
+  //   return this.sysService.findAll();
+  // }
+  //
+  // @Get(':id')
+  // findOne(@Param('id') id: string) {
+  //   return this.sysService.findOne(+id);
+  // }
+  //
+  // @Delete(':id')
+  // remove(@Param('id') id: string) {
+  //   return this.sysService.remove(+id);
+  // }
 }

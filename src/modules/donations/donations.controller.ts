@@ -5,15 +5,11 @@ import { UserTypeAuth } from 'src/auth/decorators/userTypeAuth.decorator';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
-  ApiConflictResponse,
   ApiCreatedResponse,
-  ApiNotAcceptableResponse,
-  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiParam,
   ApiTags,
-  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 
 @Controller('donations')
@@ -23,7 +19,7 @@ export class DonationsController {
   constructor(private readonly donationsService: DonationsService) {}
 
   @UserTypeAuth('admin', 'voluntary')
-  @Post('/createDonation')
+  @Post('createDonation')
   @ApiCreatedResponse({description: 'Doação resgistrada', type: CreateDonationDto, status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiOperation({summary: 'Doação'})
@@ -32,7 +28,7 @@ export class DonationsController {
   }
 
   @UserTypeAuth('admin', 'voluntary')
-  @Get('/getAllDonationsByOng/:page/:ong/:date')
+  @Get('getAllDonationsByOng/:page/:ong/:date')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'page', schema: { default: 1 } })
@@ -44,7 +40,7 @@ export class DonationsController {
   }
 
   @UserTypeAuth('admin', 'voluntary')
-  @Get('/getAllDonationsByVoluntary/:page/:voluntary/:date')
+  @Get('getAllDonationsByVoluntary/:page/:voluntary/:date')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'page', schema: { default: 1 } })
@@ -56,7 +52,7 @@ export class DonationsController {
   }
 
   @UserTypeAuth('admin', 'voluntary')
-  @Get('/getAllDonationsByCrowdfunding/:page/:crowdfunding/:date')
+  @Get('getAllDonationsByCrowdfunding/:page/:crowdfunding/:date')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'page', schema: { default: 1 } })
@@ -68,7 +64,7 @@ export class DonationsController {
   }
 
   @UserTypeAuth('admin', 'voluntary')
-  @Get('/getDonationById/:id')
+  @Get('getDonationById/:id')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'id', schema: { default: 1 } })
