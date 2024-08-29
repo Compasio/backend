@@ -13,33 +13,32 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 //========TABELAS========
 
 model User {
   //CAMPOS DA TABELA
-  id Int @id @default(autoincrement())
-  email String @unique
+  id       Int    @id @default(autoincrement())
+  email    String @unique
   password String
 
   //RELAÇÕES
-  userType UserType @default(voluntary)
-  voluntary Voluntary?
-  ong Ong?
+  userType      UserType       @default(voluntary)
+  voluntary     Voluntary?
+  ong           Ong?
   ongAssociated OngAssociated?
-  address Address?
+  address       Address?
 }
 
 model Address {
   //CAMPOS DA TABELA
-  id_user Int
-  num String
-  street String @db.VarChar(50)
+  id_user      Int
+  num          String
+  street       String @db.VarChar(50)
   neighborhood String @db.VarChar(30)
-  city String @db.VarChar(30)
-  state State
-  lat Float
-  lng Float
+  city         String @db.VarChar(30)
+  state        State
+  lat          Float
+  lng          Float
 
   //RELAÇÕES
   user User? @relation(fields: [id_user], references: [id])
@@ -49,40 +48,40 @@ model Address {
 
 model Voluntary {
   //CAMPOS DA TABELA
-  id_voluntary Int
-  cpf_voluntary String @unique @db.VarChar(11)
-  fullname String @db.VarChar(100)
+  id_voluntary    Int
+  cpf_voluntary   String  @unique @db.VarChar(11)
+  fullname        String  @db.VarChar(100)
   profile_picture Bytes?
-  description String? @db.VarChar(200)
-  birthDate DateTime
+  description     String? @db.VarChar(200)
+  birthDate       String
 
   //RELAÇÕES
-  user User? @relation(fields: [id_voluntary], references: [id])
-  habilities Habilities_User[]
+  user               User?                @relation(fields: [id_voluntary], references: [id])
+  habilities         Habilities_User[]
   voluntaryRelations VoluntaryRelations[]
-  relationRequests RelationRequests[]
-  
+  relationRequests   RelationRequests[]
+
   @@id([id_voluntary])
 }
 
 model Ong {
   //CAMPOS DA TABELA    
-  id_ong Int
-  cnpj_ong String @unique @db.VarChar(14)
-  cpf_founder String @db.VarChar(11)
-  ong_name String @db.VarChar(50)
+  id_ong          Int
+  cnpj_ong        String  @unique @db.VarChar(14)
+  cpf_founder     String  @db.VarChar(11)
+  ong_name        String  @db.VarChar(50)
   profile_picture Bytes?
-  description String? @db.VarChar(200)
+  description     String? @db.VarChar(200)
 
   //RELAÇÕES
-  user User? @relation(fields: [id_ong], references: [id])
-  themes Themes_ONG[]
+  user               User?                @relation(fields: [id_ong], references: [id])
+  themes             Themes_ONG[]
   voluntaryRelations VoluntaryRelations[]
-  ongAssociates OngAssociated[]
-  projects Project[]
-  relationRequests RelationRequests[]
-  neededItems NeededItems[]
-  donationHistory DonationHistory[]
+  ongAssociates      OngAssociated[]
+  projects           Project[]
+  relationRequests   RelationRequests[]
+  neededItems        NeededItems[]
+  donationHistory    DonationHistory[]
 
   @@id([id_ong])
 }
@@ -90,24 +89,24 @@ model Ong {
 model OngAssociated {
   //CAMPOS DA TABELA
   id_associate Int
-  ong Int
-  firstname String @db.VarChar(50)
-  lastname String @db.VarChar(70)
+  ong          Int
+  firstname    String @db.VarChar(50)
+  lastname     String @db.VarChar(70)
 
   //RELAÇÕES
-  user User @relation(fields: [id_associate], references: [id])
-  id_ong Ong @relation(fields: [ong], references: [id_ong])
+  user        User          @relation(fields: [id_associate], references: [id])
+  id_ong      Ong           @relation(fields: [ong], references: [id_ong])
   permissions Permissions[]
 
   @@id([id_associate])
 }
 
 //model UserAppData {
-  //CAMPOS DA TABELA
+//CAMPOS DA TABELA
 //  id_user Int
-  //TODO---TERMINAR TABELA USERAPPDATA
+//TODO---TERMINAR TABELA USERAPPDATA
 
-  //RELAÇÕES
+//RELAÇÕES
 //  user User         @relation(fields: [id_user], references: [id_user])
 
 //  @@id([id_user])
@@ -115,58 +114,58 @@ model OngAssociated {
 
 model VoluntaryRelations {
   //CAMPOS DA TABELA
-  id_relation Int @id @default(autoincrement())
-  voluntary Int
-  ong Int
-  project Int?
-  dateStart DateTime
-  dateEnding DateTime
+  id_relation Int     @id @default(autoincrement())
+  voluntary   Int
+  ong         Int
+  project     Int?
+  dateStart   String
+  dateEnding  String?
   description String? @db.VarChar(200)
 
   //RELAÇÕES
   id_voluntary Voluntary @relation(fields: [voluntary], references: [id_voluntary])
-  id_ong Ong @relation(fields: [ong], references: [id_ong])
-  id_project Project? @relation(fields: [project], references: [id_project])
+  id_ong       Ong       @relation(fields: [ong], references: [id_ong])
+  id_project   Project?  @relation(fields: [project], references: [id_project])
 }
 
 model RelationRequests {
   //CAMPOS DA TABELA
-  voluntary Int
-  ong Int
-  project Int?
+  voluntary            Int
+  ong                  Int
+  project              Int?
   userTypeWhoRequested UserType
 
   //RELAÇÕES
   id_voluntary Voluntary @relation(fields: [voluntary], references: [id_voluntary])
-  id_ong Ong @relation(fields: [ong], references: [id_ong])
-  id_project Project? @relation(fields: [project], references: [id_project])
+  id_ong       Ong       @relation(fields: [ong], references: [id_ong])
+  id_project   Project?  @relation(fields: [project], references: [id_project])
 
   @@id([voluntary, ong])
 }
 
 model Project {
   //CAMPOS DA TABELA
-  id_project Int @id @default(autoincrement())
-  ong Int
-  project_name String @db.VarChar(50)
-  description String? @db.VarChar(200)
+  id_project   Int     @id @default(autoincrement())
+  ong          Int
+  project_name String  @db.VarChar(50)
+  description  String? @db.VarChar(200)
 
   //RELAÇÕES
   voluntaryRelations VoluntaryRelations[]
-  relationRequests RelationRequests[]
-  theme Themes_ONG[]
-  id_ong Ong @relation(fields: [ong], references: [id_ong])
+  relationRequests   RelationRequests[]
+  theme              Themes_ONG[]
+  id_ong             Ong                  @relation(fields: [ong], references: [id_ong])
 }
 
 model CrowdFunding {
   //CAMPOS DA TABELA
-  id_crowdfunding Int @id @default(autoincrement()) 
-  title String @db.VarChar(70)
-  description String? @db.VarChar(150)
-  project Int
-  neededValue Float
-  collectedValue Float @default(0)
-  isClosed Boolean @default(false)
+  id_crowdfunding Int     @id @default(autoincrement())
+  title           String  @db.VarChar(70)
+  description     String? @db.VarChar(150)
+  project         Int
+  neededValue     Float
+  collectedValue  Float   @default(0)
+  isClosed        Boolean @default(false)
 
   //RELAÇÕES
   donationHistory DonationHistory[]
@@ -177,30 +176,29 @@ model CrowdFunding {
 
 model DonationHistory {
   //CAMPOS DA TABELA
-  id_donation Int @id @default(autoincrement())
-  voluntary Int
+  id_donation  Int      @id @default(autoincrement())
+  voluntary    Int
   crowdfunding Int?
-  ong Int?
-  value Float
-  date DateTime @default(now())
+  ong          Int?
+  value        Float
+  date         DateTime @default(now())
 
   //RELAÇÕES
   id_crowdfunding CrowdFunding? @relation(fields: [crowdfunding], references: [id_crowdfunding])
-  id_ong Ong? @relation(fields: [ong], references: [id_ong])
+  id_ong          Ong?          @relation(fields: [ong], references: [id_ong])
 }
 
 model NeededItems {
-  id Int @id @default(autoincrement())
-  ong Int
-  itemName String @db.VarChar(50)
+  id          Int       @id @default(autoincrement())
+  ong         Int
+  itemName    String    @db.VarChar(50)
   description String
-  itemClass ItemClass
-  itemPhoto Bytes
-  quantity Int
-  
+  itemClass   ItemClass
+  itemPhoto   Bytes
+  quantity    Int
+
   id_ong Ong @relation(fields: [ong], references: [id_ong])
 }
-
 
 model SysLogs {
   //CAMPOS DA TABELA
@@ -211,10 +209,10 @@ model SysLogs {
 }
 
 model EmailVerifyCode {
-    code String @id @db.VarChar(6)
-    dto String
-    iv Bytes
-    createdAt BigInt
+  code      String @id @db.VarChar(6)
+  dto       String
+  iv        Bytes
+  createdAt BigInt
 }
 
 //=======================
@@ -479,8 +477,5 @@ enum Themes_ONG {
   FESTIVAIS
   EVENTOS_CULTURAIS
 }
+
 //=======================
-
-
-
-
