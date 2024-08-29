@@ -1,5 +1,5 @@
 import { ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import { CreateVoluntaryRelationDto } from './dto/create-voluntary-relation.dto';
+import { CreateVoluntaryRelationDto, DellVoluntaryRelationDto } from "./dto/create-voluntary-relation.dto";
 import { RequestRelationDto} from "./dto/request-relation.dto";
 import { UpdateVoluntaryRelationDto } from './dto/update-voluntary-relation.dto';
 import { PrismaService } from 'src/db/prisma.service';
@@ -85,7 +85,9 @@ export class VoluntaryRelationsService {
     return { success: true };
   }
 
-  async refuseVoluntaryRelation(voluntary: number, ong: number) {
+  async refuseVoluntaryRelation(dellDto: DellVoluntaryRelationDto) {
+    const {voluntary, ong} = dellDto;
+
     const requestExists = await this.prisma.relationRequests.findUnique({
       where: {
         voluntary_ong: {
@@ -140,10 +142,11 @@ export class VoluntaryRelationsService {
     return {"requests": requests, "totalCount": count};
   }
 
-  async getAllRequestsByVoluntary(page: number, voluntary: number) {
+  async getAllRequestsByVoluntary(voluntary: number, page: number) {
     let requests;
     let count = await this.prisma.relationRequests.count({where: {voluntary}});
 
+    console.log(voluntary)
     if(page == 0) {
       requests = await this.prisma.relationRequests.findMany({
         where: {
@@ -168,6 +171,7 @@ export class VoluntaryRelationsService {
         skip: (page - 1) * 20,
       });
     }
+    console.log(requests)
 
     if(requests[0] == undefined) return [];
     return {"requests": requests, "totalCount": count};

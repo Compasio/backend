@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Request } from '@nestjs/common';
-import { CreateVoluntaryRelationDto } from './dto/create-voluntary-relation.dto';
+import { CreateVoluntaryRelationDto, DellVoluntaryRelationDto } from "./dto/create-voluntary-relation.dto";
 import { UpdateVoluntaryRelationDto } from './dto/update-voluntary-relation.dto';
 import { Public } from '../../auth/decorators/public.decorator';
 import { UserTypeAuth } from 'src/auth/decorators/userTypeAuth.decorator';
@@ -69,28 +69,35 @@ export class VoluntaryRelationsController {
   @ApiCreatedResponse({description: 'Relação recusada com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiOperation({summary: 'Recusa uma relação de voluntario'})
-  async refuseVoluntaryRelation(@Param('ong') ong: number, @Param('voluntary') voluntary: number, @Request() req) {
+  async refuseVoluntaryRelation(@Body() dellDto: DellVoluntaryRelationDto, @Request() req) {
     let type = req.user.userType;
     if(type == 'ong') {
-      let confirmPass = await this.authService.checkIdAndAdminStatus(ong, req);
+      let confirmPass = await this.authService.checkIdAndAdminStatus(dellDto.ong, req);
     } 
     else if(type == 'ongAssociated') {
-      let confirmPass = await this.authService.checkIfOngAssociateIsFromOngAndItsPermission(ong, req, 'voluntary');
+      let confirmPass = await this.authService.checkIfOngAssociateIsFromOngAndItsPermission(dellDto.ong, req, 'voluntary');
     }
     else {
-      let confirmPass = await this.authService.checkIdAndAdminStatus(voluntary, req);
+      let confirmPass = await this.authService.checkIdAndAdminStatus(dellDto.voluntary, req);
     }
-    return this.voluntaryRelationsService.refuseVoluntaryRelation(voluntary, ong);
+    return this.voluntaryRelationsService.refuseVoluntaryRelation(dellDto);
   }
 
   @UserTypeAuth('admin', 'ong', 'ongAssociated')
-  @Get('getAllRequestsByOng/:page/:ong')
+  @Get('getAllRequestsByOng/:ong/:page')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'ong', schema: { default: 1 } })
   @ApiParam({ name: 'page', schema: { default: 1 } })
   @ApiOperation({summary: 'Retorna uma lista de vinte requisições de relações envolvendo a ong enviada por página'})
-  async getAllRequestsByOng(@Param('ong') ong: number, @Param('page') page: number) {
+  async getAllRequestsByOng(@Param('ong') ong: number, @Param('page') page: number, @Request() req) {
+    let type = req.user.userType;
+    if(type == 'ong') {
+      let confirmPass = await this.authService.checkIdAndAdminStatus(ong, req);
+    }
+    else {
+      let confirmPass = await this.authService.checkIfOngAssociateIsFromOngAndItsPermission(ong, req, 'voluntary');
+    }
     return this.voluntaryRelationsService.getAllRequestsByOng(ong, page);
   }
 
@@ -101,7 +108,8 @@ export class VoluntaryRelationsController {
   @ApiParam({ name: 'voluntary', schema: { default: 1 } })
   @ApiParam({ name: 'page', schema: { default: 1 } })
   @ApiOperation({summary: 'Retorna uma lista de vinte requisições de relação envolvendo o voluntário enviado por página'})
-  async getAllRequestsByVoluntary(@Param('voluntary') voluntary: number, @Param('page') page: number) {
+  async getAllRequestsByVoluntary(@Param('voluntary') voluntary: number, @Param('page') page: number, @Request() req) {
+    let confirmPass = await this.authService.checkIdAndAdminStatus(voluntary, req);
     return this.voluntaryRelationsService.getAllRequestsByVoluntary(voluntary, page);
   }
 
