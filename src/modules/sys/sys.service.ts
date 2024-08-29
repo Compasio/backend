@@ -1,6 +1,6 @@
 import { CreateAdminDto } from './dto/create-admin.dto';
 import { PrismaService } from '../../db/prisma.service';
-import { Habilities_User } from '@prisma/client';
+import { Habilities_User, Themes_ONG } from "@prisma/client";
 import {
   ConflictException,
   Delete,
@@ -35,22 +35,10 @@ export class SysService {
   }
 
   async getVoluntaryHabilities() {
-    let hab: string[] = [];
-    for (let i of Object.entries(Habilities_User)) {
-      hab.push(i[0]);
-    }
-    return {"habilities": hab};
+    return Object.keys(Habilities_User)
   }
 
-  findAll() {
-    return `This action returns all sys`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} sy`;
-  }
-  
-  remove(id: number) {
-    return `This action removes a #${id} sy`;
+  async getOngThemes() {
+    return Object.keys(Themes_ONG);
   }
 }

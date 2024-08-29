@@ -8,16 +8,11 @@ import {
   ApiConflictResponse,
   ApiCreatedResponse,
   ApiNotAcceptableResponse,
-  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
-  ApiParam,
   ApiTags,
-  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { UserTypeAuth } from 'src/auth/decorators/userTypeAuth.decorator';
-
-//TODAS AS ROTAS TEM QUE SER TRANCADAS APENAS PARA ADMINS
 
 @Controller('sys')
 @ApiBearerAuth()
@@ -41,6 +36,13 @@ export class SysController {
   @ApiOperation({summary: 'Retornar enum de habilidades de usuários'})
   async getVoluntaryHabilities() {
     return this.sysService.getVoluntaryHabilities();
+  }
+
+  @Public()
+  @Get('getOngThemes')
+  @ApiOperation({summary: 'Retornar enum de temas de ong'})
+  async getOngThemes() {
+    return this.sysService.getOngThemes();
   }
 
   // @Get()
