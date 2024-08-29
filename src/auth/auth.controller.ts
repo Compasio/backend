@@ -22,6 +22,7 @@ import { LogUserDto } from './log.user.dto';
 import { PrismaService } from 'src/db/prisma.service';
 import { UserTypeAuth } from 'src/auth/decorators/userTypeAuth.decorator';
 import { EmailAuthService } from './emailAuth/emailAuth.service';
+import { CodeDto } from "./emailAuth/code-dto";
 
 @ApiBearerAuth()
 @ApiTags('Auth')
@@ -42,13 +43,12 @@ export class AuthController {
     }
 
     @Public()
-    @Post('verifyUserCreation/:code')
+    @Post('verifyUserCreation')
     @ApiCreatedResponse({description: 'Usuário criado com sucesso', status: 201})
     @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
     @ApiConflictResponse({ description: 'Codigo inválido', status: 409})
     @ApiOperation({summary: 'Registra o voluntário depois de código mandado por email'})
-    @ApiParam({name: 'code', schema: {default: '123456'}})
-    async verifyUserCreation(@Param('code') code: string) {
+    async verifyUserCreation(@Body() code: CodeDto) {
       return await this.emailAuthService.verifyUserCreation(code);
     }
 
