@@ -15,8 +15,17 @@ import * as bcrypt from 'bcrypt';
 export class OngAssociatedService {
   constructor(private prisma: PrismaService) {}
   
-  async createOngAssociate(createOngAssociatedDto: CreateOngAssociatedDto, ongid: number) {
-    const { email } = createOngAssociatedDto;
+  async createOngAssociate(createOngAssociatedDto: CreateOngAssociatedDto) {
+    const { ongid, email } = createOngAssociatedDto;
+
+    const ongExists = await this.prisma.user.findFirst({
+      where: {
+        id: ongid,
+        userType: 'ong'
+      },
+    });
+    if(!ongExists) throw new ConflictException("ERROR: Ong não existe");
+
     const emailExists = await this.prisma.user.findFirst({
       where: {
         email,
