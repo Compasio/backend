@@ -22,11 +22,12 @@ model User {
   password String
 
   //RELAÇÕES
-  userType      UserType       @default(voluntary)
+  userType      UserType        @default(voluntary)
   voluntary     Voluntary?
   ong           Ong?
   ongAssociated OngAssociated?
   address       Address?
+  UserBlackList UserBlackList[]
 }
 
 model Address {
@@ -206,6 +207,12 @@ model SysLogs {
   //TODO---TERMINAR TABELA SYSLOGS
 
   //RELAÇÕES
+}
+
+model UserBlackList {
+  id_user Int
+  user    User? @relation(fields: [id_user], references: [id])
+  @@id([id_user])
 }
 
 model EmailVerifyCode {

@@ -38,8 +38,8 @@ import { PrismaService } from '../db/prisma.service';
         throw new UnauthorizedException();
       }
 
-      const checkBlackList = await this.checkTokenBlackList(token);
-      if(checkBlackList) {
+      const checkTokenBlackList = await this.checkTokenBlackList(token);
+      if(checkTokenBlackList) {
         throw new UnauthorizedException();
       }
 
@@ -48,13 +48,18 @@ import { PrismaService } from '../db/prisma.service';
           secret: process.env.JWTSECRET,
         });
 
+        const checkUserBlackList = await this.checkUserBlackList(payload.id)
+
+        if(checkUserBlackList) {
+          throw new UnauthorizedException();
+        }
+
         const userRole = payload.userType;
         const match = this.matchUserTypeFromHeader(types, userRole);
 
         if(!match) {
           throw new UnauthorizedException();
         }
-
 
         request['user'] = payload;
       } catch {
@@ -72,12 +77,22 @@ import { PrismaService } from '../db/prisma.service';
       return types.some((type) => type === currentUserType);
     }
 
+    private async checkUserBlackList(id_user: number) {
+      const check = await this.prisma.userBlackList.findUnique({
+        where: {
+          id_user,
+        },
+      });
+      return check ? true : false;
+    }
+
     private async checkTokenBlackList(token: string) {
       const check = await this.prisma.tokenBlackList.findUnique({
         where: {
           token,
         },
       });
+
       return check ? true : false;
     }
   }
