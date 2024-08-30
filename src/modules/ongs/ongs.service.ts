@@ -2,11 +2,14 @@ import { CreateOngDto } from './dto/create-ong.dto';
 import { UpdateOngDto } from './dto/update-ong.dto';
 import { PrismaService } from '../../db/prisma.service';
 import { AuthService } from '../../auth/auth.service';
+import { HttpService } from '@nestjs/axios';
+import { AxiosError } from 'axios';
+import { catchError, firstValueFrom } from 'rxjs';
 import {
   ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+  Injectable, Logger,
+  NotFoundException
+} from "@nestjs/common";
 import * as bcrypt from 'bcrypt';
 import { Themes_ONG } from '@prisma/client';
 
@@ -15,7 +18,9 @@ export class OngsService {
   constructor(
     private prisma: PrismaService,
     private authService: AuthService,
+    private readonly httpService: HttpService,
   ) {}
+  private readonly logger = new Logger(OngsService.name);
 
   async createOng(createOngDto: CreateOngDto) {
     const {email, cpf_founder, cnpj_ong} = createOngDto;
@@ -27,13 +32,33 @@ export class OngsService {
         email
       }
     });
+    if(emailExists) throw new ConflictException("ERROR: Email já cadastrado");
+
+    if(process.env.CHECK_ONG_WITHOUT_CNPJ_VERIFY == "false") {
+      try {
+        let url = `https://api.cnpja.com/office/${cnpj_ong}?simples=true`
+        const { data } = await firstValueFrom(
+          this.httpService.get(url, {headers: { Authorization: `${process.env.CNPJ}`} }).pipe(
+            catchError((error: AxiosError) => {
+              this.logger.error(error.response.data);
+              throw error;
+            }),
+          ),
+        );
+      } catch (e) {
+        if(e.response.status === 404) {
+          throw new NotFoundException("ERROR: CNPJ não existe");
+        } else {
+          throw new NotFoundException("ERROR: CNPJ inválido");
+        }
+      }
+    }
+
     const cnpjExists = await this.prisma.ong.findFirst({
       where: {
         cnpj_ong
       }
     });
-
-    if(emailExists) throw new ConflictException("ERROR: Email já cadastrado");
     if(cnpjExists) throw new ConflictException("ERROR: CNPJ já cadastrado");
     
     const salt = await bcrypt.genSalt();
