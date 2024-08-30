@@ -41,4 +41,52 @@ export class SysService {
   async getOngThemes() {
     return Object.keys(Themes_ONG);
   }
+
+  async addUserToBlackList(id_user: number) {
+    const userExists = await this.prisma.user.findFirst({
+      where: {
+        id: id_user,
+      },
+    });
+
+    if(!userExists) throw new ConflictException("ERROR: Usuário não existe");
+
+    const check = await this.prisma.userBlackList.findFirst({
+      where: {
+        id_user,
+      },
+    });
+
+    if(check) throw new ConflictException("ERROR: Usuário já está na blacklist");
+
+    return this.prisma.userBlackList.create({
+      data: {
+        id_user,
+      },
+    });
+  }
+
+  async removeUserFromBlackList(id_user: number) {
+    const userExists = await this.prisma.user.findFirst({
+      where: {
+        id: id_user,
+      },
+    });
+
+    if(!userExists) throw new ConflictException("ERROR: Usuário não existe");
+
+    const check = await this.prisma.userBlackList.findFirst({
+      where: {
+        id_user,
+      },
+    });
+
+    if(!check) throw new ConflictException("ERROR: Usuário não está na blacklist");
+
+    return this.prisma.userBlackList.delete({
+      where: {
+        id_user,
+      },
+    });
+  }
 }

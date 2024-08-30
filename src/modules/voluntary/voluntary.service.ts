@@ -2,10 +2,9 @@ import { PrismaService } from '../../db/prisma.service';
 import { CreateVoluntaryDto } from './dto/create-voluntary.dto';
 import { UpdateVoluntaryDto } from './dto/update-voluntary.dto';
 import { Habilities_User } from '@prisma/client';
-import { EmailAuthService } from 'src/auth/emailAuth/emailAuth.service';
+import { AuthService } from '../../auth/auth.service';
 import {
   ConflictException,
-  Delete,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -15,7 +14,7 @@ import * as bcrypt from 'bcrypt';
 export class VoluntaryService {
   constructor(
     private prisma: PrismaService,
-    private emailAuth: EmailAuthService,
+    private authService: AuthService,
   ) {}
   
   async createVoluntary(createVoluntaryDto: CreateVoluntaryDto) {
@@ -44,7 +43,7 @@ export class VoluntaryService {
     createVoluntaryDto.password = hash;
 
     if(process.env.CREATE_USER_WITHOUT_EMAIL_VERIFY == "false") {
-      const makeVerifyCode = await this.emailAuth.generateAndSendEmailVerifyCode(createVoluntaryDto);
+      const makeVerifyCode = await this.authService.generateAndSendEmailVerifyCode(createVoluntaryDto);
       if(makeVerifyCode) {
         return true;
       } else {

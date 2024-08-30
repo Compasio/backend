@@ -13,6 +13,8 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { UserTypeAuth } from 'src/auth/decorators/userTypeAuth.decorator';
+import { UpdateVoluntaryDto } from '../voluntary/dto/update-voluntary.dto';
+import { BlacklistDto } from './dto/blacklist-dto';
 
 @Controller('sys')
 @ApiBearerAuth()
@@ -43,6 +45,22 @@ export class SysController {
   @ApiOperation({summary: 'Retornar enum de temas de ong'})
   async getOngThemes() {
     return this.sysService.getOngThemes();
+  }
+
+  @UserTypeAuth('admin')
+  @Post('addUserToBlackList')
+  @ApiOkResponse({description: 'Requisição feita com sucesso', type: UpdateVoluntaryDto, status: 201})
+  @ApiOperation({summary: 'Adiciona um usuário na blacklist'})
+  async addUserToBlackList(@Body() blacklistDto: BlacklistDto) {
+    return this.sysService.addUserToBlackList(blacklistDto.id);
+  }
+
+  @UserTypeAuth('admin')
+  @Post('removeUserFromBlackList')
+  @ApiOkResponse({description: 'Requisição feita com sucesso', type: UpdateVoluntaryDto, status: 201})
+  @ApiOperation({summary: 'Adiciona um usuário na blacklist'})
+  async removeUserFromBlackList(@Body() blacklistDto: BlacklistDto) {
+    return this.sysService.removeUserFromBlackList(blacklistDto.id);
   }
 
   // @Get()

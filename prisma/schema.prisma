@@ -22,11 +22,12 @@ model User {
   password String
 
   //RELAÇÕES
-  userType      UserType       @default(voluntary)
+  userType      UserType        @default(voluntary)
   voluntary     Voluntary?
   ong           Ong?
   ongAssociated OngAssociated?
   address       Address?
+  UserBlackList UserBlackList[]
 }
 
 model Address {
@@ -208,11 +209,28 @@ model SysLogs {
   //RELAÇÕES
 }
 
+model UserBlackList {
+  id_user Int
+  user    User? @relation(fields: [id_user], references: [id])
+  @@id([id_user])
+}
+
 model EmailVerifyCode {
   code      String @id @db.VarChar(6)
   dto       String
   iv        Bytes
   createdAt BigInt
+}
+
+model PasswordRecCode {
+  code      String @id @db.VarChar(6)
+  newPass   String
+  userEmail String
+  createdAt BigInt
+}
+
+model TokenBlackList {
+  token String @id
 }
 
 //=======================
