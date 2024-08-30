@@ -20,6 +20,19 @@ export class OperationsService {
         });
     }
 
+    async deleteExpiredPasswordCodes() {
+        const expirationThreshold = 10 * 60 * 1000;
+        const now = Date.now();
+
+        const expired = await this.prisma.passwordRecCode.deleteMany({
+            where: {
+                createdAt: {
+                    lt: now - expirationThreshold,
+                }
+            }
+        });
+    }
+
     async clearTokenBlackList() {
         try {
             const delRecords = await this.prisma.$executeRawUnsafe('DELETE FROM "TokenBlackList"');

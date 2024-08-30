@@ -13,7 +13,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 //========TABELAS========
 
 model User {
@@ -213,6 +212,13 @@ model EmailVerifyCode {
   code      String @id @db.VarChar(6)
   dto       String
   iv        Bytes
+  createdAt BigInt
+}
+
+model PasswordRecCode {
+  code      String @id @db.VarChar(6)
+  newPass   String
+  userEmail String
   createdAt BigInt
 }
 

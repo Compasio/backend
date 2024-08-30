@@ -1,12 +1,17 @@
 import {
-    Injectable,
-    NotFoundException,
-    UnauthorizedException,
-  } from '@nestjs/common';
+  ConflictException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from 'src/db/prisma.service';
 import { Permissions } from '@prisma/client';
+import { LogUserDto } from './dto/log.user.dto';
+import * as crypto from 'crypto';
+import * as nodemailer from 'nodemailer';
+import { CodeDto } from './dto/code-dto';
 
 @Injectable()
 export class AuthService {
@@ -135,4 +140,230 @@ export class AuthService {
 
     return true;    
   }
+
+  async passwordRecoveryCode(dto: LogUserDto) {
+      try {
+        const {email} = dto;
+
+        const emailExists = await this.prisma.user.findUnique({
+          where: {
+            email,
+          },
+        });
+
+        if(!emailExists) return false;
+
+        const checkRequests = await this.prisma.passwordRecCode.findMany({
+          where: {
+            userEmail: email,
+          },
+        });
+
+        if(checkRequests.length >= 5) return {"erro": "Muitos requests, por favor tente novamente mais tarde"};
+
+        const salt = await bcrypt.genSalt();
+        const hash: string = await bcrypt.hash(dto.password, salt);
+
+        const code = Math.floor(100000 + Math.random() * 900000).toString();
+
+        const createTheCode = await this.prisma.passwordRecCode.create({
+          data: {
+            code,
+            newPass: hash,
+            userEmail: email,
+            createdAt: Date.now()
+          }
+        });
+
+        const sendMail = await this.emailSender(
+          email,
+          "Recuperação de Senha Compassio",
+          `<p>Olá, você está recebendo este email para recuperar sua conta Compassio!</p><br /><p>${code}</p>`
+        )
+
+        return true;
+      }
+      catch(e) {
+        console.log(e)
+        throw new Error("Erro ao gerar código, por favor tente novamente");
+      }
+  }
+
+  async resetPassword(codeDto: CodeDto) {
+      try {
+        const { code } = codeDto;
+
+        const data = await this.prisma.passwordRecCode.findUnique({
+          where: {
+            code,
+          },
+        });
+
+        if (!data) return false;
+
+        const { newPass, userEmail } = data;
+
+        const update = await this.prisma.user.update({
+          data: {
+            password: newPass,
+          },
+          where: {
+            email: userEmail,
+          },
+        });
+
+        const removeCode = await this.prisma.passwordRecCode.delete({where: {code}});
+
+        return true;
+      }
+      catch(e) {
+        throw new ConflictException(e);
+      }
+  }
+
+  async generateAndSendEmailVerifyCode(dto) {
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+
+    try {
+
+      const secret = process.env.SECRETKEY;
+      if(secret.length !== 32) throw new Error("SecretKey invalida");
+      const key = Buffer.from(secret, 'hex');
+      const iv = crypto.randomBytes(16);
+      let cDto = crypto.createCipheriv('aes-128-cbc', key, iv);
+      let dto2 = JSON.stringify(dto)
+      let cryptDto = cDto.update(dto2, 'utf8', 'hex')
+      cryptDto += cDto.final('hex');
+
+      const createThisCode = await this.prisma.emailVerifyCode.create({
+        data: {
+          code,
+          dto: cryptDto,
+          iv,
+          createdAt: Date.now(),
+        },
+      });
+
+      const sendMail = this.emailSender(dto.email,
+        "Verificação de Email da Compassio",
+        `<p>Olá, você está recebendo este email para criar sua conta Compassio!</p><br /><p>${code}</p>`
+      )
+
+      return true;
+    }
+    catch(e) {
+      console.log(e)
+      throw new Error("Erro ao gerar código, por favor tente novamente");
+    }
+  }
+
+  async verifyUserCreation(codeDto: CodeDto) {
+    const { code } = codeDto;
+
+    if(code.length !== 6 || /^\d+$/.test(code) == false) throw new ConflictException("Codigo Inválido");
+    const verify = await this.prisma.emailVerifyCode.findUnique({
+      where: {
+        code,
+      },
+    });
+    if(!verify) throw new ConflictException("Código inválido");
+
+    let dtoJson;
+    try {
+      const secret = process.env.SECRETKEY;
+      if(secret.length !== 32) throw new Error("SecretKey invalida");
+      const key = Buffer.from(secret, 'hex');
+      const decipher = crypto.createDecipheriv('aes-128-cbc', key, verify.iv);
+      dtoJson = decipher.update(verify.dto, 'hex', 'utf8');
+      dtoJson += decipher.final('utf8');
+      dtoJson = JSON.parse(dtoJson);
+    } catch(e) {
+      console.log(e)
+      throw new Error("Ouve um erro, por favor tente novamente");
+    }
+
+    const removeCode = await this.prisma.emailVerifyCode.delete({where: {code}});
+
+    if(dtoJson.cpf_voluntary) {
+      return this.prisma.user.create({
+        data: {
+          email: dtoJson.email,
+          password: dtoJson.password,
+          userType: 'voluntary',
+          voluntary: {
+            create:
+              {
+                cpf_voluntary: dtoJson.cpf_voluntary,
+                fullname: dtoJson.fullname,
+                profile_picture: dtoJson.profile_picture,
+                description: dtoJson.description,
+                birthDate: dtoJson.birthDate,
+                habilities: dtoJson.habilities,
+              },
+          },
+        },
+        include: {
+          voluntary: true,
+        },
+      });
+    }
+
+    else {
+      return this.prisma.user.create({
+        data: {
+          email: dtoJson.email,
+          password: dtoJson.password,
+          userType: 'ong',
+          ong: {
+            create:
+              {
+                cpf_founder: dtoJson.cpf_founder,
+                cnpj_ong: dtoJson.cnpj_ong,
+                ong_name: dtoJson.ong_name,
+                profile_picture: dtoJson.profile_picture,
+                description: dtoJson.description,
+                themes: dtoJson.themes,
+              },
+          },
+        },
+        include: {
+          ong: true,
+        },
+      });
+    }
+  }
+
+  private async emailSender(email: string, subject: string, html: string) {
+      try {
+        const transporter = nodemailer.createTransport({
+          host: 'smtp.zoho.com',
+          port: 465,
+          secure: true,
+          auth: {
+            user: process.env.EMAIL,
+            pass: process.env.EMAILPASS,
+          }
+        });
+
+        const mail = {
+          from: process.env.EMAIL,
+          to: email,
+          subject: subject,
+          html: html
+        };
+
+        transporter.sendMail(mail, function(e, info) {
+          if(e) {
+            console.log(e)
+            return false;
+          } else {
+            return info;
+          }
+        });
+      }
+      catch(e) {
+        return e;
+      }
+    }
+
 }

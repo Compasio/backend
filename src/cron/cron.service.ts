@@ -20,6 +20,17 @@ export class CronService {
         this.logger.debug("deleteExpiredEmailCodes executado");
     }
 
+    @Cron(CronExpression.EVERY_10_MINUTES)
+    async deleteExpiredPasswordCodes() {
+        try {
+            const execute = await this.operations.deleteExpiredPasswordCodes();
+        }
+        catch(e) {
+            this.logger.debug("Ocorreu um erro:" + e);
+        }
+        this.logger.debug("deleteExpiredPasswordCodes executado");
+    }
+
     @Cron(CronExpression.EVERY_3_HOURS)
     async clearTokenBlackList() {
         try {

@@ -1,10 +1,9 @@
 import { CreateOngDto } from './dto/create-ong.dto';
 import { UpdateOngDto } from './dto/update-ong.dto';
 import { PrismaService } from '../../db/prisma.service';
-import { EmailAuthService } from 'src/auth/emailAuth/emailAuth.service';
+import { AuthService } from '../../auth/auth.service';
 import {
   ConflictException,
-  Delete,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -15,7 +14,7 @@ import { Themes_ONG } from '@prisma/client';
 export class OngsService {
   constructor(
     private prisma: PrismaService,
-    private emailAuth: EmailAuthService,
+    private authService: AuthService,
   ) {}
 
   async createOng(createOngDto: CreateOngDto) {
@@ -42,7 +41,7 @@ export class OngsService {
     createOngDto.password = hash;
 
     if(process.env.CREATE_USER_WITHOUT_EMAIL_VERIFY == "false") {
-      const makeVerifyCode = await this.emailAuth.generateAndSendEmailVerifyCode(createOngDto);
+      const makeVerifyCode = await this.authService.generateAndSendEmailVerifyCode(createOngDto);
       if(makeVerifyCode) {
         return true;
       } else {
