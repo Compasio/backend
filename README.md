@@ -12,7 +12,7 @@ Este é um guia para rodar e utilizar as APIs providas pelo backend do projeto C
 
 -PgAdmin 4 (Opcional porém recomendado)
 
--IDE a sua escolha (preferencialmente Microsoft Visual Studio Code)
+-IDE a sua escolha
 
 ===========================================================================
 
@@ -113,7 +113,7 @@ MAP=""
 -(Opcional) Chave de API do CnpjJá para checar CNPJs contra uma base de dados
 CNPJ=""
 
-========================================================================================================================
+===========================================================================
 
     VARIÁVEIS DO ARQUIVO .debug.env
 
