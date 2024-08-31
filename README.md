@@ -52,7 +52,7 @@ O Swagger é um conjunto de ferramentas utilizadas para melhor documentar e inte
 
 O usuário admin é o único que pode fazer requisições para qualquer API. Todos os outros tem limites de acesso.
 
-Para logar no sistema, você pode utilizar o usuário admin padrão (o email e senha do admin tem que ser declarados no arquivo *prisma/seed.ts*) ou criar um usuário de um dos tipos que você precisa, e então, seguir estes passos:
+Para logar no sistema, você pode utilizar o usuário admin padrão (email e senha são os mesmos declarados no arquivo *.env*) ou criar um usuário de um dos tipos que você precisa, e então, seguir estes passos:
 
 1-Clique na rota /auth/loginUser;
 
