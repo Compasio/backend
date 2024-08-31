@@ -38,6 +38,7 @@ model Address {
   neighborhood String @db.VarChar(30)
   city         String @db.VarChar(30)
   state        State
+  concat       String
   lat          Float
   lng          Float
 
@@ -212,6 +213,7 @@ model SysLogs {
 model UserBlackList {
   id_user Int
   user    User? @relation(fields: [id_user], references: [id])
+
   @@id([id_user])
 }
 

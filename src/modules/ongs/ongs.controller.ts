@@ -48,7 +48,7 @@ export class OngsController {
     return await this.ongsService.getAllOngs(page);
   }
 
-  @UserTypeAuth('admin', 'ong')
+  @Public()
   @Get('getOngById/:id')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})

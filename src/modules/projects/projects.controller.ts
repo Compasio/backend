@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Request } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
@@ -14,20 +14,30 @@ import {
 import { CreateVoluntaryDto } from '../voluntary/dto/create-voluntary.dto';
 import { Public } from '../../auth/decorators/public.decorator';
 import { UserTypeAuth } from '../../auth/decorators/userTypeAuth.decorator';
+import { AuthService } from '../../auth/auth.service';
 
 @Controller('projects')
 @ApiBearerAuth()
 @ApiTags('Projects')
 export class ProjectsController {
-  constructor(private readonly projectsService: ProjectsService) {}
+  constructor(
+    private readonly projectsService: ProjectsService,
+    private authService: AuthService,
+  ) {}
 
-  @Public()
+  @UserTypeAuth('admin', 'ong', 'ongAssociated')
   @Post('createProject')
   @ApiCreatedResponse({description: 'Projeto criado com sucesso', type: CreateVoluntaryDto, status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiConflictResponse({ description: 'Projeto já existente', status: 409})
   @ApiOperation({summary: 'Cria um projeto'})
-  async createProject(@Body() createProjectDto: CreateProjectDto) {
+  async createProject(@Body() createProjectDto: CreateProjectDto, @Request() req) {
+    let type = req.user.userType;
+    if(type == 'ongAssociated') {
+      let confirmPass = await this.authService.checkIfOngAssociateIsFromOngAndItsPermission(createProjectDto.ong, req, 'projects');
+    } else {
+      let confirmPass = await this.authService.checkIdAndAdminStatus(createProjectDto.ong, req);
+    }
     return this.projectsService.createProject(createProjectDto);
   }
 
@@ -78,7 +88,14 @@ export class ProjectsController {
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'id', schema: { default: 1 } })
   @ApiOperation({summary: 'Atualiza um projeto'})
-  async updateProject(@Param('id') id: number, @Body() updateProjectDto: UpdateProjectDto) {
+  async updateProject(@Param('id') id: number, @Body() updateProjectDto: UpdateProjectDto, @Request() req) {
+    //REVISAR COMO FASER ESTA AUTENTICAÇÃO DEPOIS
+    // let type = req.user.userType;
+    // if(type == 'ongAssociated') {
+    //   let confirmPass = await this.authService.checkIfOngAssociateIsFromOngAndItsPermission(createProjectDto.ong, req, 'projects');
+    // } else {
+    //   let confirmPass = await this.authService.checkIdAndAdminStatus(createProjectDto.ong, req);
+    // }
     return this.projectsService.updateProject(id, updateProjectDto);
   }
 
@@ -89,6 +106,7 @@ export class ProjectsController {
   @ApiParam({ name: 'id', schema: { default: 1 } })
   @ApiOperation({summary: 'Deleta um projeto e os crowdfundings atrelados'})
   async deleteProject(@Param('id') id: number) {
+    //REVISAR COMO FASER ESTA AUTENTICAÇÃO DEPOIS
     return this.projectsService.deleteProject(id);
   }
 }

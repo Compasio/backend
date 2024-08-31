@@ -62,19 +62,4 @@ export class SysController {
   async removeUserFromBlackList(@Body() blacklistDto: BlacklistDto) {
     return this.sysService.removeUserFromBlackList(blacklistDto.id);
   }
-
-  // @Get()
-  // findAll() {
-  //   return this.sysService.findAll();
-  // }
-  //
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.sysService.findOne(+id);
-  // }
-  //
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.sysService.remove(+id);
-  // }
 }

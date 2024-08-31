@@ -8,7 +8,7 @@ Este é um guia para rodar e utilizar as APIs providas pelo backend do projeto C
 
 -Npm ^10.0.0
 
--PostgreSQL 16
+-PostgreSQL 16 e extensão PostGIS
 
 -PgAdmin 4 (Opcional porém recomendado)
 

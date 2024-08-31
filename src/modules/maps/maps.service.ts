@@ -37,6 +37,7 @@ export class MapsService {
     return this.prisma.address.create({
       data: {
         ...createMapDto,
+        concat: address.split('%20').join(''),
         lat: data.features[0].geometry.coordinates[1],
         lng: data.features[0].geometry.coordinates[0]
       },
@@ -73,11 +74,11 @@ export class MapsService {
           {ong_name: { contains: ongname, mode: 'insensitive' }},
         ],
       },
-      take: 10,
+      take: 30,
     });
     
     if(!ong) throw new NotFoundException("ERROR: ong não encontrada");
-    
+
     let coordinates = [];
     for(let i = 0; i < ong.length; i++) {
       let id = ong[i].id_ong;
@@ -94,61 +95,127 @@ export class MapsService {
     return coordinates;
   }
 
-  async getOngsByPlace(place: string) {
+  async getOngsByPlace(placeOng: string) {
+    let place: string = placeOng.split(' ').join('');
+    console.log(place)
     const ongs = await this.prisma.address.findMany({
       where: {
         OR: [
           {
-            num: {
+            concat: {
               contains: place, mode: 'insensitive',
-            },
-          },
-          {
-            street: {
-              contains: place, mode: 'insensitive',
-            },
-          },
-          {
-            neighborhood: {
-              contains: place, mode: 'insensitive',
-            },
-          },
-          {
-            city: {
-              contains: place, mode: 'insensitive',
-            },
-          },
-          // {
-          //   state: {
-          //     contains: place, mode: 'insensitive',
-          //   },
-          // },
-          {
-            AND: [
-              { num: { contains: place.split(' ')[0], mode: 'insensitive' } },
-              { street: { contains: place.split(' ')[1], mode: 'insensitive' } },
-              { neighborhood: { contains: place.split(' ')[2], mode: 'insensitive' } },
-              { city: { contains: place.split(' ')[3], mode: 'insensitive' } },
-              //{ state: { contains: place.split(' ')[4], mode: 'insensitive' } },
-            ],
+            }
           },
         ],
       },
+      include: {
+        user: {
+          include: {
+            ong: true,
+          },
+        },
+      },
       take: 30,
     });
-    console.log(ongs)
+    if(!ongs) throw new NotFoundException("ERROR: nenhuma Ong encontrada");
+    let result = ongs.map((i) => ({"id_ong": i.id_user, "ong_name": i.user.ong.ong_name, "lat": i.lat, "lng": i.lng}))
+
+    return result;
   }
 
-  //TODO --- TODAS ESSAS FUNÇÕES
-  async getOngByCoordinate(lat: string, lng: string) {
+  async getNearestOgns(userLat: number, userLng: number, radius: number) {
+    const query = await this.prisma.$queryRaw<{id_user: number, lat: number, lng: number}[]>`
+      SELECT id_user, lat, lng
+      FROM "Address"
+      WHERE ST_DWithin(
+        ST_MakePoint(${userLng}, ${userLat})::geography, 
+        ST_MakePoint(lng, lat)::geography, 
+        ${radius} * 1000)`;
+
+    const ongs = await this.prisma.user.findMany({
+      where: {
+        id: {
+          in: query.map(({id_user}) => id_user)
+        },
+      },
+      include: {
+        ong: true,
+        address: true,
+      },
+    });
+
+    if(!ongs) return [];
+
+    let result = ongs.map((i) => ({ "id_user": i.id, "ong_name": i.ong.ong_name, "lat": i.address.lat, "lng": i.address.lng }));
+    return result;
 
   }
 
-  async updateAddress(id: number) {
+  async getAddressById(id: number) {
+    const ong = await this.prisma.user.findUnique({
+      where: {
+        id,
+        userType: 'ong',
+      },
+      include: {
+        address: true,
+      },
+    });
 
+    if(!ong) throw new NotFoundException("ERROR: não encontrado");
+
+    delete ong.password;
+
+    return ong;
+  }
+
+  async updateAddress(id: number, update: UpdateMapDto) {
+    const ong = await this.prisma.address.findUnique({
+      where: {
+        id_user: id,
+      },
+    });
+
+    if(!ong) throw new NotFoundException("Error: não encontrado");
+
+    let address = `${update.num} ${update.street} ${update.neighborhood} ${update.city} ${update.state}`.replace(/\s+/g, '%20');
+    let url = `https://api.mapbox.com/search/geocode/v6/forward?q=${address}&access_token=${process.env.MAP}`;
+
+    const { data } = await firstValueFrom(
+      this.httpService.get(url).pipe(
+        catchError((error: AxiosError) => {
+          this.logger.error(error.response.data);
+          throw 'Erro';
+        }),
+      ),
+    );
+
+    return this.prisma.address.update({
+      where: {
+        id_user: id,
+      },
+      data: {
+        ...update,
+        concat: address.split('%20').join(''),
+        lat: data.features[0].geometry.coordinates[1],
+        lng: data.features[0].geometry.coordinates[0]
+      },
+    });
   }
 
   async deleteAddress(id: number) {
+    const address = await this.prisma.address.findUnique({
+      where: {
+        id_user: id,
+      },
+    });
 
+    if(!address) throw new NotFoundException("Error: não encontrado");
+
+    return this.prisma.address.delete({
+      where: {
+        id_user: id,
+      },
+    });
   }
 }

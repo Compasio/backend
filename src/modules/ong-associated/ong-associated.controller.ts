@@ -16,6 +16,7 @@ import {
 } from '@nestjs/swagger';
 import { UserTypeAuth } from 'src/auth/decorators/userTypeAuth.decorator';
 import { AuthService } from 'src/auth/auth.service';
+import { Public } from '../../auth/decorators/public.decorator';
 
 @Controller('ong-associated')
 @ApiBearerAuth()
@@ -49,7 +50,7 @@ export class OngAssociatedController {
     return this.ongAssociatedService.getOngAssociatesByOng(page, ongid);
   }
 
-  @UserTypeAuth('admin', 'ong')
+  @Public()
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'id', schema: { default: 1 } })

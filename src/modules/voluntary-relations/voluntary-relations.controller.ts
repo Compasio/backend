@@ -157,7 +157,7 @@ export class VoluntaryRelationsController {
     return this.voluntaryRelationsService.getAllRelationsByProject(page, project);
   }
 
-  @UserTypeAuth('admin')
+  @Public()
   @Get('getVoluntaryRelationById/:id')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
