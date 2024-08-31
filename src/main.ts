@@ -19,7 +19,7 @@ async function bootstrap() {
     .setTitle('API - Compasio')
     .setDescription('APIs do Projeto da S.A. Compasio')
     .setContact('Compasio', 'https://github.com/Compasio', '')
-    .setVersion('0.1')
+    .setVersion('0.6.5')
     .addTag('Auth', 'Autenticação do Sistema')
     .addTag('Voluntary', 'Ações de Voluntários')
     .addTag('Ong', 'Ações de Ong')

@@ -4,9 +4,9 @@ import { PrismaService } from '../../db/prisma.service';
 import { AuthService } from '../../auth/auth.service';
 import {
   ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+  Injectable, Logger,
+  NotFoundException
+} from "@nestjs/common";
 import * as bcrypt from 'bcrypt';
 import { Themes_ONG } from '@prisma/client';
 
@@ -20,21 +20,34 @@ export class OngsService {
   async createOng(createOngDto: CreateOngDto) {
     const {email, cpf_founder, cnpj_ong} = createOngDto;
 
-    if(cpf_founder.length != 11 || cnpj_ong.length != 14) throw new ConflictException("ERROR: CPF ou CNPJ inválidos");
+    if(process.env.CREATE_USER_WITHOUT_CPF_VERIFY == "false") {
+      const checkCpf = await this.authService.checkIfCpfIsValid(cpf_founder);
+      if(!checkCpf) {
+        throw new ConflictException("ERROR: CPF inválido");
+      }
+    }
+
+
+    if(process.env.CHECK_ONG_WITHOUT_CNPJ_VERIFY == "false") {
+      const checkCnpj = await this.authService.checkIfCnpjIsValid(cnpj_ong);
+      if(!checkCnpj) {
+        throw new ConflictException("ERROR: CNPJ inválido");
+      }
+    }
+
+    const cnpjExists = await this.prisma.ong.findFirst({
+      where: {
+        cnpj_ong
+      }
+    });
+    if(cnpjExists) throw new ConflictException("ERROR: CNPJ inválido");
 
     const emailExists = await this.prisma.user.findFirst({
       where: {
         email
       }
     });
-    const cnpjExists = await this.prisma.ong.findFirst({
-      where: {
-        cnpj_ong
-      }
-    });
-
-    if(emailExists) throw new ConflictException("ERROR: Email já cadastrado");
-    if(cnpjExists) throw new ConflictException("ERROR: CNPJ já cadastrado");
+    if(emailExists) throw new ConflictException("ERROR: Email inválido");
     
     const salt = await bcrypt.genSalt();
     const hash: string = await bcrypt.hash(createOngDto.password, salt);

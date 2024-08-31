@@ -31,7 +31,7 @@ export class OngAssociatedService {
         email,
       },
     });
-    if(emailExists) throw new ConflictException("ERROR: Este email já está cadastrado em outra conta");
+    if(emailExists) throw new ConflictException("ERROR: Email inválido");
 
     const salt = await bcrypt.genSalt();
     const hash: string = await bcrypt.hash(createOngAssociatedDto.password, salt);

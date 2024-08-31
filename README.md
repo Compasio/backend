@@ -14,7 +14,7 @@ Este é um guia para rodar e utilizar as APIs providas pelo backend do projeto C
 
 -IDE a sua escolha (preferencialmente Microsoft Visual Studio Code)
 
-=====================================================================================================================================================
+===========================================================================
 
     RODANDO O PROJETO PELA PRIMEIRA VEZ:
 
@@ -32,11 +32,11 @@ Após ter clonado o repositório na sua máquina e ter instalado os componentes 
 
 6-No seu terminal, insira o comando 'npx prisma migrate dev'. Insira 'y' ou 'yes' quando pedido e dê o nome que quiser para a migração. Este comando serve para atualizar seu banco de dados PostgreSQL com a configuração de tabelas mais recente.
 
-7-No seu terminal, insira o comando 'npm run start:dev'. Este comando inicia o servidor Nest, aguarde até a verificação inicial terminar;
+7-No seu terminal, insira o comando 'npm run start:dev' ou 'npm run start'. Este comando inicia o servidor Nest em modo de desenvolvimento, aguarde até a verificação inicial terminar;
 
 8-Em seu browser de preferência, acesse o link localhost:9000/api. Neste link você pode acessar as APIs pela interface Swagger.
 
-=====================================================================================================================================================
+===========================================================================
 
     UTILIZANDO AS APIS COM A INTERFACE DO SWAGGER
 
@@ -52,7 +52,7 @@ O Swagger é um conjunto de ferramentas utilizadas para melhor documentar e inte
 
 O usuário admin é o único que pode fazer requisições para qualquer API. Todos os outros tem limites de acesso.
 
-Para logar no sistema, você pode utilizar o usuário admin padrão (email: compassioAdm@compassio.com.br senha: admin123) ou criar um usuário de um dos tipos que você precisa, e então, seguir estes passos:
+Para logar no sistema, você pode utilizar o usuário admin padrão (email e senha são os mesmos declarados no arquivo *.env*) ou criar um usuário de um dos tipos que você precisa, e então, seguir estes passos:
 
 1-Clique na rota /auth/loginUser;
 
@@ -72,11 +72,7 @@ Para logar no sistema, você pode utilizar o usuário admin padrão (email: comp
 
 Agora você está autorizado a fazer requisições no sistema.
 
-=====================================================================================================================================================
-
-    LISTA DE USUÁRIOS AUTOZIDADOS POR ROTA
-
-=====================================================================================================================================================
+===========================================================================
 
     BOAS PRÁTICAS E REPORT DE BUGS
 
@@ -94,76 +90,49 @@ Agora você está autorizado a fazer requisições no sistema.
 
 -Qualquer tentativa de alteração na base de código e commitar para qualquer branch do projeto sem autorização de um membro do time de Backend da Compassio acarretará no bloqueio de acesso e possível banimento do projeto
 
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+===========================================================================
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+    O QUE VOCÊ IRÁ PRECISAR NO SEU ARQUIVO .env
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+-Url do Banco de Dados:
+DATABASE_URL=""
 
-## Description
+-Email com server SMTP e senha para ações envolvendo envio de email
+EMAIL=""
+EMAILPASS=""
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+-Chave secreta para o JWT Token
+JWTSECRET=""
 
-## Installation
+-Chave secreta para encriptação
+SECRETKEY=""
 
-```bash
-$ npm install
-```
+-Chave de API do Mapbox para uso do módulo Maps
+MAP=""
 
-## Running the app
+-(Opcional) Chave de API do CnpjJá para checar CNPJs contra uma base de dados
+CNPJ=""
 
-```bash
-# development
-$ npm run start
+========================================================================================================================
 
-# watch mode
-$ npm run start:dev
+    VARIÁVEIS DO ARQUIVO .debug.env
 
-# production mode
-$ npm run start:prod
-```
+-Se falso: Cria um usuário após código de verificação enviado por email ser inserido. Se verdadeiro: Cria um usuário sem
+a verificação de email.
 
-## Test
+CREATE_USER_WITHOUT_EMAIL_VERIFY="false"
 
-```bash
-# unit tests
-$ npm run test
+-Se falso: Faz verificação de validação do CNPJ da ONG. Se verdadeiro: Pula essa verificação e cria a ONG mesmo com um
+CNPJ inválido.
 
-# e2e tests
-$ npm run test:e2e
+CHECK_ONG_WITHOUT_CNPJ_VERIFY="false"
 
-# test coverage
-$ npm run test:cov
-```
+-Se falso: Não utiliza api do CNPJjá para validar CNPJ. Se verdadeiro: Faz a verificação do CNPJ pela API.
+USE_API_FOR_CNPJ_VERIFY="false"
 
-## Support
+-Se falso: Faz verificação de validação do CPF do Voluntário ou dono da Ong. Se verdadeiro: Pula essa verificação e cria
+o usuário mesmo o CPF sendo inválido.
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+CREATE_USER_WITHOUT_CPF_VERIFY="false"
 
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](LICENSE).
+===========================================================================
