@@ -2,9 +2,6 @@ import { CreateOngDto } from './dto/create-ong.dto';
 import { UpdateOngDto } from './dto/update-ong.dto';
 import { PrismaService } from '../../db/prisma.service';
 import { AuthService } from '../../auth/auth.service';
-import { HttpService } from '@nestjs/axios';
-import { AxiosError } from 'axios';
-import { catchError, firstValueFrom } from 'rxjs';
 import {
   ConflictException,
   Injectable, Logger,
@@ -12,42 +9,29 @@ import {
 } from "@nestjs/common";
 import * as bcrypt from 'bcrypt';
 import { Themes_ONG } from '@prisma/client';
-import process from 'node:process';
 
 @Injectable()
 export class OngsService {
   constructor(
     private prisma: PrismaService,
     private authService: AuthService,
-    private readonly httpService: HttpService,
   ) {}
-  private readonly logger = new Logger(OngsService.name);
 
   async createOng(createOngDto: CreateOngDto) {
     const {email, cpf_founder, cnpj_ong} = createOngDto;
 
     if(process.env.CREATE_USER_WITHOUT_CPF_VERIFY == "false") {
-      const checkCpf = this.authService.checkIfCpfIsValid(cpf_founder);
+      const checkCpf = await this.authService.checkIfCpfIsValid(cpf_founder);
       if(!checkCpf) {
         throw new ConflictException("ERROR: CPF inválido");
       }
     }
 
-    if(cnpj_ong.length != 14) throw new ConflictException("ERROR: CNPJ inválido");
 
     if(process.env.CHECK_ONG_WITHOUT_CNPJ_VERIFY == "false") {
-      try {
-        let url = `https://api.cnpja.com/office/${cnpj_ong}?simples=true`
-        const { data } = await firstValueFrom(
-          this.httpService.get(url, {headers: { Authorization: `${process.env.CNPJ}`} }).pipe(
-            catchError((error: AxiosError) => {
-              this.logger.error(error.response.data);
-              throw error;
-            }),
-          ),
-        );
-      } catch (e) {
-        throw new NotFoundException("ERROR: CNPJ inválido");
+      const checkCnpj = await this.authService.checkIfCnpjIsValid(cnpj_ong);
+      if(!checkCnpj) {
+        throw new ConflictException("ERROR: CNPJ inválido");
       }
     }
 

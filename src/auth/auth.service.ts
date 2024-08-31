@@ -1,6 +1,6 @@
 import {
   ConflictException,
-  Injectable,
+  Injectable, Logger,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -12,13 +12,18 @@ import { LogUserDto } from './dto/log.user.dto';
 import * as crypto from 'crypto';
 import * as nodemailer from 'nodemailer';
 import { CodeDto } from './dto/code-dto';
+import { catchError, firstValueFrom } from 'rxjs';
+import { AxiosError } from 'axios';
+import { HttpService } from '@nestjs/axios';
 
 @Injectable()
 export class AuthService {
     constructor(
       private jwtService: JwtService,
       private prisma: PrismaService,
+      private readonly httpService: HttpService,
     ) {}
+  private readonly logger = new Logger(AuthService.name);
   
     async signIn(email: string, password: string) {
       const user = await this.getUserByEmail(email);
@@ -253,7 +258,7 @@ export class AuthService {
     }
     catch(e) {
       console.log(e)
-      throw new Error("Erro ao gerar código, por favor tente novamente");
+      return false;
     }
   }
 
@@ -366,7 +371,7 @@ export class AuthService {
       }
     }
 
-    checkIfCpfIsValid(cpf: string) {
+    async checkIfCpfIsValid(cpf: string) {
       if(cpf.length != 11 || /^\d+$/.test(cpf) == false) return false;
 
       let calc: number = (
@@ -391,6 +396,53 @@ export class AuthService {
       if(secondDigit >= 10) secondDigit = 0;
       if(parseInt(cpf[10]) != secondDigit) return false;
       return true;
+    }
+
+    async checkIfCnpjIsValid(cnpj: string) {
+      if(cnpj.length != 14) return false;
+
+      if(process.env.USE_API_FOR_CNPJ_VERIFY == "true") {
+        try {
+          let url = `https://api.cnpja.com/office/${cnpj}?simples=true`
+          const { data } = await firstValueFrom(
+            this.httpService.get(url, {headers: { Authorization: `${process.env.CNPJ}`} }).pipe(
+              catchError((error: AxiosError) => {
+                this.logger.error(error.response.data);
+                throw error;
+              }),
+            ),
+          );
+          return true;
+        } catch (e) {
+          return false;
+        }
+      }
+      else {
+        let calc1: number = (
+          (parseInt(cnpj[11])*2) + (parseInt(cnpj[10])*3) +
+          (parseInt(cnpj[9])*4) + (parseInt(cnpj[8])*5) +
+          (parseInt(cnpj[7])*6) + (parseInt(cnpj[6])*7) +
+          (parseInt(cnpj[5])*8) + (parseInt(cnpj[4])*9) +
+          (parseInt(cnpj[3])*2) + (parseInt(cnpj[2])*3) +
+          (parseInt(cnpj[1])*4) + (parseInt(cnpj[0])*5)
+        ) % 11;
+        let firstDigit: number = 11 - calc1;
+        if(firstDigit >= 10) firstDigit = 0;
+        if(parseInt(cnpj[12]) != firstDigit) return false;
+
+        let calc2: number = ( (parseInt(cnpj[12])*2) +
+          (parseInt(cnpj[11])*3) + (parseInt(cnpj[10])*4) +
+          (parseInt(cnpj[9])*5) + (parseInt(cnpj[8])*6) +
+          (parseInt(cnpj[7])*7) + (parseInt(cnpj[6])*8) +
+          (parseInt(cnpj[5])*9) + (parseInt(cnpj[4])*2) +
+          (parseInt(cnpj[3])*3) + (parseInt(cnpj[2])*4) +
+          (parseInt(cnpj[1])*5) + (parseInt(cnpj[0])*6)
+        ) % 11;
+        let secondDigit: number = 11 - calc2;
+        if(secondDigit >= 10) secondDigit = 0;
+        if(parseInt(cnpj[13]) != secondDigit) return false;
+        return true;
+      }
     }
 
 }

@@ -9,7 +9,6 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import * as process from 'node:process';
 
 @Injectable()
 export class VoluntaryService {
@@ -22,7 +21,7 @@ export class VoluntaryService {
     const {email, cpf_voluntary} = createVoluntaryDto;
 
     if(process.env.CREATE_USER_WITHOUT_CPF_VERIFY == "false") {
-      const checkCpf = this.authService.checkIfCpfIsValid(cpf_voluntary);
+      const checkCpf = await this.authService.checkIfCpfIsValid(cpf_voluntary);
       if(!checkCpf) {
         throw new ConflictException("ERROR: CPF inválido");
       }
