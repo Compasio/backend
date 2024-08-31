@@ -366,4 +366,31 @@ export class AuthService {
       }
     }
 
+    checkIfCpfIsValid(cpf: string) {
+      if(cpf.length != 11 || /^\d+$/.test(cpf) == false) return false;
+
+      let calc: number = (
+        (parseInt(cpf[0])*10) + (parseInt(cpf[1])*9) +
+        (parseInt(cpf[2])*8) + (parseInt(cpf[3])*7) +
+        (parseInt(cpf[4])*6) + (parseInt(cpf[5])*5) +
+        (parseInt(cpf[6])*4) + (parseInt(cpf[7])*3) +
+        (parseInt(cpf[8])*2)
+      ) % 11;
+      let firstDigit: number = 11 - calc;
+      if(firstDigit >= 10) firstDigit = 0;
+      if(parseInt(cpf[9]) != firstDigit) return false;
+
+      let calc2: number = (
+        (parseInt(cpf[0])*11) + (parseInt(cpf[1])*10) +
+        (parseInt(cpf[2])*9) + (parseInt(cpf[3])*8) +
+        (parseInt(cpf[4])*7) + (parseInt(cpf[5])*6) +
+        (parseInt(cpf[6])*5) + (parseInt(cpf[7])*4) +
+        (parseInt(cpf[8])*3) + (parseInt(cpf[9])*2)
+      ) % 11;
+      let secondDigit: number = 11 - calc2;
+      if(secondDigit >= 10) secondDigit = 0;
+      if(parseInt(cpf[10]) != secondDigit) return false;
+      return true;
+    }
+
 }

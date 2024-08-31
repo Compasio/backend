@@ -9,6 +9,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
+import * as process from 'node:process';
 
 @Injectable()
 export class VoluntaryService {
@@ -20,23 +21,27 @@ export class VoluntaryService {
   async createVoluntary(createVoluntaryDto: CreateVoluntaryDto) {
     const {email, cpf_voluntary} = createVoluntaryDto;
 
-    if(cpf_voluntary.length != 11 || /^\d+$/.test(cpf_voluntary) == false) throw new ConflictException("ERROR: CPF inválido")
-    
+    if(process.env.CREATE_USER_WITHOUT_CPF_VERIFY == "false") {
+      const checkCpf = this.authService.checkIfCpfIsValid(cpf_voluntary);
+      if(!checkCpf) {
+        throw new ConflictException("ERROR: CPF inválido");
+      }
+    }
+
+    const cpfExists = await this.prisma.voluntary.findFirst({
+      where: {
+        cpf_voluntary,
+      },
+    });
+    if(cpfExists) throw new ConflictException("ERROR: CPF inválido");
     
     const emailExists = await this.prisma.user.findFirst({
       where: {
         email,
       },
     });
-    const cpfExists = await this.prisma.voluntary.findFirst({
-      where: {
-        cpf_voluntary,
-      },
-    });
-    if(emailExists) throw new ConflictException("ERROR: Este email já está cadastrado em outra conta");
-    if(cpfExists) throw new ConflictException("ERROR: Este CPF já está cadastrado em outra conta");
+    if(emailExists) throw new ConflictException("ERROR: Email inválido");
 
-    //TODO --- CHECAR SE O CPF DO CARA REALMENTE EXISTE (PESQUISAR API PRA ISSO)
 
     const salt = await bcrypt.genSalt();
     const hash: string = await bcrypt.hash(createVoluntaryDto.password, salt);

@@ -12,6 +12,7 @@ import {
 } from "@nestjs/common";
 import * as bcrypt from 'bcrypt';
 import { Themes_ONG } from '@prisma/client';
+import process from 'node:process';
 
 @Injectable()
 export class OngsService {
@@ -25,14 +26,14 @@ export class OngsService {
   async createOng(createOngDto: CreateOngDto) {
     const {email, cpf_founder, cnpj_ong} = createOngDto;
 
-    if(cpf_founder.length != 11 || cnpj_ong.length != 14) throw new ConflictException("ERROR: CPF ou CNPJ inválidos");
-
-    const emailExists = await this.prisma.user.findFirst({
-      where: {
-        email
+    if(process.env.CREATE_USER_WITHOUT_CPF_VERIFY == "false") {
+      const checkCpf = this.authService.checkIfCpfIsValid(cpf_founder);
+      if(!checkCpf) {
+        throw new ConflictException("ERROR: CPF inválido");
       }
-    });
-    if(emailExists) throw new ConflictException("ERROR: Email já cadastrado");
+    }
+
+    if(cnpj_ong.length != 14) throw new ConflictException("ERROR: CNPJ inválido");
 
     if(process.env.CHECK_ONG_WITHOUT_CNPJ_VERIFY == "false") {
       try {
@@ -46,11 +47,7 @@ export class OngsService {
           ),
         );
       } catch (e) {
-        if(e.response.status === 404) {
-          throw new NotFoundException("ERROR: CNPJ não existe");
-        } else {
-          throw new NotFoundException("ERROR: CNPJ inválido");
-        }
+        throw new NotFoundException("ERROR: CNPJ inválido");
       }
     }
 
@@ -59,7 +56,14 @@ export class OngsService {
         cnpj_ong
       }
     });
-    if(cnpjExists) throw new ConflictException("ERROR: CNPJ já cadastrado");
+    if(cnpjExists) throw new ConflictException("ERROR: CNPJ inválido");
+
+    const emailExists = await this.prisma.user.findFirst({
+      where: {
+        email
+      }
+    });
+    if(emailExists) throw new ConflictException("ERROR: Email inválido");
     
     const salt = await bcrypt.genSalt();
     const hash: string = await bcrypt.hash(createOngDto.password, salt);
