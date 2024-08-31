@@ -48,7 +48,7 @@ export class VoluntarysController {
     return await this.voluntarysService.getAllVoluntarys(page);
   }
 
-  @UserTypeAuth('admin', 'voluntary')
+  @Public()
   @Get('getVoluntaryById/:id')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})

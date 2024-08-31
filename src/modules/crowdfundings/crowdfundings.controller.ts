@@ -46,7 +46,7 @@ export class CrowdfundingsController {
     return this.crowdfundingsService.getCrowdfundingByProject(project);
   }
 
-  @UserTypeAuth('admin', 'ong', 'ongAssociated')
+  @Public()
   @Get('getCrowdfundingById/:id')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
@@ -84,6 +84,7 @@ export class CrowdfundingsController {
   @ApiParam({ name: 'id', schema: { default: 1 } })
   @ApiOperation({summary: 'Fecha vaquinha com o respectivo id'})
   async closeCrowdfunding(@Param('id') id: number) {
+    //REVISAR ESTA AUTENTICAÇÃO DEPOIS
     return this.crowdfundingsService.closeCrowdfunding(id);
   }
 
