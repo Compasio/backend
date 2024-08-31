@@ -14,7 +14,7 @@ Este é um guia para rodar e utilizar as APIs providas pelo backend do projeto C
 
 -IDE a sua escolha (preferencialmente Microsoft Visual Studio Code)
 
-========================================================================================================================
+===========================================================================
 
     RODANDO O PROJETO PELA PRIMEIRA VEZ:
 
@@ -36,7 +36,7 @@ Após ter clonado o repositório na sua máquina e ter instalado os componentes 
 
 8-Em seu browser de preferência, acesse o link localhost:9000/api. Neste link você pode acessar as APIs pela interface Swagger.
 
-========================================================================================================================
+===========================================================================
 
     UTILIZANDO AS APIS COM A INTERFACE DO SWAGGER
 
@@ -72,11 +72,7 @@ Para logar no sistema, você pode utilizar o usuário admin padrão (email: comp
 
 Agora você está autorizado a fazer requisições no sistema.
 
-========================================================================================================================
-
-    LISTA DE USUÁRIOS AUTOZIDADOS POR ROTA
-
-========================================================================================================================
+===========================================================================
 
     BOAS PRÁTICAS E REPORT DE BUGS
 
@@ -94,7 +90,7 @@ Agora você está autorizado a fazer requisições no sistema.
 
 -Qualquer tentativa de alteração na base de código e commitar para qualquer branch do projeto sem autorização de um membro do time de Backend da Compassio acarretará no bloqueio de acesso e possível banimento do projeto
 
-========================================================================================================================
+===========================================================================
 
     O QUE VOCÊ IRÁ PRECISAR NO SEU ARQUIVO .env
 
@@ -139,4 +135,4 @@ o usuário mesmo o CPF sendo inválido.
 
 CREATE_USER_WITHOUT_CPF_VERIFY="false"
 
-========================================================================================================================
+===========================================================================
