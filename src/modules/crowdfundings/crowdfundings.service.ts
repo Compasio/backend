@@ -1,6 +1,7 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCrowdfundingDto } from './dto/create-crowdfunding.dto';
 import { PrismaService } from 'src/db/prisma.service';
+const stripe = require('stripe')(process.env.STRIPE);
 
 @Injectable()
 export class CrowdfundingsService {
@@ -15,9 +16,23 @@ export class CrowdfundingsService {
     });
     if(!projectExists) throw new NotFoundException("ERRO: projeto não encontrado");
     if(neededValue < 0 || neededValue > 9999999) throw new ConflictException("ERRO: valor inválido");
+
+    const newProductStripe = await stripe.products.create({
+      name: createCrowdfundingDto.title,
+    });
+    const newPriceStripe = await stripe.prices.create({
+      currency: 'brl',
+      custom_unit_amount: {
+        enabled: true,
+      },
+      product: newProductStripe.id,
+    });
+
     return this.prisma.crowdFunding.create({
       data: {
         ...createCrowdfundingDto,
+        stripe_id: newProductStripe.id,
+        stripe_price_id: newPriceStripe.id,
       },
     });
   }

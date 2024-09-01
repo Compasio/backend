@@ -38,7 +38,7 @@ export class DonationsController {
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'page', schema: { default: 1 } })
   @ApiParam({ name: 'ong', schema: { default: 1 } })
-  @ApiParam({ name: 'date', schema: { default: undefined } })
+  @ApiParam({ name: 'date', schema: { default: '' } })
   @ApiOperation({summary: 'Retorna doações para cada ong'})
   async getAllDonationsByOng(@Param('page') page: number, @Param('ong') ong: number, @Param('date') date: string, @Request() req) {
     let confirmPass = await this.authService.checkIdAndAdminStatus(ong, req);
@@ -51,7 +51,7 @@ export class DonationsController {
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'page', schema: { default: 1 } })
   @ApiParam({ name: 'voluntary', schema: { default: 1 } })
-  @ApiParam({ name: 'date', schema: { default: undefined } })
+  @ApiParam({ name: 'date', schema: { default: '' } })
   @ApiOperation({summary: 'Retorna doações para cada voluntário'})
   async getAllDonationsByVoluntary(@Param('page') page: number, @Param('voluntary') voluntary: number, @Param('date') date: string, @Request() req) {
     let confirmPass = await this.authService.checkIdAndAdminStatus(voluntary, req);
@@ -64,7 +64,7 @@ export class DonationsController {
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'page', schema: { default: 1 } })
   @ApiParam({ name: 'crowdfunding', schema: { default: 1 } })
-  @ApiParam({ name: 'date', schema: { default: undefined } })
+  @ApiParam({ name: 'date', schema: { default: '' } })
   @ApiOperation({summary: 'Retorna doações para cada vaquinha'})
   async getAllDonationsByCrowdfunding(@Param('page') page: number, @Param('crowdfunding') crowdfunding: number, @Param('date') date: string) {
     //REVISAR COMO FAZER ESTA AUTENTICAÇÃO DEPOIS

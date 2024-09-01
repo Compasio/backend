@@ -23,18 +23,13 @@ export class CreateDonationDto {
     @IsNumber()
     voluntary: number
 
-    @ApiProperty({type: Number, description: "Ong", example: 1})
-    @IsOptional()
-    @IsNumber()
-    ong: number
-
     @ApiProperty({type: Number, description: "Vaquinha",example: 1})
     @IsOptional()
     @IsNumber()
     crowdfunding : number
 
-    @ApiProperty({type: Number, description: "Valor da doação", example: 1})
+    @ApiProperty({type: String, description: "Id do checkout da stripe", example: 'cs_test_a11YYufWQzNY63zpQ6QSNRQhkUpVph4WRmzW0zWJO2znZKdVujZ0N0S22u'})
     @IsNotEmpty()
-    @IsNumber()
-    value : number
+    @IsString()
+    stripe_checkout : string
 }

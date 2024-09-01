@@ -113,6 +113,9 @@ MAP=""
 -(Opcional) Chave de API do CnpjJá para checar CNPJs contra uma base de dados
 CNPJ=""
 
+-Chave de API para uso da Stripe com doações (em testes)
+STRIPE="
+
 ========================================================================================================================
 
     VARIÁVEIS DO ARQUIVO .debug.env

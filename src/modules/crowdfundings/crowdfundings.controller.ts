@@ -31,8 +31,9 @@ export class CrowdfundingsController {
   @ApiConflictResponse({ description: 'vaquinha já existente', status: 409})
   @ApiOperation({summary: 'Cria uma vaquinha'})
   async createCrowdfunding(@Body() createCrowdfundingDto: CreateCrowdfundingDto, @Request() req) {
-    let proj = createCrowdfundingDto.project;
-    let checkProjectOwner = await this.authService.checkProjectOwnershipForCrowdfunding(req, null, proj);
+    //MUDAR AUTH DAQUI PARA ACEITAR ADMINS
+    //let proj = createCrowdfundingDto.project;
+    //let checkProjectOwner = await this.authService.checkProjectOwnershipForCrowdfunding(req, null, proj);
     return this.crowdfundingsService.createCrowdfunding(createCrowdfundingDto);
   }
 

@@ -83,7 +83,6 @@ model Ong {
   projects           Project[]
   relationRequests   RelationRequests[]
   neededItems        NeededItems[]
-  donationHistory    DonationHistory[]
 
   @@id([id_ong])
 }
@@ -168,26 +167,24 @@ model CrowdFunding {
   neededValue     Float
   collectedValue  Float   @default(0)
   isClosed        Boolean @default(false)
+  stripe_id       String
+  stripe_price_id String
 
   //RELAÇÕES
   donationHistory DonationHistory[]
 }
 
-//TEMOS QUE VER SE ESSAS TABELAS SÂO REALMENTE NECESSÁRIAS OU SE PODEMOS FAZER ELAS COMO CAMPOS EM OUTRAS TABELAS
-// model NeededItems {}
-
 model DonationHistory {
   //CAMPOS DA TABELA
-  id_donation  Int      @id @default(autoincrement())
-  voluntary    Int
-  crowdfunding Int?
-  ong          Int?
-  value        Float
-  date         DateTime @default(now())
+  id_donation     Int    @id @default(autoincrement())
+  voluntary       Int
+  crowdfunding    Int
+  value           Float
+  date            String
+  stripe_checkout String
 
   //RELAÇÕES
   id_crowdfunding CrowdFunding? @relation(fields: [crowdfunding], references: [id_crowdfunding])
-  id_ong          Ong?          @relation(fields: [ong], references: [id_ong])
 }
 
 model NeededItems {
