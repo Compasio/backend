@@ -108,8 +108,35 @@ export class AuthService {
     return true;
   }
 
+  async checkProjectOwner(req, project: number) {
+      let id = req.user.id;
+      let userType = req.user.userType;
+      if(userType == 'admin') {
+        return true;
+      }
+
+      const projectData = await this.prisma.project.findUnique({
+        where: {
+          id_project: project,
+        },
+      });
+
+      if(userType == 'ong') {
+        if(id != projectData.ong) throw new UnauthorizedException();
+      }
+      else {
+        let check = this.checkIfOngAssociateIsFromOngAndItsPermission(projectData.ong, req, 'projects');
+      }
+
+      return true;
+  }
+
   async checkProjectOwnershipForCrowdfunding(req, id: number = null, project: number = null) {
     let proj: number;
+    let userType = req.user.userType;
+    if(userType == 'admin') {
+      return true;
+    }
 
     if(project != null) {
       proj = project;
@@ -128,7 +155,6 @@ export class AuthService {
     else {
       throw new UnauthorizedException();
     }
-    
 
     const checkOwnership = await this.prisma.project.findUnique({
       where: {
@@ -141,7 +167,12 @@ export class AuthService {
     let requester = req.user.id;
     let ong = checkOwnership.ong;
 
-    if(ong != requester) throw new UnauthorizedException("ERROR: você não tem permissão para executar esta ação");
+    if(userType == 'ong') {
+      if(ong != requester) throw new UnauthorizedException("ERROR: você não tem permissão para executar esta ação");
+    }
+    else {
+      let check = this.checkIfOngAssociateIsFromOngAndItsPermission(ong, req, 'projects');
+    }
 
     return true;    
   }

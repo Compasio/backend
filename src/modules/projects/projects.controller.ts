@@ -89,13 +89,7 @@ export class ProjectsController {
   @ApiParam({ name: 'id', schema: { default: 1 } })
   @ApiOperation({summary: 'Atualiza um projeto'})
   async updateProject(@Param('id') id: number, @Body() updateProjectDto: UpdateProjectDto, @Request() req) {
-    //REVISAR COMO FASER ESTA AUTENTICAÇÃO DEPOIS
-    // let type = req.user.userType;
-    // if(type == 'ongAssociated') {
-    //   let confirmPass = await this.authService.checkIfOngAssociateIsFromOngAndItsPermission(createProjectDto.ong, req, 'projects');
-    // } else {
-    //   let confirmPass = await this.authService.checkIdAndAdminStatus(createProjectDto.ong, req);
-    // }
+    let confirmPass = this.authService.checkProjectOwner(req, id);
     return this.projectsService.updateProject(id, updateProjectDto);
   }
 
@@ -105,8 +99,8 @@ export class ProjectsController {
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'id', schema: { default: 1 } })
   @ApiOperation({summary: 'Deleta um projeto e os crowdfundings atrelados'})
-  async deleteProject(@Param('id') id: number) {
-    //REVISAR COMO FASER ESTA AUTENTICAÇÃO DEPOIS
+  async deleteProject(@Param('id') id: number, @Request() req) {
+    let confirmPass = this.authService.checkProjectOwner(req, id);
     return this.projectsService.deleteProject(id);
   }
 }

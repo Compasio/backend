@@ -58,7 +58,7 @@ export class DonationsController {
     return await this.donationsService.getAllDonationsByVoluntary(page, voluntary, date);
   }
 
-  @UserTypeAuth('admin', 'ong')
+  @UserTypeAuth('admin', 'ong', 'ongAssociated')
   @Get('getAllDonationsByCrowdfunding/:page/:crowdfunding/:date')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
@@ -66,12 +66,12 @@ export class DonationsController {
   @ApiParam({ name: 'crowdfunding', schema: { default: 1 } })
   @ApiParam({ name: 'date', schema: { default: '' } })
   @ApiOperation({summary: 'Retorna doações para cada vaquinha'})
-  async getAllDonationsByCrowdfunding(@Param('page') page: number, @Param('crowdfunding') crowdfunding: number, @Param('date') date: string) {
-    //REVISAR COMO FAZER ESTA AUTENTICAÇÃO DEPOIS
+  async getAllDonationsByCrowdfunding(@Param('page') page: number, @Param('crowdfunding') crowdfunding: number, @Param('date') date: string, @Request() req) {
+    let checkProjectOwner = await this.authService.checkProjectOwnershipForCrowdfunding(req, crowdfunding);
     return await this.donationsService.getAllDonationsByCrowdfunding(page, crowdfunding, date);
   }
 
-  @UserTypeAuth('admin', 'voluntary')
+  @UserTypeAuth('admin', 'voluntary', 'ong')
   @Get('getDonationById/:id')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
