@@ -15,6 +15,8 @@ import { CodeDto } from './dto/code-dto';
 import { catchError, firstValueFrom } from 'rxjs';
 import { AxiosError } from 'axios';
 import { HttpService } from '@nestjs/axios';
+import { PassCodeDto } from "./dto/pass-code-dto";
+import { EmailDto } from "./dto/emai-dto";
 
 @Injectable()
 export class AuthService {
@@ -177,17 +179,9 @@ export class AuthService {
     return true;    
   }
 
-  async passwordRecoveryCode(dto: LogUserDto) {
+  async passwordRecoveryCode(dto: EmailDto) {
       try {
         const {email} = dto;
-
-        const emailExists = await this.prisma.user.findUnique({
-          where: {
-            email,
-          },
-        });
-
-        if(!emailExists) return false;
 
         const checkRequests = await this.prisma.passwordRecCode.findMany({
           where: {
@@ -197,15 +191,11 @@ export class AuthService {
 
         if(checkRequests.length >= 5) return {"erro": "Muitos requests, por favor tente novamente mais tarde"};
 
-        const salt = await bcrypt.genSalt();
-        const hash: string = await bcrypt.hash(dto.password, salt);
-
         const code = Math.floor(100000 + Math.random() * 900000).toString();
 
         const createTheCode = await this.prisma.passwordRecCode.create({
           data: {
             code,
-            newPass: hash,
             userEmail: email,
             createdAt: Date.now()
           }
@@ -225,9 +215,9 @@ export class AuthService {
       }
   }
 
-  async resetPassword(codeDto: CodeDto) {
+  async resetPassword(codeDto: PassCodeDto) {
       try {
-        const { code } = codeDto;
+        const { code, password } = codeDto;
 
         const data = await this.prisma.passwordRecCode.findUnique({
           where: {
@@ -235,13 +225,15 @@ export class AuthService {
           },
         });
 
-        if (!data) return false;
+        if(!data) return false;
 
-        const { newPass, userEmail } = data;
+        const { userEmail } = data;
+        const salt = await bcrypt.genSalt();
+        const hash: string = await bcrypt.hash(password, salt);
 
         const update = await this.prisma.user.update({
           data: {
-            password: newPass,
+            password: hash,
           },
           where: {
             email: userEmail,
