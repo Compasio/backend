@@ -223,7 +223,6 @@ model EmailVerifyCode {
 
 model PasswordRecCode {
   code      String @id @db.VarChar(6)
-  newPass   String
   userEmail String
   createdAt BigInt
 }

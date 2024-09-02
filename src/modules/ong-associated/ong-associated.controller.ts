@@ -39,14 +39,13 @@ export class OngAssociatedController {
     return this.ongAssociatedService.createOngAssociate(createOngAssociatedDto);
   }
 
-  @UserTypeAuth('admin', 'ong')
+  @Public()
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'page', schema: { default: 1 } })
   @ApiOperation({summary: 'Retorna uma lista de vinte associados da ong por página'})
   @Get('getOngAssociatesByOng/:page/:ongid')
-  async getOngAssociatesByOng(@Param('page') page: number, @Param('ongid') ongid: number, @Request() req) {
-    let confirmPass = await this.authService.checkIdAndAdminStatus(ongid, req);
+  async getOngAssociatesByOng(@Param('page') page: number, @Param('ongid') ongid: number) {
     return this.ongAssociatedService.getOngAssociatesByOng(page, ongid);
   }
 

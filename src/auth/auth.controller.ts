@@ -19,6 +19,8 @@ import { Public } from './decorators/public.decorator';
 import { LogUserDto } from './dto/log.user.dto';
 import { UserTypeAuth } from 'src/auth/decorators/userTypeAuth.decorator';
 import { CodeDto } from "./dto/code-dto";
+import { PassCodeDto } from "./dto/pass-code-dto";
+import { EmailDto } from "./dto/emai-dto";
 
 @ApiBearerAuth()
 @ApiTags('Auth')
@@ -66,19 +68,19 @@ export class AuthController {
 
     @Public()
     @Post('passwordRecovery')
-    @ApiOkResponse({description: 'Realizado com sucesso', type: LogUserDto, status: 200})
+    @ApiOkResponse({description: 'Realizado com sucesso', status: 200})
     @ApiOperation({summary: 'Cria código para recuperar senha'})
-    async passwordRecoveryCode(@Body() logUserDto: LogUserDto) {
+    async passwordRecoveryCode(@Body() logUserDto: EmailDto) {
       return this.authService.passwordRecoveryCode(logUserDto);
     }
 
     @Public()
     @Post('resetPassword')
-    @ApiOkResponse({description: 'Senha resetada com sucesso', type: LogUserDto, status: 200})
+    @ApiOkResponse({description: 'Senha resetada com sucesso', status: 200})
     @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
     @ApiConflictResponse({ description: 'Codigo inválido', status: 409})
     @ApiOperation({summary: 'Reseta a senha do voluntário a partir do código'})
-    async resetPassword(@Body() code: CodeDto) {
+    async resetPassword(@Body() code: PassCodeDto) {
       return await this.authService.resetPassword(code);
     }
 }

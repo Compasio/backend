@@ -31,9 +31,8 @@ export class CrowdfundingsController {
   @ApiConflictResponse({ description: 'vaquinha já existente', status: 409})
   @ApiOperation({summary: 'Cria uma vaquinha'})
   async createCrowdfunding(@Body() createCrowdfundingDto: CreateCrowdfundingDto, @Request() req) {
-    //MUDAR AUTH DAQUI PARA ACEITAR ADMINS
-    //let proj = createCrowdfundingDto.project;
-    //let checkProjectOwner = await this.authService.checkProjectOwnershipForCrowdfunding(req, null, proj);
+    let proj = createCrowdfundingDto.project;
+    let checkProjectOwner = await this.authService.checkProjectOwnershipForCrowdfunding(req, null, proj);
     return this.crowdfundingsService.createCrowdfunding(createCrowdfundingDto);
   }
 
@@ -84,8 +83,8 @@ export class CrowdfundingsController {
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'id', schema: { default: 1 } })
   @ApiOperation({summary: 'Fecha vaquinha com o respectivo id'})
-  async closeCrowdfunding(@Param('id') id: number) {
-    //REVISAR ESTA AUTENTICAÇÃO DEPOIS
+  async closeCrowdfunding(@Param('id') id: number, @Request() req) {
+    let checkProjectOwner = await this.authService.checkProjectOwnershipForCrowdfunding(req, id=id);
     return this.crowdfundingsService.closeCrowdfunding(id);
   }
 
