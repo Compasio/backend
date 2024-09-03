@@ -46,6 +46,7 @@ export class OngAssociatedService {
             firstname: createOngAssociatedDto.firstname,
             lastname: createOngAssociatedDto.lastname,
             ong: ongid,
+            permissions: createOngAssociatedDto.permissions,
           },
         },
       },

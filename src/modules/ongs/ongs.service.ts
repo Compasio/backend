@@ -103,7 +103,7 @@ export class OngsService {
     
     else if(page == 1) {
       res = await this.prisma.user.findMany({
-        take: 20,
+        take: 8,
         where: {
           userType: 'ong',
         },
@@ -115,8 +115,8 @@ export class OngsService {
     
     else {
       res = await this.prisma.user.findMany({
-        take: 20,
-        skip: (page - 1) * 20,
+        take: 8,
+        skip: (page - 1) * 8,
         where: {
           userType: 'ong',
         },
@@ -198,7 +198,7 @@ export class OngsService {
         include: {
           ong: true,
         },
-        take: 20,
+        take: 8,
       });  
     }
     else {
@@ -211,8 +211,8 @@ export class OngsService {
         include: {
           ong: true,
         },
-        take: 20,
-        skip: (page - 1) * 20,
+        take: 8,
+        skip: (page - 1) * 8,
       });  
     }
     
