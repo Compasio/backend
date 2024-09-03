@@ -43,7 +43,7 @@ export class VoluntarysController {
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'page', schema: { default: 1 } })
-  @ApiOperation({summary: 'Retorna uma lista de vinte voluntários por página'})
+  @ApiOperation({summary: 'Retorna uma lista de oito voluntários por página'})
   async getAllvoluntarys(@Param('page') page: number) {
     return await this.voluntarysService.getAllVoluntarys(page);
   }

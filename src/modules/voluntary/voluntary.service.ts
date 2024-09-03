@@ -102,7 +102,7 @@ export class VoluntaryService {
     
     else if(page == 1) {
       res = await this.prisma.user.findMany({
-        take: 20,
+        take: 8,
         where: {
           userType: 'voluntary'
         },
@@ -114,8 +114,8 @@ export class VoluntaryService {
     
     else {
       res = await this.prisma.user.findMany({
-        take: 20,
-        skip: (page - 1) * 20,
+        take: 8,
+        skip: (page - 1) * 8,
         where: {
           userType: 'voluntary'
         },
@@ -199,7 +199,7 @@ export class VoluntaryService {
         include: {
           voluntary: true,
         },
-        take: 20,
+        take: 8,
       });
     }
     else {
@@ -212,8 +212,8 @@ export class VoluntaryService {
         include: {
           voluntary: true,
         },
-        take: 20,
-        skip: (page - 1) * 20,
+        take: 8,
+        skip: (page - 1) * 8,
       });
     }
     
