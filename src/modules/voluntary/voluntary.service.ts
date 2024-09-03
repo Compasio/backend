@@ -18,7 +18,8 @@ export class VoluntaryService {
   ) {}
   
   async createVoluntary(createVoluntaryDto: CreateVoluntaryDto) {
-    const {email, cpf_voluntary} = createVoluntaryDto;
+    let {email, cpf_voluntary} = createVoluntaryDto;
+    email = email.toLowerCase();
 
     if(process.env.CREATE_USER_WITHOUT_CPF_VERIFY == "false") {
       const checkCpf = await this.authService.checkIfCpfIsValid(cpf_voluntary);
@@ -57,7 +58,7 @@ export class VoluntaryService {
     else {
       return this.prisma.user.create({
         data: {
-          email: createVoluntaryDto.email,
+          email: createVoluntaryDto.email.toLowerCase(),
           password: createVoluntaryDto.password,
           userType: 'voluntary',
           voluntary: {

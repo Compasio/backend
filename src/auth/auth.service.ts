@@ -28,13 +28,13 @@ export class AuthService {
   private readonly logger = new Logger(AuthService.name);
   
     async signIn(email: string, password: string) {
-      const user = await this.getUserByEmail(email);
+      const user = await this.getUserByEmail(email.toLowerCase());
       if(!user) throw new UnauthorizedException('Usuário não existe');
   
       const isMatch = await bcrypt.compare(password, user.password);
   
       if (isMatch) {
-        const payload = { id: user.id, email: user.email, userType: user.userType };
+        const payload = { id: user.id, email: user.email.toLowerCase(), userType: user.userType };
         return await this.jwtService.signAsync(payload);
       } else {
         throw new UnauthorizedException('Senha incorreta');
@@ -196,7 +196,7 @@ export class AuthService {
         const createTheCode = await this.prisma.passwordRecCode.create({
           data: {
             code,
-            userEmail: email,
+            userEmail: email.toLowerCase(),
             createdAt: Date.now()
           }
         });
@@ -227,7 +227,8 @@ export class AuthService {
 
         if(!data) return false;
 
-        const { userEmail } = data;
+        let { userEmail } = data;
+        userEmail = userEmail.toLowerCase();
         const salt = await bcrypt.genSalt();
         const hash: string = await bcrypt.hash(password, salt);
 
@@ -315,7 +316,7 @@ export class AuthService {
     if(dtoJson.cpf_voluntary) {
       return this.prisma.user.create({
         data: {
-          email: dtoJson.email,
+          email: dtoJson.email.toLowerCase(),
           password: dtoJson.password,
           userType: 'voluntary',
           voluntary: {
@@ -339,7 +340,7 @@ export class AuthService {
     else {
       return this.prisma.user.create({
         data: {
-          email: dtoJson.email,
+          email: dtoJson.email.toLowerCase(),
           password: dtoJson.password,
           userType: 'ong',
           ong: {

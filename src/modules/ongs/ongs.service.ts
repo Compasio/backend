@@ -18,7 +18,8 @@ export class OngsService {
   ) {}
 
   async createOng(createOngDto: CreateOngDto) {
-    const {email, cpf_founder, cnpj_ong} = createOngDto;
+    let {email, cpf_founder, cnpj_ong} = createOngDto;
+    email = email.toLowerCase();
 
     if(process.env.CREATE_USER_WITHOUT_CPF_VERIFY == "false") {
       const checkCpf = await this.authService.checkIfCpfIsValid(cpf_founder);
@@ -44,8 +45,8 @@ export class OngsService {
 
     const emailExists = await this.prisma.user.findFirst({
       where: {
-        email
-      }
+        email,
+      },
     });
     if(emailExists) throw new ConflictException("ERROR: Email inválido");
     
@@ -64,7 +65,7 @@ export class OngsService {
     else {
       return this.prisma.user.create({
         data: {
-          email: createOngDto.email,
+          email: createOngDto.email.toLowerCase(),
           password: hash,
           userType: 'ong',
           ong: {
