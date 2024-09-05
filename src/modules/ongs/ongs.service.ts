@@ -9,15 +9,17 @@ import {
 } from "@nestjs/common";
 import * as bcrypt from 'bcrypt';
 import { Themes_ONG } from '@prisma/client';
+import { CloudinaryService } from '../../cloudinary/cloudinary.service';
 
 @Injectable()
 export class OngsService {
   constructor(
     private prisma: PrismaService,
     private authService: AuthService,
+    private cloudinary: CloudinaryService,
   ) {}
 
-  async createOng(createOngDto: CreateOngDto) {
+  async createOng(createOngDto: CreateOngDto, profilepic?: Express.Multer.File) {
     let {email, cpf_founder, cnpj_ong} = createOngDto;
     email = email.toLowerCase();
 
@@ -55,7 +57,7 @@ export class OngsService {
     createOngDto.password = hash;
 
     if(process.env.CREATE_USER_WITHOUT_EMAIL_VERIFY == "false") {
-      const makeVerifyCode = await this.authService.generateAndSendEmailVerifyCode(createOngDto);
+      const makeVerifyCode = await this.authService.generateAndSendEmailVerifyCode(createOngDto, profilepic);
       if(makeVerifyCode) {
         return true;
       } else {
@@ -63,7 +65,7 @@ export class OngsService {
       }
     } 
     else {
-      return this.prisma.user.create({
+      let createOng = await this.prisma.user.create({
         data: {
           email: createOngDto.email.toLowerCase(),
           password: hash,
@@ -74,7 +76,6 @@ export class OngsService {
                 cpf_founder: createOngDto.cpf_founder,
                 cnpj_ong: createOngDto.cnpj_ong,
                 ong_name: createOngDto.ong_name,
-                profile_picture: createOngDto.profile_picture,
                 description: createOngDto.description,
                 themes: createOngDto.themes,
               },
@@ -83,7 +84,10 @@ export class OngsService {
         include: {
           ong: true,
         },
-      })
+      });
+      let uploadProfilePic = await this.cloudinary.uploadFileToCloudinary(profilepic);
+      let registerPic = await this.cloudinary.registerPicInDb(uploadProfilePic.url, createOng.id, "profile", uploadProfilePic.public_id);
+      return createOng;
     }
   }
 
@@ -253,19 +257,23 @@ export class OngsService {
 
     if(!ong) throw new NotFoundException("ERROR: Ong não encontrada");
 
-    const deleteFromOng = this.prisma.ong.delete({
+    const deletePic = await this.prisma.imageResouce.deleteMany({
+      where: {
+        user: id,
+      },
+    });
+
+    const deleteFromOng = await this.prisma.ong.delete({
       where: {
         id_ong: id,
       }
     });
 
-    const deleteFromUser = this.prisma.user.delete({
+    const deleteFromUser = await this.prisma.user.delete({
       where: {
         id,
       }
     });
-
-    await Promise.all([deleteFromOng, deleteFromUser]);
 
     return { success: true };
   }

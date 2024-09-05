@@ -17,6 +17,7 @@ import { AxiosError } from 'axios';
 import { HttpService } from '@nestjs/axios';
 import { PassCodeDto } from "./dto/pass-code-dto";
 import { EmailDto } from "./dto/emai-dto";
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 @Injectable()
 export class AuthService {
@@ -24,6 +25,7 @@ export class AuthService {
       private jwtService: JwtService,
       private prisma: PrismaService,
       private readonly httpService: HttpService,
+      private readonly cloudinary: CloudinaryService,
     ) {}
   private readonly logger = new Logger(AuthService.name);
   
@@ -250,7 +252,7 @@ export class AuthService {
       }
   }
 
-  async generateAndSendEmailVerifyCode(dto) {
+  async generateAndSendEmailVerifyCode(dto, profilepic?: Express.Multer.File) {
     const code = Math.floor(100000 + Math.random() * 900000).toString();
 
     try {
@@ -264,12 +266,23 @@ export class AuthService {
       let cryptDto = cDto.update(dto2, 'utf8', 'hex')
       cryptDto += cDto.final('hex');
 
+      let imgId = "", imgUrl = "";
+
+      if(profilepic) {
+        let uploadProfilePic = await this.cloudinary.uploadFileToCloudinary(profilepic);
+        imgUrl = uploadProfilePic.url;
+        imgId = uploadProfilePic.public_id;
+      }
+
+
       const createThisCode = await this.prisma.emailVerifyCode.create({
         data: {
           code,
           dto: cryptDto,
           iv,
           createdAt: Date.now(),
+          imgId: imgId,
+          imgUrl: imgUrl,
         },
       });
 
@@ -311,10 +324,13 @@ export class AuthService {
       throw new Error("Ouve um erro, por favor tente novamente");
     }
 
+    const imgUrl = verify.imgUrl;
+    const imgId = verify.imgId;
+
     const removeCode = await this.prisma.emailVerifyCode.delete({where: {code}});
 
     if(dtoJson.cpf_voluntary) {
-      return this.prisma.user.create({
+      let createUser = await this.prisma.user.create({
         data: {
           email: dtoJson.email.toLowerCase(),
           password: dtoJson.password,
@@ -324,7 +340,6 @@ export class AuthService {
               {
                 cpf_voluntary: dtoJson.cpf_voluntary,
                 fullname: dtoJson.fullname,
-                profile_picture: dtoJson.profile_picture,
                 description: dtoJson.description,
                 birthDate: dtoJson.birthDate,
                 habilities: dtoJson.habilities,
@@ -335,10 +350,12 @@ export class AuthService {
           voluntary: true,
         },
       });
+      let registerPic = await this.cloudinary.registerPicInDb(imgUrl, createUser.id, "profile", imgId);
+      return createUser;
     }
 
     else {
-      return this.prisma.user.create({
+      let createUser = await this.prisma.user.create({
         data: {
           email: dtoJson.email.toLowerCase(),
           password: dtoJson.password,
@@ -349,7 +366,6 @@ export class AuthService {
                 cpf_founder: dtoJson.cpf_founder,
                 cnpj_ong: dtoJson.cnpj_ong,
                 ong_name: dtoJson.ong_name,
-                profile_picture: dtoJson.profile_picture,
                 description: dtoJson.description,
                 themes: dtoJson.themes,
               },
@@ -359,6 +375,8 @@ export class AuthService {
           ong: true,
         },
       });
+      let registerPic = await this.cloudinary.registerPicInDb(imgUrl, createUser.id, "profile", imgId);
+      return createUser;
     }
   }
 

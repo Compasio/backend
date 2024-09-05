@@ -1,4 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Request } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Request,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
 import { VoluntaryService } from './voluntary.service';
 import { CreateVoluntaryDto } from './dto/create-voluntary.dto';
 import { UpdateVoluntaryDto } from './dto/update-voluntary.dto';
@@ -17,6 +28,8 @@ import {
 } from '@nestjs/swagger';
 import { UserTypeAuth } from 'src/auth/decorators/userTypeAuth.decorator';
 import { AuthService } from 'src/auth/auth.service';
+import { CloudinaryService } from '../../cloudinary/cloudinary.service';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('voluntarys')
 @ApiBearerAuth()
@@ -34,8 +47,9 @@ export class VoluntarysController {
   @ApiNotAcceptableResponse({description: 'Senha não é forte o suficiente', status: 406})
   @ApiConflictResponse({ description: 'voluntário já existente', status: 409})
   @ApiOperation({summary: 'Cria um voluntário'})
-  async createVoluntary(@Body() createvoluntaryDto: CreateVoluntaryDto) {
-    return await this.voluntarysService.createVoluntary(createvoluntaryDto);
+  @UseInterceptors(FileInterceptor('file'))
+  async createVoluntary(@Body() createvoluntaryDto: CreateVoluntaryDto, @UploadedFile() profilepic?: Express.Multer.File) {
+    return await this.voluntarysService.createVoluntary(createvoluntaryDto, profilepic);
   }
 
   @Public()
