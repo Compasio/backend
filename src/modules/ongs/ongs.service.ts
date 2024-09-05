@@ -266,30 +266,6 @@ export class OngsService {
 
     if (!ong) throw new NotFoundException('ERROR: Ong não encontrada');
 
-    const delAddress = await this.prisma.address.delete({
-      where: {
-        id_user: id,
-      }
-    })
-
-    const deleteOngAssociates = await this.prisma.ongAssociated.deleteMany({
-      where: {
-        ong: id,
-      },
-    });
-
-    const deletePic = await this.prisma.imageResouce.deleteMany({
-      where: {
-        user: id,
-      },
-    });
-
-    const deleteFromOng = await this.prisma.ong.delete({
-      where: {
-        id_ong: id,
-      },
-    });
-
     const deleteFromUser = await this.prisma.user.delete({
       where: {
         id,

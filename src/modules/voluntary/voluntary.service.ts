@@ -298,18 +298,6 @@ export class VoluntaryService {
 
     if(!user) throw new NotFoundException('ERROR: Usuário não encontrado');
 
-    const deletePic = await this.prisma.imageResouce.deleteMany({
-      where: {
-        user: id,
-      },
-    });
-
-    const deleteFromVoluntary = await this.prisma.voluntary.delete({
-      where: {
-        id_voluntary: id,
-      }
-    });
-
     const deleteFromUser = await this.prisma.user.delete({
       where: {
         id,

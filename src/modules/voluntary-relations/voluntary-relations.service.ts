@@ -60,7 +60,11 @@ export class VoluntaryRelationsService {
     });
 
     if(!requestExists) throw new NotFoundException("ERROR: request não existe");
-    if(requestExists.userTypeWhoRequested == userType) throw new UnauthorizedException();
+    if(requestExists.userTypeWhoRequested == "admin") {
+      //pass
+    } else {
+      if(requestExists.userTypeWhoRequested == userType) throw new UnauthorizedException();
+    }
 
     const createVoluntaryRelation = await this.prisma.voluntaryRelations.create({
       data: {
