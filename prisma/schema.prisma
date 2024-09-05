@@ -44,7 +44,7 @@ model Address {
   lng          Float
 
   //RELAÇÕES
-  user User? @relation(fields: [id_user], references: [id])
+  user User? @relation(fields: [id_user], references: [id], onDelete: Cascade)
 
   @@id([id_user])
 }
@@ -58,7 +58,7 @@ model Voluntary {
   birthDate     String
 
   //RELAÇÕES
-  user               User?                @relation(fields: [id_voluntary], references: [id])
+  user               User?                @relation(fields: [id_voluntary], references: [id], onDelete: Cascade)
   habilities         Habilities_User[]
   voluntaryRelations VoluntaryRelations[]
   relationRequests   RelationRequests[]
@@ -75,7 +75,7 @@ model Ong {
   description String? @db.VarChar(200)
 
   //RELAÇÕES
-  user               User?                @relation(fields: [id_ong], references: [id])
+  user               User?                @relation(fields: [id_ong], references: [id], onDelete: Cascade)
   themes             Themes_ONG[]
   voluntaryRelations VoluntaryRelations[]
   ongAssociates      OngAssociated[]
@@ -94,8 +94,8 @@ model OngAssociated {
   lastname     String @db.VarChar(70)
 
   //RELAÇÕES
-  user        User          @relation(fields: [id_associate], references: [id])
-  id_ong      Ong           @relation(fields: [ong], references: [id_ong])
+  user        User          @relation(fields: [id_associate], references: [id], onDelete: Cascade)
+  id_ong      Ong           @relation(fields: [ong], references: [id_ong], onDelete: Cascade)
   permissions Permissions[]
 
   @@id([id_associate])
@@ -123,9 +123,9 @@ model VoluntaryRelations {
   description String? @db.VarChar(200)
 
   //RELAÇÕES
-  id_voluntary Voluntary @relation(fields: [voluntary], references: [id_voluntary])
-  id_ong       Ong       @relation(fields: [ong], references: [id_ong])
-  id_project   Project?  @relation(fields: [project], references: [id_project])
+  id_voluntary Voluntary @relation(fields: [voluntary], references: [id_voluntary], onDelete: Cascade)
+  id_ong       Ong       @relation(fields: [ong], references: [id_ong], onDelete: Cascade)
+  id_project   Project?  @relation(fields: [project], references: [id_project], onDelete: Cascade)
 }
 
 model RelationRequests {
@@ -136,9 +136,9 @@ model RelationRequests {
   userTypeWhoRequested UserType
 
   //RELAÇÕES
-  id_voluntary Voluntary @relation(fields: [voluntary], references: [id_voluntary])
-  id_ong       Ong       @relation(fields: [ong], references: [id_ong])
-  id_project   Project?  @relation(fields: [project], references: [id_project])
+  id_voluntary Voluntary @relation(fields: [voluntary], references: [id_voluntary], onDelete: Cascade)
+  id_ong       Ong       @relation(fields: [ong], references: [id_ong], onDelete: Cascade)
+  id_project   Project?  @relation(fields: [project], references: [id_project], onDelete: Cascade)
 
   @@id([voluntary, ong])
 }
@@ -154,7 +154,7 @@ model Project {
   voluntaryRelations VoluntaryRelations[]
   relationRequests   RelationRequests[]
   theme              Themes_ONG[]
-  id_ong             Ong                  @relation(fields: [ong], references: [id_ong])
+  id_ong             Ong                  @relation(fields: [ong], references: [id_ong], onDelete: Cascade)
 }
 
 model CrowdFunding {
@@ -195,7 +195,7 @@ model NeededItems {
   itemPhoto   Bytes
   quantity    Int
 
-  id_ong Ong @relation(fields: [ong], references: [id_ong])
+  id_ong Ong @relation(fields: [ong], references: [id_ong], onDelete: Cascade)
 }
 
 model SysLogs {
@@ -208,7 +208,7 @@ model SysLogs {
 
 model UserBlackList {
   id_user Int
-  user    User? @relation(fields: [id_user], references: [id])
+  user    User? @relation(fields: [id_user], references: [id], onDelete: Cascade)
 
   @@id([id_user])
 }
@@ -239,7 +239,7 @@ model ImageResouce {
   type      ImgType
   cloudName String
 
-  userid User? @relation(fields: [user], references: [id])
+  userid User? @relation(fields: [user], references: [id], onDelete: Cascade)
 }
 
 //=======================

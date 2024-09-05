@@ -206,20 +206,12 @@ export class OngAssociatedService {
     });
 
     if(!associate) throw new NotFoundException('ERROR: Usuário não encontrado');
-    
-    const deleteFromAssociate = this.prisma.ongAssociated.delete({
-      where: {
-        id_associate: id,
-      },
-    });
 
-    const deleteFromUser = this.prisma.user.delete({
+    const deleteFromUser = await this.prisma.user.delete({
       where: {
         id,
       }
     });
-
-    await Promise.all([deleteFromAssociate, deleteFromUser]);
 
     return { success: true };
   }

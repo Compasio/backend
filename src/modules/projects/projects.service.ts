@@ -123,19 +123,11 @@ export class ProjectsService {
     });
     if(!projectExists) throw new NotFoundException('ERROR: Projeto não encontrado');
 
-    const deleteCrowdfunding = await this.prisma.crowdFunding.deleteMany({
-      where: {
-        project: id,
-      },
-    })
-
     const delProject = await this.prisma.project.delete({
       where: {
         id_project: id,
       },
     });
-
-    await Promise.all([deleteCrowdfunding, delProject]);
 
     return { success: true };
   }

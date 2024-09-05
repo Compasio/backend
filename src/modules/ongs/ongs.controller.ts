@@ -8,8 +8,8 @@ import {
   Delete,
   Request,
   UseInterceptors,
-  UploadedFile,
-} from '@nestjs/common';
+  UploadedFile, UploadedFiles
+} from "@nestjs/common";
 import { OngsService } from './ongs.service';
 import { CreateOngDto } from './dto/create-ong.dto';
 import { UpdateOngDto } from './dto/update-ong.dto';
@@ -28,8 +28,9 @@ import {
 } from '@nestjs/swagger';
 import { UserTypeAuth } from 'src/auth/decorators/userTypeAuth.decorator';
 import { AuthService } from 'src/auth/auth.service';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from "@nestjs/platform-express";
 import { SearchThemeDto } from "./dto/search-theme.dto";
+import { IdDTO } from '../../auth/dto/id-dto';
 
 @Controller('ongs')
 @ApiBearerAuth()
@@ -111,5 +112,31 @@ export class OngsController {
   async removeOng(@Param('id') id: number, @Request() req) {
     let confirmPass = await this.authService.checkIdAndAdminStatus(id, req);
     return this.ongsService.removeOng(+id);
+  }
+
+  @UserTypeAuth('admin', 'ong', 'ongAssociated')
+  @Post('postPicture')
+  @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
+  @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
+  @ApiOperation({summary: 'Postar foto para a galeria'})
+  @UseInterceptors(FilesInterceptor('files', 5))
+  async postPicture(@Body() dto: IdDTO, @Request() req, @UploadedFiles() files: Express.Multer.File[]) {
+    let type = req.user.userType;
+    if(type == 'ong') {
+      let confirmPass = await this.authService.checkIdAndAdminStatus(dto.id, req);
+    }
+    else {
+      let confirmPass = await this.authService.checkIfOngAssociateIsFromOngAndItsPermission(dto.id, req, 'projects');
+    }
+    return this.ongsService.postPicture(dto.id, files);
+  }
+
+  @Public()
+  @Get('getPictures/:id')
+  @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
+  @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
+  @ApiOperation({summary: 'Pegar fotos da galeria'})
+  async getPictures(@Param('id') id: number) {
+    return this.ongsService.getPictures(id);
   }
 }
