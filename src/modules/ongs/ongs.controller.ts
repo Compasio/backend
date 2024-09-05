@@ -8,8 +8,8 @@ import {
   Delete,
   Request,
   UseInterceptors,
-  UploadedFile,
-} from '@nestjs/common';
+  UploadedFile, UploadedFiles
+} from "@nestjs/common";
 import { OngsService } from './ongs.service';
 import { CreateOngDto } from './dto/create-ong.dto';
 import { UpdateOngDto } from './dto/update-ong.dto';
@@ -28,7 +28,7 @@ import {
 } from '@nestjs/swagger';
 import { UserTypeAuth } from 'src/auth/decorators/userTypeAuth.decorator';
 import { AuthService } from 'src/auth/auth.service';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from "@nestjs/platform-express";
 import { SearchThemeDto } from "./dto/search-theme.dto";
 
 @Controller('ongs')
@@ -111,5 +111,14 @@ export class OngsController {
   async removeOng(@Param('id') id: number, @Request() req) {
     let confirmPass = await this.authService.checkIdAndAdminStatus(id, req);
     return this.ongsService.removeOng(+id);
+  }
+
+  @UserTypeAuth('admin', 'ong', 'ongAssociated')
+  @Post('postPicture/:id')
+  @UseInterceptors(FilesInterceptor('file[]', 5))
+  async postPicture(@Param('id') id: number, @Request() req, @UploadedFiles() files: Express.Multer.File[]) {
+    console.log(files)
+    let confirmPass = await this.authService.checkIdAndAdminStatus(id, req);
+    return this.ongsService.postPicture(id, files);
   }
 }
