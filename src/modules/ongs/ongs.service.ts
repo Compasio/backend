@@ -266,6 +266,18 @@ export class OngsService {
 
     if (!ong) throw new NotFoundException('ERROR: Ong não encontrada');
 
+    const delAddress = await this.prisma.address.delete({
+      where: {
+        id_user: id,
+      }
+    })
+
+    const deleteOngAssociates = await this.prisma.ongAssociated.deleteMany({
+      where: {
+        ong: id,
+      },
+    });
+
     const deletePic = await this.prisma.imageResouce.deleteMany({
       where: {
         user: id,
@@ -287,19 +299,35 @@ export class OngsService {
     return { success: true };
   }
 
-  async postPicture(ong, files: Express.Multer.File[]) {
-    console.log(files, ong);
+  async postPicture(ong: number, files: Express.Multer.File[]) {
+    try {
+      for (let file of files) {
+        let uploadProfilePic = await this.cloudinary.uploadFileToCloudinary(file);
+        let registerPic = await this.cloudinary.registerPicInDb(
+          uploadProfilePic.url,
+          ong,
+          'galery',
+          uploadProfilePic.public_id,
+        );
+      }
+      return true;
+    } catch (e) {
+      throw new Error("Algo deu errado");
+    }
+  }
 
-    for (let file of files) {
-      console.log(file)
-      //
-      // let uploadProfilePic = await this.cloudinary.uploadFileToCloudinary(i);
-      // let registerPic = await this.cloudinary.registerPicInDb(
-      //   uploadProfilePic.url,
-      //   ong,
-      //   'profile',
-      //   uploadProfilePic.public_id,
-      // );
+  async getPictures(ong: number) {
+    try {
+      const getPics = await this.prisma.imageResouce.findMany({
+        where: {
+          user: ong,
+          type: 'galery',
+        },
+      });
+      return {"pictures": getPics}
+    } catch (e) {
+      console.log(e);
+      throw new Error("Algo deu errado");
     }
   }
 }
