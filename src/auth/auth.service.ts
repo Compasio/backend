@@ -73,6 +73,7 @@ export class AuthService {
         voluntary: true,
         ong: true,
         ongAssociated: true,
+        ImageResource: true,
       }
     });
 
