@@ -1,7 +1,6 @@
 import { PrismaService } from '../../db/prisma.service';
 import { CreateVoluntaryDto } from './dto/create-voluntary.dto';
 import { UpdateVoluntaryDto } from './dto/update-voluntary.dto';
-import { Habilities_User } from '@prisma/client';
 import { AuthService } from '../../auth/auth.service';
 import {
   ConflictException,
@@ -10,6 +9,7 @@ import {
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { CloudinaryService } from '../../cloudinary/cloudinary.service';
+import { SearchHabilityDto } from "./dto/search-hability.dto";
 
 @Injectable()
 export class VoluntaryService {
@@ -202,8 +202,8 @@ export class VoluntaryService {
     return userNearest;
   }
 
-  async getVoluntarysByHabilities(page: number, hability: Habilities_User[]) {
-    console.log(page, typeof page)
+  async getVoluntarysByHabilities(dto: SearchHabilityDto) {
+    const {hability, page} = dto;
     let res;
     let count = await this.prisma.user.count({where:{voluntary:{habilities: {hasEvery: hability}}}});
 

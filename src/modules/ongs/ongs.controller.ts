@@ -29,6 +29,7 @@ import {
 import { UserTypeAuth } from 'src/auth/decorators/userTypeAuth.decorator';
 import { AuthService } from 'src/auth/auth.service';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { SearchThemeDto } from "./dto/search-theme.dto";
 
 @Controller('ongs')
 @ApiBearerAuth()
@@ -82,13 +83,12 @@ export class OngsController {
   }
 
   @Public()
-  @Post('getOngByTheme/:theme')
+  @Post('getOngByTheme')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiOperation({summary: 'Retorna uma lista de ongs pelos temas'})
-  @ApiParam({ name: 'page', schema: { default: 1 } })
-  async getOngsByTheme(@Param('page') page: number, @Body() themes: Themes_ONG[]) {
-    return await this.ongsService.getOngsByTheme(page, themes)
+  async getOngsByTheme(@Body() dto: SearchThemeDto) {
+    return await this.ongsService.getOngsByTheme(dto)
   }
 
   @UserTypeAuth('admin', 'ong')

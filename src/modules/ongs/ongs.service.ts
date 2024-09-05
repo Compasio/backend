@@ -10,6 +10,7 @@ import {
 import * as bcrypt from 'bcrypt';
 import { Themes_ONG } from '@prisma/client';
 import { CloudinaryService } from '../../cloudinary/cloudinary.service';
+import { SearchThemeDto } from "./dto/search-theme.dto";
 
 @Injectable()
 export class OngsService {
@@ -85,8 +86,11 @@ export class OngsService {
           ong: true,
         },
       });
-      let uploadProfilePic = await this.cloudinary.uploadFileToCloudinary(profilepic);
-      let registerPic = await this.cloudinary.registerPicInDb(uploadProfilePic.url, createOng.id, "profile", uploadProfilePic.public_id);
+      if(profilepic) {
+        let uploadProfilePic = await this.cloudinary.uploadFileToCloudinary(profilepic);
+        let registerPic = await this.cloudinary.registerPicInDb(uploadProfilePic.url, createOng.id, "profile", uploadProfilePic.public_id);
+      }
+
       return createOng;
     }
   }
@@ -176,7 +180,8 @@ export class OngsService {
     return ongNearest;
   }
 
-  async getOngsByTheme(page: number, themes: Themes_ONG[]) {
+  async getOngsByTheme(dto: SearchThemeDto) {
+    const {themes, page} = dto;
     let res;
     let count = await this.prisma.user.count({where:{ong:{themes: {hasEvery: themes}}}});
 

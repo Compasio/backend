@@ -14,7 +14,6 @@ import { VoluntaryService } from './voluntary.service';
 import { CreateVoluntaryDto } from './dto/create-voluntary.dto';
 import { UpdateVoluntaryDto } from './dto/update-voluntary.dto';
 import { Public } from '../../auth/decorators/public.decorator';
-import { Habilities_User } from '@prisma/client';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
@@ -30,6 +29,7 @@ import { UserTypeAuth } from 'src/auth/decorators/userTypeAuth.decorator';
 import { AuthService } from 'src/auth/auth.service';
 import { CloudinaryService } from '../../cloudinary/cloudinary.service';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { SearchHabilityDto } from "./dto/search-hability.dto";
 
 @Controller('voluntarys')
 @ApiBearerAuth()
@@ -86,10 +86,9 @@ export class VoluntarysController {
   @Post('getVoluntarysByHabilities')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
-  @ApiParam({ name: 'page', schema: { default: 1 } })
   @ApiOperation({summary: 'Retorna uma lista de voluntários pelas habilidades'})
-  async getvoluntarysByHabilities(@Param('page') page: number, @Body() hability: Habilities_User[]) {
-    return await this.voluntarysService.getVoluntarysByHabilities(page, hability);
+  async getvoluntarysByHabilities(@Body() dto: SearchHabilityDto) {
+    return await this.voluntarysService.getVoluntarysByHabilities(dto);
   }
 
   @UserTypeAuth('admin', 'voluntary')
