@@ -1,4 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Request } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Request,
+  UseInterceptors,
+  UploadedFile,
+} from '@nestjs/common';
 import { OngsService } from './ongs.service';
 import { CreateOngDto } from './dto/create-ong.dto';
 import { UpdateOngDto } from './dto/update-ong.dto';
@@ -17,6 +28,8 @@ import {
 } from '@nestjs/swagger';
 import { UserTypeAuth } from 'src/auth/decorators/userTypeAuth.decorator';
 import { AuthService } from 'src/auth/auth.service';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { SearchThemeDto } from "./dto/search-theme.dto";
 
 @Controller('ongs')
 @ApiBearerAuth()
@@ -34,8 +47,9 @@ export class OngsController {
   @ApiNotAcceptableResponse({description: 'Senha não é forte o suficiente', status: 406})
   @ApiConflictResponse({ description: 'Ong já existente', status: 409})
   @ApiOperation({summary: 'Cria uma Ong'})
-  async createOng(@Body() createOngDto: CreateOngDto) {
-    return await this.ongsService.createOng(createOngDto);
+  @UseInterceptors(FileInterceptor('file'))
+  async createOng(@Body() createOngDto: CreateOngDto, @UploadedFile() profilepic?: Express.Multer.File) {
+    return await this.ongsService.createOng(createOngDto, profilepic);
   }
 
   @Public()
@@ -69,13 +83,12 @@ export class OngsController {
   }
 
   @Public()
-  @Post('getOngByTheme/:theme')
+  @Post('getOngByTheme')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiOperation({summary: 'Retorna uma lista de ongs pelos temas'})
-  @ApiParam({ name: 'page', schema: { default: 1 } })
-  async getOngsByTheme(@Param('page') page: number, @Body() themes: Themes_ONG[]) {
-    return await this.ongsService.getOngsByTheme(page, themes)
+  async getOngsByTheme(@Body() dto: SearchThemeDto) {
+    return await this.ongsService.getOngsByTheme(dto)
   }
 
   @UserTypeAuth('admin', 'ong')

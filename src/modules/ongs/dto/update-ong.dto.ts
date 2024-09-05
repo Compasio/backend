@@ -27,11 +27,6 @@ export class UpdateOngDto {
     @IsOptional()
     description: string;
 
-    @ApiProperty({type: Buffer, description: "Logo da ong", example: "slamano"})
-    @IsString()
-    @IsOptional()
-    profile_picture: Buffer;
-
     @ApiProperty({ type: String, description: 'Áreas que a ong atua', example: ['EDUCACAO', 'SAUDE']})
     @IsOptional()
     @IsArray()

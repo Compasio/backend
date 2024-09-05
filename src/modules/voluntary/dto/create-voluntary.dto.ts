@@ -32,11 +32,6 @@ export class CreateVoluntaryDto {
     @IsStrongPassword()
     @IsNotEmpty()
     password: string;
-    
-    @ApiProperty({type: Buffer, description: "Foto de perfil do usuário", example: "slamano"})
-    @IsString()
-    @IsOptional()
-    profile_picture: Buffer;
 
     @ApiProperty({type: String, description: "Data de nascimento usuário", example: "2003-09-21"})
     @IsDateString()

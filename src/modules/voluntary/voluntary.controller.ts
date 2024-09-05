@@ -1,9 +1,19 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Request } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Request,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
 import { VoluntaryService } from './voluntary.service';
 import { CreateVoluntaryDto } from './dto/create-voluntary.dto';
 import { UpdateVoluntaryDto } from './dto/update-voluntary.dto';
 import { Public } from '../../auth/decorators/public.decorator';
-import { Habilities_User } from '@prisma/client';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
@@ -17,6 +27,9 @@ import {
 } from '@nestjs/swagger';
 import { UserTypeAuth } from 'src/auth/decorators/userTypeAuth.decorator';
 import { AuthService } from 'src/auth/auth.service';
+import { CloudinaryService } from '../../cloudinary/cloudinary.service';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { SearchHabilityDto } from "./dto/search-hability.dto";
 
 @Controller('voluntarys')
 @ApiBearerAuth()
@@ -34,8 +47,9 @@ export class VoluntarysController {
   @ApiNotAcceptableResponse({description: 'Senha não é forte o suficiente', status: 406})
   @ApiConflictResponse({ description: 'voluntário já existente', status: 409})
   @ApiOperation({summary: 'Cria um voluntário'})
-  async createVoluntary(@Body() createvoluntaryDto: CreateVoluntaryDto) {
-    return await this.voluntarysService.createVoluntary(createvoluntaryDto);
+  @UseInterceptors(FileInterceptor('file'))
+  async createVoluntary(@Body() createvoluntaryDto: CreateVoluntaryDto, @UploadedFile() profilepic?: Express.Multer.File) {
+    return await this.voluntarysService.createVoluntary(createvoluntaryDto, profilepic);
   }
 
   @Public()
@@ -72,10 +86,9 @@ export class VoluntarysController {
   @Post('getVoluntarysByHabilities')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
-  @ApiParam({ name: 'page', schema: { default: 1 } })
   @ApiOperation({summary: 'Retorna uma lista de voluntários pelas habilidades'})
-  async getvoluntarysByHabilities(@Param('page') page: number, @Body() hability: Habilities_User[]) {
-    return await this.voluntarysService.getVoluntarysByHabilities(page, hability);
+  async getvoluntarysByHabilities(@Body() dto: SearchHabilityDto) {
+    return await this.voluntarysService.getVoluntarysByHabilities(dto);
   }
 
   @UserTypeAuth('admin', 'voluntary')

@@ -20,9 +20,4 @@ export class UpdateVoluntaryDto {
     @IsOptional()
     @IsArray()
     habilities?: Habilities_User[];
-
-    @ApiProperty({type: Buffer, description: "Foto de perfil do usuário", example: "slamano"})
-    @IsString()
-    @IsOptional()
-    profile_picture: Buffer;
 }

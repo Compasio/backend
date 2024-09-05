@@ -15,9 +15,10 @@ import { MapsModule } from './modules/maps/maps.module';
 import { DonationsModule } from './modules/donations/donations.module';
 import { ProjectsModule } from './modules/projects/projects.module';
 import { CrowdfundingsModule } from './modules/crowdfundings/crowdfundings.module';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
 
 @Module({
-  imports: [AuthModule, VoluntarysModule, OngsModule, ConfigModule.forRoot({envFilePath: '.env'}), ConfigModule.forRoot({envFilePath: '.debug.env'}), VoluntaryRelationsModule, OngAssociatedModule, SysModule, ScheduleModule.forRoot(), OperationsModule, MapsModule, DonationsModule, ProjectsModule, CrowdfundingsModule],
+  imports: [AuthModule, VoluntarysModule, OngsModule, ConfigModule.forRoot({envFilePath: '.env'}), ConfigModule.forRoot({envFilePath: '.debug.env'}), VoluntaryRelationsModule, OngAssociatedModule, SysModule, ScheduleModule.forRoot(), OperationsModule, MapsModule, DonationsModule, ProjectsModule, CrowdfundingsModule, CloudinaryModule],
   controllers: [AppController],
   providers: [AppService, CronService],
 })

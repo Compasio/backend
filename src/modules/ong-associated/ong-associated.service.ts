@@ -10,6 +10,7 @@ import {
   Request
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
+import { SearchPermissionsDto } from "./dto/search-permissions.dto";
 
 @Injectable()
 export class OngAssociatedService {
@@ -38,7 +39,7 @@ export class OngAssociatedService {
 
     return this.prisma.user.create({
       data: {
-        email: createOngAssociatedDto.email,
+        email: createOngAssociatedDto.email.toLowerCase(),
         password: hash,
         userType: 'ongAssociated',
         ongAssociated: {
@@ -120,7 +121,8 @@ export class OngAssociatedService {
     return associate;
   }
 
-  async getOngAssociatesByPermission(page: number, permission: Permissions[], ongid: number) {
+  async getOngAssociatesByPermission(dto: SearchPermissionsDto) {
+    const {permission, page, ongid} = dto;
     let res;
     let count = await this.prisma.user.count({where:{ongAssociated:{permissions: {hasEvery: permission}}}});
     

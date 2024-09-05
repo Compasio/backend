@@ -28,6 +28,7 @@ model User {
   ongAssociated OngAssociated?
   address       Address?
   UserBlackList UserBlackList[]
+  ImageResource ImageResouce[]
 }
 
 model Address {
@@ -50,12 +51,11 @@ model Address {
 
 model Voluntary {
   //CAMPOS DA TABELA
-  id_voluntary    Int
-  cpf_voluntary   String  @unique @db.VarChar(11)
-  fullname        String  @db.VarChar(100)
-  profile_picture Bytes?
-  description     String? @db.VarChar(200)
-  birthDate       String
+  id_voluntary  Int
+  cpf_voluntary String  @unique @db.VarChar(11)
+  fullname      String  @db.VarChar(100)
+  description   String? @db.VarChar(200)
+  birthDate     String
 
   //RELAÇÕES
   user               User?                @relation(fields: [id_voluntary], references: [id])
@@ -68,12 +68,11 @@ model Voluntary {
 
 model Ong {
   //CAMPOS DA TABELA    
-  id_ong          Int
-  cnpj_ong        String  @unique @db.VarChar(14)
-  cpf_founder     String  @db.VarChar(11)
-  ong_name        String  @db.VarChar(50)
-  profile_picture Bytes?
-  description     String? @db.VarChar(200)
+  id_ong      Int
+  cnpj_ong    String  @unique @db.VarChar(14)
+  cpf_founder String  @db.VarChar(11)
+  ong_name    String  @db.VarChar(50)
+  description String? @db.VarChar(200)
 
   //RELAÇÕES
   user               User?                @relation(fields: [id_ong], references: [id])
@@ -219,6 +218,8 @@ model EmailVerifyCode {
   dto       String
   iv        Bytes
   createdAt BigInt
+  imgId     String
+  imgUrl    String
 }
 
 model PasswordRecCode {
@@ -229,6 +230,16 @@ model PasswordRecCode {
 
 model TokenBlackList {
   token String @id
+}
+
+model ImageResouce {
+  id        Int     @id @default(autoincrement())
+  url       String
+  user      Int
+  type      ImgType
+  cloudName String
+
+  userid User? @relation(fields: [user], references: [id])
 }
 
 //=======================
@@ -247,6 +258,12 @@ enum Permissions {
   voluntary
   projects
   total
+}
+
+enum ImgType {
+  profile
+  galery
+  project
 }
 
 enum ItemClass {

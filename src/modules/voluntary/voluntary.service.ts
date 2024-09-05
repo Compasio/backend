@@ -1,7 +1,6 @@
 import { PrismaService } from '../../db/prisma.service';
 import { CreateVoluntaryDto } from './dto/create-voluntary.dto';
 import { UpdateVoluntaryDto } from './dto/update-voluntary.dto';
-import { Habilities_User } from '@prisma/client';
 import { AuthService } from '../../auth/auth.service';
 import {
   ConflictException,
@@ -9,15 +8,18 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
+import { CloudinaryService } from '../../cloudinary/cloudinary.service';
+import { SearchHabilityDto } from "./dto/search-hability.dto";
 
 @Injectable()
 export class VoluntaryService {
   constructor(
     private prisma: PrismaService,
     private authService: AuthService,
+    private cloudinary: CloudinaryService,
   ) {}
   
-  async createVoluntary(createVoluntaryDto: CreateVoluntaryDto) {
+  async createVoluntary(createVoluntaryDto: CreateVoluntaryDto, profilepic?: Express.Multer.File) {
     let {email, cpf_voluntary} = createVoluntaryDto;
     email = email.toLowerCase();
 
@@ -48,7 +50,7 @@ export class VoluntaryService {
     createVoluntaryDto.password = hash;
 
     if(process.env.CREATE_USER_WITHOUT_EMAIL_VERIFY == "false") {
-      const makeVerifyCode = await this.authService.generateAndSendEmailVerifyCode(createVoluntaryDto);
+      const makeVerifyCode = await this.authService.generateAndSendEmailVerifyCode(createVoluntaryDto, profilepic);
       if(makeVerifyCode) {
         return true;
       } else {
@@ -56,7 +58,7 @@ export class VoluntaryService {
       }
     }
     else {
-      return this.prisma.user.create({
+      let createdUser = await this.prisma.user.create({
         data: {
           email: createVoluntaryDto.email.toLowerCase(),
           password: createVoluntaryDto.password,
@@ -66,7 +68,6 @@ export class VoluntaryService {
               { 
                 cpf_voluntary: createVoluntaryDto.cpf_voluntary,
                 fullname: createVoluntaryDto.fullname,
-                profile_picture: createVoluntaryDto.profile_picture,
                 description: createVoluntaryDto.description,
                 birthDate: createVoluntaryDto.birthDate,
                 habilities: createVoluntaryDto.habilities,
@@ -77,6 +78,11 @@ export class VoluntaryService {
           voluntary: true,
         },
       });
+      if(profilepic) {
+        let uploadProfilePic = await this.cloudinary.uploadFileToCloudinary(profilepic);
+        let registerPic = await this.cloudinary.registerPicInDb(uploadProfilePic.url, createdUser.id, "profile", uploadProfilePic.public_id);
+      }
+      return createdUser;
     }
     
   }
@@ -91,11 +97,12 @@ export class VoluntaryService {
           userType: 'voluntary'
         }, 
         include: {
-          voluntary: {
-            include: {   
-              voluntaryRelations: true,
+          voluntary: true,
+          ImageResource: {
+            where: {
+              type: "profile"
             }
-          } 
+          },
         }},
       );
     } 
@@ -107,8 +114,14 @@ export class VoluntaryService {
           userType: 'voluntary'
         },
         include: {
-          voluntary: true
-        }}, 
+          voluntary: true,
+          ImageResource: {
+            where: {
+              type: "profile"
+            }
+          },
+        },
+        },
       );
     } 
     
@@ -120,7 +133,12 @@ export class VoluntaryService {
           userType: 'voluntary'
         },
         include: {
-          voluntary: true
+          voluntary: true,
+          ImageResource: {
+            where: {
+              type: "profile"
+            }
+          },
         }},
       );
     }
@@ -140,7 +158,14 @@ export class VoluntaryService {
         userType: 'voluntary'
       },
       include: {
-        voluntary: true,
+        voluntary: {
+          include: {voluntaryRelations: true}
+        },
+        ImageResource: {
+          where: {
+            type: "profile"
+          }
+        },
       },
     });
     if(!user) throw new NotFoundException('ERROR: Voluntário não encontrado');
@@ -160,6 +185,11 @@ export class VoluntaryService {
       },
       include: {
         voluntary: true,
+        ImageResource: {
+          where: {
+            type: "profile"
+          }
+        },
       }
     });
 
@@ -172,8 +202,8 @@ export class VoluntaryService {
     return userNearest;
   }
 
-  async getVoluntarysByHabilities(page: number, hability: Habilities_User[]) {
-    console.log(page, typeof page)
+  async getVoluntarysByHabilities(dto: SearchHabilityDto) {
+    const {hability, page} = dto;
     let res;
     let count = await this.prisma.user.count({where:{voluntary:{habilities: {hasEvery: hability}}}});
 
@@ -186,6 +216,11 @@ export class VoluntaryService {
         },
         include: {
           voluntary: true,
+          ImageResource: {
+            where: {
+              type: "profile"
+            }
+          },
         }
       });
     }
@@ -198,6 +233,11 @@ export class VoluntaryService {
         },
         include: {
           voluntary: true,
+          ImageResource: {
+            where: {
+              type: "profile"
+            }
+          },
         },
         take: 8,
       });
@@ -211,6 +251,11 @@ export class VoluntaryService {
         },
         include: {
           voluntary: true,
+          ImageResource: {
+            where: {
+              type: "profile"
+            }
+          },
         },
         take: 8,
         skip: (page - 1) * 8,
@@ -253,19 +298,23 @@ export class VoluntaryService {
 
     if(!user) throw new NotFoundException('ERROR: Usuário não encontrado');
 
-    const deleteFromVoluntary = this.prisma.voluntary.delete({
+    const deletePic = await this.prisma.imageResouce.deleteMany({
+      where: {
+        user: id,
+      },
+    });
+
+    const deleteFromVoluntary = await this.prisma.voluntary.delete({
       where: {
         id_voluntary: id,
       }
     });
 
-    const deleteFromUser = this.prisma.user.delete({
+    const deleteFromUser = await this.prisma.user.delete({
       where: {
         id,
       }
     });
-
-    await Promise.all([deleteFromVoluntary, deleteFromUser]);
 
     return { success: true };
    }

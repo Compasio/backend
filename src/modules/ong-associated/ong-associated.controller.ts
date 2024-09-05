@@ -17,6 +17,7 @@ import {
 import { UserTypeAuth } from 'src/auth/decorators/userTypeAuth.decorator';
 import { AuthService } from 'src/auth/auth.service';
 import { Public } from '../../auth/decorators/public.decorator';
+import { SearchPermissionsDto } from "./dto/search-permissions.dto";
 
 @Controller('ong-associated')
 @ApiBearerAuth()
@@ -55,19 +56,18 @@ export class OngAssociatedController {
   @ApiParam({ name: 'id', schema: { default: 1 } })
   @ApiOperation({summary: 'Retorna um associado pelo seu id'})
   @Get('getOngAssociateById/:id')
-  async getOngAssociateById(@Param('id') id: string) {
-    return this.ongAssociatedService.getOngAssociateById(+id);
+  async getOngAssociateById(@Param('id') id: number) {
+    return this.ongAssociatedService.getOngAssociateById(id);
   }
 
   @UserTypeAuth('admin', 'ong')
-  @Post('getOngAssociatesByPermission/:ongid/:permission')
+  @Post('getOngAssociatesByPermission')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiOperation({summary: 'Retorna uma lista de associados pelas permissões'})
-  @ApiParam({ name: 'page', schema: { default: 1 } })
-  async getOngAssociatesByPermission(@Param('page') page: number, @Param('ongid') ongid: number, @Body() permission: Permissions[], @Request() req) {
-    let confirmPass = await this.authService.checkIdAndAdminStatus(ongid, req);
-    return await this.ongAssociatedService.getOngAssociatesByPermission(page, permission, ongid);
+  async getOngAssociatesByPermission(@Body() dto: SearchPermissionsDto, @Request() req) {
+    let confirmPass = await this.authService.checkIdAndAdminStatus(dto.ongid, req);
+    return await this.ongAssociatedService.getOngAssociatesByPermission(dto);
   }
   
   @UserTypeAuth('admin', 'ong')
@@ -78,7 +78,7 @@ export class OngAssociatedController {
   @ApiOperation({summary: 'Atualiza informações do associado com o respectivo id'})
   async updateOngAssociate(@Param('id') id: number, @Param('ongid') ongid: number, @Body() updateOngAssociatedDto: UpdateOngAssociatedDto, @Request() req) {
     let confirmPass = await this.authService.checkIdAndAdminStatus(ongid, req);
-    return this.ongAssociatedService.updateOngAssociate(+id, ongid, updateOngAssociatedDto);
+    return this.ongAssociatedService.updateOngAssociate(id, ongid, updateOngAssociatedDto);
   }
 
   @UserTypeAuth('admin', 'ong')
@@ -89,6 +89,6 @@ export class OngAssociatedController {
   @ApiOperation({summary: 'Remove associado com o respectivo id'})
   async removeOngAssociate(@Param('id') id: number, @Param('ongid') ongid: number, @Request() req) {
     let confirmPass = await this.authService.checkIdAndAdminStatus(ongid, req);
-    return this.ongAssociatedService.removeOngAssociate(+id, ongid);
+    return this.ongAssociatedService.removeOngAssociate(id, ongid);
   }
 }
