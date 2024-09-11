@@ -356,7 +356,7 @@ export class AuthService {
         },
       });
       let registerPic = await this.cloudinary.registerPicInDb(imgUrl, createUser.id, "profile", imgId);
-      return createUser;
+      return {"status": "success", "message": "Voluntary created"};
     }
 
     else {
@@ -381,7 +381,7 @@ export class AuthService {
         },
       });
       let registerPic = await this.cloudinary.registerPicInDb(imgUrl, createUser.id, "profile", imgId);
-      return createUser;
+      return {"status": "success", "message": "Ong created"};
     }
   }
 
