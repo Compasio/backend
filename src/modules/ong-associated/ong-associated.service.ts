@@ -17,91 +17,105 @@ export class OngAssociatedService {
   constructor(private prisma: PrismaService) {}
   
   async createOngAssociate(createOngAssociatedDto: CreateOngAssociatedDto) {
-    const { ongid, email } = createOngAssociatedDto;
+    try {
+      const { ongid, email } = createOngAssociatedDto;
 
-    const ongExists = await this.prisma.user.findFirst({
-      where: {
-        id: ongid,
-        userType: 'ong'
-      },
-    });
-    if(!ongExists) throw new ConflictException("ERROR: Ong não existe");
+      const ongExists = await this.prisma.user.findFirst({
+        where: {
+          id: ongid,
+          userType: 'ong',
+        },
+      });
+      if (!ongExists) return {"status": "failure", "code": 404, "message": "Ong not found"};
 
-    const emailExists = await this.prisma.user.findFirst({
-      where: {
-        email,
-      },
-    });
-    if(emailExists) throw new ConflictException("ERROR: Email inválido");
+      const emailExists = await this.prisma.user.findFirst({
+        where: {
+          email,
+        },
+      });
+      if (emailExists) return {"status": "error", "code": 409, "message": "Invalid email"};
 
-    const salt = await bcrypt.genSalt();
-    const hash: string = await bcrypt.hash(createOngAssociatedDto.password, salt);
+      const salt = await bcrypt.genSalt();
+      const hash: string = await bcrypt.hash(createOngAssociatedDto.password, salt);
 
-    return this.prisma.user.create({
-      data: {
-        email: createOngAssociatedDto.email.toLowerCase(),
-        password: hash,
-        userType: 'ongAssociated',
-        ongAssociated: {
-          create: {
-            firstname: createOngAssociatedDto.firstname,
-            lastname: createOngAssociatedDto.lastname,
-            ong: ongid,
-            permissions: createOngAssociatedDto.permissions,
+      const create = await this.prisma.user.create({
+        data: {
+          email: createOngAssociatedDto.email.toLowerCase(),
+          password: hash,
+          userType: 'ongAssociated',
+          ongAssociated: {
+            create: {
+              firstname: createOngAssociatedDto.firstname,
+              lastname: createOngAssociatedDto.lastname,
+              ong: ongid,
+              permissions: createOngAssociatedDto.permissions,
+            },
           },
         },
-      },
-      include: {
-        ongAssociated: true,
-      },
-    });
-  }
-
-  async getOngAssociatesByOng(page: number, ongid: number) {
-    if(page == 0) {
-      const res = await this.prisma.user.findMany({
-        where: {
-          userType: 'ongAssociated',
-          ongAssociated: {ong: ongid},
-        },
-        include: {ongAssociated: true}
-      });
-      res.forEach(e => {
-        delete e.password;
-        delete e.ongAssociated.id_associate;
-      });
-      return res;
-    } else if(page == 1) {
-      const res = await this.prisma.user.findMany({
-        take: 20,
-        where: {
-          userType: 'ongAssociated',
-          ongAssociated: {ong: ongid},
-        }, 
         include: {
           ongAssociated: true,
         },
       });
-      res.forEach(e => {
-        delete e.password;
-        delete e.ongAssociated.id_associate;
-      });
-      return res;
-    } else {
-      const res = await this.prisma.user.findMany({
-        take: 20,
-        skip: (page - 1) * 20,
+      return {"status": "success", "message": "Ong-Associate created"};
+
+    }
+    catch (e) {
+      return {"status": "failure", "code": 500, "message": e};
+    }
+  }
+
+  async getOngAssociatesByOng(page: number, ongid: number) {
+    try {
+      let res;
+      let count = await this.prisma.user.count({
         where: {
           userType: 'ongAssociated',
-          ongAssociated: {ong: ongid},
-        },
-        include: {ongAssociated: true},
-      });
+          ongAssociated: { ong: ongid },
+        }
+      })
+
+      if (page == 0) {
+        res = await this.prisma.user.findMany({
+          where: {
+            userType: 'ongAssociated',
+            ongAssociated: { ong: ongid },
+          },
+          include: { ongAssociated: true },
+        });
+      }
+      else if (page == 1) {
+        res = await this.prisma.user.findMany({
+          take: 20,
+          where: {
+            userType: 'ongAssociated',
+            ongAssociated: { ong: ongid },
+          },
+          include: {
+            ongAssociated: true,
+          },
+        });
+      }
+      else {
+        res = await this.prisma.user.findMany({
+          take: 20,
+          skip: (page - 1) * 20,
+          where: {
+            userType: 'ongAssociated',
+            ongAssociated: { ong: ongid },
+          },
+          include: { ongAssociated: true },
+        });
+      }
+
       res.forEach(e => {
         delete e.password;
         delete e.ongAssociated.id_associate;
       });
-      return res;
+
+      return {"status": "success", "data": res, "totalCount": count};
+    }
+    catch (e) {
+      return {"status": "failure", "code": 500, "message": e};
     }
   }
 

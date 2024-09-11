@@ -20,290 +20,321 @@ export class VoluntaryService {
   ) {}
   
   async createVoluntary(createVoluntaryDto: CreateVoluntaryDto, profilepic?: Express.Multer.File) {
-    let {email, cpf_voluntary} = createVoluntaryDto;
-    email = email.toLowerCase();
+    try {
+      let { email, cpf_voluntary } = createVoluntaryDto;
+      email = email.toLowerCase();
 
-    if(process.env.CREATE_USER_WITHOUT_CPF_VERIFY == "false") {
-      const checkCpf = await this.authService.checkIfCpfIsValid(cpf_voluntary);
-      if(!checkCpf) {
-        throw new ConflictException("ERROR: CPF inválido");
+      if (process.env.CREATE_USER_WITHOUT_CPF_VERIFY == 'false') {
+        const checkCpf = await this.authService.checkIfCpfIsValid(cpf_voluntary);
+        if (!checkCpf) {
+          return {"status": "error", "code": 409, "message": "Invalid CPF"};
+        }
       }
-    }
 
-    const cpfExists = await this.prisma.voluntary.findFirst({
-      where: {
-        cpf_voluntary,
-      },
-    });
-    if(cpfExists) throw new ConflictException("ERROR: CPF inválido");
-    
-    const emailExists = await this.prisma.user.findFirst({
-      where: {
-        email,
-      },
-    });
-    if(emailExists) throw new ConflictException("ERROR: Email inválido");
-
-
-    const salt = await bcrypt.genSalt();
-    const hash: string = await bcrypt.hash(createVoluntaryDto.password, salt);
-    createVoluntaryDto.password = hash;
-
-    if(process.env.CREATE_USER_WITHOUT_EMAIL_VERIFY == "false") {
-      const makeVerifyCode = await this.authService.generateAndSendEmailVerifyCode(createVoluntaryDto, profilepic);
-      if(makeVerifyCode) {
-        return true;
-      } else {
-        throw new Error("Ocorreu um erro, por favor tente novamente");
-      }
-    }
-    else {
-      let createdUser = await this.prisma.user.create({
-        data: {
-          email: createVoluntaryDto.email.toLowerCase(),
-          password: createVoluntaryDto.password,
-          userType: 'voluntary',
-          voluntary: {
-            create: 
-              { 
-                cpf_voluntary: createVoluntaryDto.cpf_voluntary,
-                fullname: createVoluntaryDto.fullname,
-                description: createVoluntaryDto.description,
-                birthDate: createVoluntaryDto.birthDate,
-                habilities: createVoluntaryDto.habilities,
-              },
-          },
-        },
-        include: {
-          voluntary: true,
+      const cpfExists = await this.prisma.voluntary.findFirst({
+        where: {
+          cpf_voluntary,
         },
       });
-      if(profilepic) {
-        let uploadProfilePic = await this.cloudinary.uploadFileToCloudinary(profilepic);
-        let registerPic = await this.cloudinary.registerPicInDb(uploadProfilePic.url, createdUser.id, "profile", uploadProfilePic.public_id);
+      if (cpfExists) return {"status": "error", "code": 409, "message": "Invalid CPF"};
+
+      const emailExists = await this.prisma.user.findFirst({
+        where: {
+          email,
+        },
+      });
+      if (emailExists) return {"status": "error", "code": 409, "message": "Invalid email"};
+
+
+      const salt = await bcrypt.genSalt();
+      const hash: string = await bcrypt.hash(createVoluntaryDto.password, salt);
+      createVoluntaryDto.password = hash;
+
+      if (process.env.CREATE_USER_WITHOUT_EMAIL_VERIFY == 'false') {
+        const makeVerifyCode = await this.authService.generateAndSendEmailVerifyCode(createVoluntaryDto, profilepic);
+        if (makeVerifyCode) {
+          return {"status": "success", "message": "Code sent by email"};
+        } else {
+          throw new Error('makeVerifyCode');
+        }
+      } else {
+        let createdUser = await this.prisma.user.create({
+          data: {
+            email: createVoluntaryDto.email.toLowerCase(),
+            password: createVoluntaryDto.password,
+            userType: 'voluntary',
+            voluntary: {
+              create:
+                {
+                  cpf_voluntary: createVoluntaryDto.cpf_voluntary,
+                  fullname: createVoluntaryDto.fullname,
+                  description: createVoluntaryDto.description,
+                  birthDate: createVoluntaryDto.birthDate,
+                  habilities: createVoluntaryDto.habilities,
+                },
+            },
+          },
+          include: {
+            voluntary: true,
+          },
+        });
+        if (profilepic) {
+          let uploadProfilePic = await this.cloudinary.uploadFileToCloudinary(profilepic);
+          let registerPic = await this.cloudinary.registerPicInDb(uploadProfilePic.url, createdUser.id, 'profile', uploadProfilePic.public_id);
+        }
+        return {"status": "success", "message": "Voluntary created"};
       }
-      return createdUser;
     }
-    
+    catch (e) {
+      return {"status": "failure", "code": 500, "message": e};
+    }
   }
 
   async getAllVoluntarys(page: number) {
-    let res;
-    let count = await this.prisma.user.count({where:{userType: 'voluntary'}});
+    try {
+      let res;
+      let count = await this.prisma.user.count({ where: { userType: 'voluntary' } });
 
-    if(page == 0) {
-      res = await this.prisma.user.findMany({
-        where: {
-          userType: 'voluntary'
-        }, 
-        include: {
-          voluntary: true,
-          ImageResource: {
+      if (page == 0) {
+        res = await this.prisma.user.findMany({
             where: {
-              type: "profile"
-            }
+              userType: 'voluntary',
+            },
+            include: {
+              voluntary: true,
+              ImageResource: {
+                where: {
+                  type: 'profile',
+                },
+              },
+            },
           },
-        }},
-      );
-    } 
-    
-    else if(page == 1) {
-      res = await this.prisma.user.findMany({
-        take: 8,
-        where: {
-          userType: 'voluntary'
-        },
-        include: {
-          voluntary: true,
-          ImageResource: {
+        );
+      } else if (page == 1) {
+        res = await this.prisma.user.findMany({
+            take: 8,
             where: {
-              type: "profile"
-            }
+              userType: 'voluntary',
+            },
+            include: {
+              voluntary: true,
+              ImageResource: {
+                where: {
+                  type: 'profile',
+                },
+              },
+            },
           },
-        },
-        },
-      );
-    } 
-    
-    else {
-      res = await this.prisma.user.findMany({
-        take: 8,
-        skip: (page - 1) * 8,
-        where: {
-          userType: 'voluntary'
-        },
-        include: {
-          voluntary: true,
-          ImageResource: {
+        );
+      } else {
+        res = await this.prisma.user.findMany({
+            take: 8,
+            skip: (page - 1) * 8,
             where: {
-              type: "profile"
-            }
+              userType: 'voluntary',
+            },
+            include: {
+              voluntary: true,
+              ImageResource: {
+                where: {
+                  type: 'profile',
+                },
+              },
+            },
           },
-        }},
-      );
+        );
+      }
+
+      res.forEach(e => {
+        delete e.password;
+        delete e.voluntary.id_voluntary;
+      });
+
+      return { 'status': 'success', 'data': res, 'totalCount': count };
     }
-    
-    res.forEach(e => {
-      delete e.password;
-      delete e.voluntary.id_voluntary;
-    });
-
-    return {"response": res, "totalCount": count};
+    catch (e) {
+      return {"status": "failure", "code": 500, "message": e};
+    }
   }
 
   async getVoluntaryById(id: number) {
-    const user = await this.prisma.user.findUnique({
-      where: {
-        id,
-        userType: 'voluntary'
-      },
-      include: {
-        voluntary: {
-          include: {voluntaryRelations: true}
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: {
+          id,
+          userType: 'voluntary',
         },
-        ImageResource: {
-          where: {
-            type: "profile"
-          }
+        include: {
+          voluntary: {
+            include: { voluntaryRelations: true },
+          },
+          ImageResource: {
+            where: {
+              type: 'profile',
+            },
+          },
         },
-      },
-    });
-    if(!user) throw new NotFoundException('ERROR: Voluntário não encontrado');
-    delete user.password;
-    delete user.voluntary.id_voluntary;
-    return user;
+      });
+      if (!user) return {"status": "failure", "code": 404, "message": "Voluntary not found"};
+      delete user.password;
+      delete user.voluntary.id_voluntary;
+      return {"status": "success", "data": user};
+    }
+    catch (e) {
+      return {"status": "failure", "code": 500, "message": e};
+    }
   }
 
   async getVoluntarysByName(name: string) {
-    const userNearest = await this.prisma.user.findMany({
-      where: {
-        voluntary: {
-          OR: [
-            { fullname: { contains: name, mode: 'insensitive' }},
-          ]
-        }
-      },
-      include: {
-        voluntary: true,
-        ImageResource: {
-          where: {
-            type: "profile"
-          }
+    try {
+      const userNearest = await this.prisma.user.findMany({
+        where: {
+          voluntary: {
+            OR: [
+              { fullname: { contains: name, mode: 'insensitive' } },
+            ],
+          },
         },
-      }
-    });
+        include: {
+          voluntary: true,
+          ImageResource: {
+            where: {
+              type: 'profile',
+            },
+          },
+        },
+      });
 
-    if(!userNearest) throw new NotFoundException('ERROR: Nenhum usuário com esse nome');
-    userNearest.forEach(e => {
-      delete e.password;
-      delete e.voluntary.id_voluntary;
-    });
+      if (!userNearest) return {"status": "failure", "code": 404, "message": "Voluntary not found"};
+      userNearest.forEach(e => {
+        delete e.password;
+        delete e.voluntary.id_voluntary;
+      });
 
-    return userNearest;
+      return {"status": "success", "data": userNearest};
+    }
+    catch (e) {
+      return {"status": "failure", "code": 500, "message": e};
+    }
   }
 
   async getVoluntarysByHabilities(dto: SearchHabilityDto) {
-    const {hability, page} = dto;
-    let res;
-    let count = await this.prisma.user.count({where:{voluntary:{habilities: {hasEvery: hability}}}});
+    try {
+      const { hability, page } = dto;
+      let res;
+      let count = await this.prisma.user.count({ where: { voluntary: { habilities: { hasEvery: hability } } } });
 
-    if(page == 0) {
-      res = await this.prisma.user.findMany({
-        where: {
-          voluntary: {
-              habilities: {hasEvery: hability},
-          }
-        },
-        include: {
-          voluntary: true,
-          ImageResource: {
-            where: {
-              type: "profile"
-            }
+      if (page == 0) {
+        res = await this.prisma.user.findMany({
+          where: {
+            voluntary: {
+              habilities: { hasEvery: hability },
+            },
           },
-        }
-      });
-    }
-    else if(page == 1) {
-      res = await this.prisma.user.findMany({
-        where: {
-          voluntary: {
-              habilities: {hasEvery: hability},
-          }
-        },
-        include: {
-          voluntary: true,
-          ImageResource: {
-            where: {
-              type: "profile"
-            }
+          include: {
+            voluntary: true,
+            ImageResource: {
+              where: {
+                type: 'profile',
+              },
+            },
           },
-        },
-        take: 8,
-      });
-    }
-    else {
-      res = await this.prisma.user.findMany({
-        where: {
-          voluntary: {
-              habilities: {hasEvery: hability},
-          }
-        },
-        include: {
-          voluntary: true,
-          ImageResource: {
-            where: {
-              type: "profile"
-            }
+        });
+      } else if (page == 1) {
+        res = await this.prisma.user.findMany({
+          where: {
+            voluntary: {
+              habilities: { hasEvery: hability },
+            },
           },
-        },
-        take: 8,
-        skip: (page - 1) * 8,
+          include: {
+            voluntary: true,
+            ImageResource: {
+              where: {
+                type: 'profile',
+              },
+            },
+          },
+          take: 8,
+        });
+      } else {
+        res = await this.prisma.user.findMany({
+          where: {
+            voluntary: {
+              habilities: { hasEvery: hability },
+            },
+          },
+          include: {
+            voluntary: true,
+            ImageResource: {
+              where: {
+                type: 'profile',
+              },
+            },
+          },
+          take: 8,
+          skip: (page - 1) * 8,
+        });
+      }
+
+      if (res[0] === undefined)return {"status": "failure", "code": 404, "message": "Voluntary not found"};
+      res.forEach(e => {
+        delete e.password;
+        delete e.voluntary.id_voluntary;
       });
+      return { "status": "success", "data": res, "totalCount": count };
     }
-    
-    if(res[0] === undefined) throw new NotFoundException('ERROR: Nenhum usuário com estas habilidades');
-    res.forEach(e => {
-      delete e.password;
-      delete e.voluntary.id_voluntary;
-    });
-    return {"response": res, "totalCount": count};
+    catch (e) {
+      return {"status": "failure", "code": 500, "message": e};
+    }
   }
 
   async updateVoluntary(id: number, updateUserDto: UpdateVoluntaryDto) {
-    const user = await this.prisma.voluntary.findUnique({
-      where: {
-        id_voluntary: id,
-      }
-    })
-    
-    if(!user) throw new NotFoundException('ERROR: Usuário não encontrado');
-    
-    return this.prisma.voluntary.update({
-      data: {
-        ...updateUserDto
-      },
-      where: {
-        id_voluntary: id,
-      }
-    });
+    try {
+      const user = await this.prisma.voluntary.findUnique({
+        where: {
+          id_voluntary: id,
+        },
+      });
+
+      if (!user) return {"status": "failure", "code": 404, "message": "Voluntary not found"};
+
+      let update = await this.prisma.voluntary.update({
+        data: {
+          ...updateUserDto,
+        },
+        where: {
+          id_voluntary: id,
+        },
+      });
+
+      return {"status": "success", "message": `Voluntary ${id} updated successfully.`};
+    }
+    catch (e) {
+      return {"status": "failure", "code": 500, "message": e};
+    }
   }
 
   async removeVoluntary(id: number) {
-    const user = await this.prisma.user.findUnique({
-      where: {
-        id,
-      }
-    });
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: {
+          id,
+        },
+      });
 
-    if(!user) throw new NotFoundException('ERROR: Usuário não encontrado');
+      if (!user) return {"status": "failure", "code": 404, "message": "Voluntary not found"};
 
-    const deleteFromUser = await this.prisma.user.delete({
-      where: {
-        id,
-      }
-    });
+      const deleteFromUser = await this.prisma.user.delete({
+        where: {
+          id,
+        },
+      });
 
-    return { success: true };
+      return {"status": "success", "message": `Voluntary ${id} deleted successfully.`};
+    }
+    catch (e) {
+      return {"status": "failure", "code": 500, "message": e};
+    }
    }
 }

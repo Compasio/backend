@@ -24,295 +24,334 @@ export class OngsService {
     createOngDto: CreateOngDto,
     profilepic?: Express.Multer.File,
   ) {
-    let { email, cpf_founder, cnpj_ong } = createOngDto;
-    email = email.toLowerCase();
+    try {
+      let { email, cpf_founder, cnpj_ong } = createOngDto;
+      email = email.toLowerCase();
 
-    if (process.env.CREATE_USER_WITHOUT_CPF_VERIFY == 'false') {
-      const checkCpf = await this.authService.checkIfCpfIsValid(cpf_founder);
-      if (!checkCpf) {
-        throw new ConflictException('ERROR: CPF inválido');
+      if (process.env.CREATE_USER_WITHOUT_CPF_VERIFY == 'false') {
+        const checkCpf = await this.authService.checkIfCpfIsValid(cpf_founder);
+        if (!checkCpf) {
+          return {"status": "error", "code": 409, "message": "Invalid CPF"};
+        }
       }
-    }
 
-    if (process.env.CHECK_ONG_WITHOUT_CNPJ_VERIFY == 'false') {
-      const checkCnpj = await this.authService.checkIfCnpjIsValid(cnpj_ong);
-      if (!checkCnpj) {
-        throw new ConflictException('ERROR: CNPJ inválido');
+      if (process.env.CHECK_ONG_WITHOUT_CNPJ_VERIFY == 'false') {
+        const checkCnpj = await this.authService.checkIfCnpjIsValid(cnpj_ong);
+        if (!checkCnpj) {
+          return {"status": "error", "code": 409, "message": "Invalid CNPJ"};
+        }
       }
-    }
 
-    const cnpjExists = await this.prisma.ong.findFirst({
-      where: {
-        cnpj_ong,
-      },
-    });
-    if (cnpjExists) throw new ConflictException('ERROR: CNPJ inválido');
-
-    const emailExists = await this.prisma.user.findFirst({
-      where: {
-        email,
-      },
-    });
-    if (emailExists) throw new ConflictException('ERROR: Email inválido');
-
-    const salt = await bcrypt.genSalt();
-    const hash: string = await bcrypt.hash(createOngDto.password, salt);
-    createOngDto.password = hash;
-
-    if (process.env.CREATE_USER_WITHOUT_EMAIL_VERIFY == 'false') {
-      const makeVerifyCode =
-        await this.authService.generateAndSendEmailVerifyCode(
-          createOngDto,
-          profilepic,
-        );
-      if (makeVerifyCode) {
-        return true;
-      } else {
-        throw new Error('Ocorreu um erro, por favor tente novamente');
-      }
-    } else {
-      let createOng = await this.prisma.user.create({
-        data: {
-          email: createOngDto.email.toLowerCase(),
-          password: hash,
-          userType: 'ong',
-          ong: {
-            create: {
-              cpf_founder: createOngDto.cpf_founder,
-              cnpj_ong: createOngDto.cnpj_ong,
-              ong_name: createOngDto.ong_name,
-              description: createOngDto.description,
-              themes: createOngDto.themes,
-            },
-          },
-        },
-        include: {
-          ong: true,
+      const cnpjExists = await this.prisma.ong.findFirst({
+        where: {
+          cnpj_ong,
         },
       });
-      if (profilepic) {
-        let uploadProfilePic =
-          await this.cloudinary.uploadFileToCloudinary(profilepic);
-        let registerPic = await this.cloudinary.registerPicInDb(
-          uploadProfilePic.url,
-          createOng.id,
-          'profile',
-          uploadProfilePic.public_id,
-        );
-      }
+      if (cnpjExists) return {"status": "error", "code": 409, "message": "Invalid CNPJ"};
 
-      return createOng;
+      const emailExists = await this.prisma.user.findFirst({
+        where: {
+          email,
+        },
+      });
+      if (emailExists) return {"status": "error", "code": 409, "message": "Invalid email"};
+
+      const salt = await bcrypt.genSalt();
+      const hash: string = await bcrypt.hash(createOngDto.password, salt);
+      createOngDto.password = hash;
+
+      if (process.env.CREATE_USER_WITHOUT_EMAIL_VERIFY == 'false') {
+        const makeVerifyCode =
+          await this.authService.generateAndSendEmailVerifyCode(
+            createOngDto,
+            profilepic,
+          );
+        if (makeVerifyCode) {
+          return {"status": "success", "message": "Code sent by email"};
+        } else {
+          throw new Error('makeVerifyCode');
+        }
+      } else {
+        let createOng = await this.prisma.user.create({
+          data: {
+            email: createOngDto.email.toLowerCase(),
+            password: hash,
+            userType: 'ong',
+            ong: {
+              create: {
+                cpf_founder: createOngDto.cpf_founder,
+                cnpj_ong: createOngDto.cnpj_ong,
+                ong_name: createOngDto.ong_name,
+                description: createOngDto.description,
+                themes: createOngDto.themes,
+              },
+            },
+          },
+          include: {
+            ong: true,
+          },
+        });
+        if (profilepic) {
+          let uploadProfilePic =
+            await this.cloudinary.uploadFileToCloudinary(profilepic);
+          let registerPic = await this.cloudinary.registerPicInDb(
+            uploadProfilePic.url,
+            createOng.id,
+            'profile',
+            uploadProfilePic.public_id,
+          );
+        }
+
+        return {"status": "success", "message": "Ong created"};
+      }
+    }
+    catch (e) {
+      return {"status": "failure", "code": 500, "message": e};
     }
   }
 
   async getAllOngs(page: number) {
-    let res;
-    if (page == 0) {
-      res = await this.prisma.user.findMany({
-        where: {
-          userType: 'ong',
-        },
-        include: {
-          ong: true,
-          ImageResource: {
-            where: {
-              type: "profile"
-            }
-          }
-        },
-      });
-    } else if (page == 1) {
-      res = await this.prisma.user.findMany({
-        take: 8,
-        where: {
-          userType: 'ong',
-        },
-        include: {
-          ong: true,
-          ImageResource: {
-            where: {
-              type: "profile",
+    try {
+      let res;
+      let totalCount = await this.prisma.user.count({where: {userType: 'ong'}});
+
+      if (page == 0) {
+        res = await this.prisma.user.findMany({
+          where: {
+            userType: 'ong',
+          },
+          include: {
+            ong: true,
+            ImageResource: {
+              where: {
+                type: 'profile',
+              },
             },
           },
-        }
-      });
-    } else {
-      res = await this.prisma.user.findMany({
-        take: 8,
-        skip: (page - 1) * 8,
-        where: {
-          userType: 'ong',
-        },
-        include: {
-          ong: true,
-          ImageResource: {
-            where: {
-              type: "profile",
+        });
+      } else if (page == 1) {
+        res = await this.prisma.user.findMany({
+          take: 8,
+          where: {
+            userType: 'ong',
+          },
+          include: {
+            ong: true,
+            ImageResource: {
+              where: {
+                type: 'profile',
+              },
             },
-          }
-        },
-      });
-    }
+          },
+        });
+      } else {
+        res = await this.prisma.user.findMany({
+          take: 8,
+          skip: (page - 1) * 8,
+          where: {
+            userType: 'ong',
+          },
+          include: {
+            ong: true,
+            ImageResource: {
+              where: {
+                type: 'profile',
+              },
+            },
+          },
+        });
+      }
 
-    res.forEach((e) => delete e.password);
-    res.forEach((e) => delete e.ong.id_ong);
-    return res;
+      res.forEach((e) => delete e.password);
+      res.forEach((e) => delete e.ong.id_ong);
+      return {"status": "success", "data": res, "totalCount": totalCount};
+    }
+    catch (e) {
+      return {"status": "failure", "code": 500, "message": e};
+    }
   }
 
   async getOngById(id: number) {
-    const ong = await this.prisma.user.findUnique({
-      where: {
-        id,
-        userType: 'ong',
-      },
-      include: {
-        ong: true,
-        ImageResource: {
-          where: {
-            type: "profile"
-          }
-        }
-      },
-    });
+    try {
+      const ong = await this.prisma.user.findUnique({
+        where: {
+          id,
+          userType: 'ong',
+        },
+        include: {
+          ong: true,
+          ImageResource: {
+            where: {
+              type: 'profile',
+            },
+          },
+        },
+      });
 
-    if (!ong) throw new NotFoundException('ERROR: Ong não encontrada');
-    delete ong.password;
-    delete ong.ong.id_ong;
-    return ong;
+      if (!ong) return {"status": "failure", "code": 404, "message": "Ong not found"};
+      delete ong.password;
+      delete ong.ong.id_ong;
+      return {"status": "success", "data": ong};
+    }
+    catch (e) {
+      return {"status": "failure", "code": 500, "message": e};
+    }
   }
 
   async getOngByName(name: string) {
-    const ongNearest = await this.prisma.user.findMany({
-      where: {
-        ong: {
-          OR: [{ ong_name: { contains: name, mode: 'insensitive' } }],
+    try {
+      const ongNearest = await this.prisma.user.findMany({
+        where: {
+          ong: {
+            OR: [{ ong_name: { contains: name, mode: 'insensitive' } }],
+          },
         },
-      },
-      include: {
-        ong: true,
-        ImageResource: {
-          where: {
-            type: "profile"
-          }
-        }
-      },
-    });
+        include: {
+          ong: true,
+          ImageResource: {
+            where: {
+              type: 'profile',
+            },
+          },
+        },
+      });
 
-    if (!ongNearest) throw new NotFoundException('ERROR: Nenhuma ong com esse nome');
+      if (ongNearest[0] === undefined) return { 'status': 'failure', 'code': 404, 'message': 'Ong not found' };
 
-    ongNearest.forEach((e) => {
-      delete e.password;
-      delete e.ong.id_ong;
-    });
+      ongNearest.forEach((e) => {
+        delete e.password;
+        delete e.ong.id_ong;
+      });
 
-    return ongNearest;
+      return {"status": "success", "data": ongNearest};
+    }
+    catch (e) {
+      return {"status": "failure", "code": 500, "message": e};
+    }
   }
 
   async getOngsByTheme(dto: SearchThemeDto) {
-    const { themes, page } = dto;
-    let res;
-    let count = await this.prisma.user.count({
-      where: { ong: { themes: { hasEvery: themes } } },
-    });
+    try {
+      const { themes, page } = dto;
+      let res;
+      let count = await this.prisma.user.count({
+        where: { ong: { themes: { hasEvery: themes } } },
+      });
 
-    if (page == 0) {
-      res = await this.prisma.user.findMany({
-        where: {
-          ong: {
-            themes: { hasEvery: themes },
+      if (page == 0) {
+        res = await this.prisma.user.findMany({
+          where: {
+            ong: {
+              themes: { hasEvery: themes },
+            },
           },
-        },
-        include: {
-          ong: true,
-          ImageResource: {
-            where: {
-              type: "profile"
-            }
-          }
-        },
-      });
-    } else if (page == 1) {
-      res = await this.prisma.user.findMany({
-        where: {
-          ong: {
-            themes: { hasEvery: themes },
+          include: {
+            ong: true,
+            ImageResource: {
+              where: {
+                type: 'profile',
+              },
+            },
           },
-        },
-        include: {
-          ong: true,
-          ImageResource: {
-            where: {
-              type: "profile"
-            }
-          }
-        },
-        take: 8,
-      });
-    } else {
-      res = await this.prisma.user.findMany({
-        where: {
-          ong: {
-            themes: { hasEvery: themes },
+        });
+      } else if (page == 1) {
+        res = await this.prisma.user.findMany({
+          where: {
+            ong: {
+              themes: { hasEvery: themes },
+            },
           },
-        },
-        include: {
-          ong: true,
-          ImageResource: {
-            where: {
-              type: "profile"
-            }
-          }
-        },
-        take: 8,
-        skip: (page - 1) * 8,
+          include: {
+            ong: true,
+            ImageResource: {
+              where: {
+                type: 'profile',
+              },
+            },
+          },
+          take: 8,
+        });
+      } else {
+        res = await this.prisma.user.findMany({
+          where: {
+            ong: {
+              themes: { hasEvery: themes },
+            },
+          },
+          include: {
+            ong: true,
+            ImageResource: {
+              where: {
+                type: 'profile',
+              },
+            },
+          },
+          take: 8,
+          skip: (page - 1) * 8,
+        });
+      }
+
+      if (res[0] === undefined) return { 'status': 'failure', 'code': 404, 'message': 'Ong not found' };
+
+      res.forEach((e) => {
+        delete e.password;
+        delete e.ong.id_ong;
       });
+      return { "status": "success", "data": res, "totalCount": count };
     }
-
-    if (res[0] === undefined) throw new NotFoundException('ERROR: Nenhuma Ong com estes temas');
-
-    res.forEach((e) => {
-      delete e.password;
-      delete e.ong.id_ong;
-    });
-    return { response: res, totalCount: count };
+    catch (e) {
+      return {"status": "failure", "code": 500, "message": e};
+    }
   }
 
   async updateOng(id: number, updateOngDto: UpdateOngDto) {
-    const ong = await this.prisma.ong.findUnique({
-      where: {
-        id_ong: id,
-      },
-    });
+    try {
+      const ong = await this.prisma.ong.findUnique({
+        where: {
+          id_ong: id,
+        },
+      });
 
-    if (!ong) throw new NotFoundException('ERROR: Ong não encontrada');
+      if (!ong) return { 'status': 'failure', 'code': 404, 'message': 'Ong not found' };
 
-    return this.prisma.ong.update({
-      data: {
-        ...updateOngDto,
-      },
-      where: {
-        id_ong: id,
-      },
-    });
+      let update = await this.prisma.ong.update({
+        data: {
+          ...updateOngDto,
+        },
+        where: {
+          id_ong: id,
+        },
+      });
+
+      return { "status": "success", "message": `Ong ${id} updated with success` };
+    }
+    catch (e) {
+      return {"status": "failure", "code": 500, "message": e};
+    }
   }
 
   async removeOng(id: number) {
-    const ong = await this.prisma.user.findUnique({
-      where: {
-        id,
-        userType: 'ong',
-      },
-    });
+    try {
+      const ong = await this.prisma.user.findUnique({
+        where: {
+          id,
+          userType: 'ong',
+        },
+      });
 
-    if (!ong) throw new NotFoundException('ERROR: Ong não encontrada');
+      if (!ong) return { 'status': 'failure', 'code': 404, 'message': 'Ong not found' };
 
-    const deleteFromUser = await this.prisma.user.delete({
-      where: {
-        id,
-      },
-    });
+      const deleteFromUser = await this.prisma.user.delete({
+        where: {
+          id,
+        },
+      });
 
-    return { success: true };
+      return { "status": "success", "message": `Ong ${id} deleted with success` };
+    }
+    catch (e) {
+      return {"status": "failure", "code": 500, "message": e};
+    }
   }
 
   async postPicture(ong: number, files: Express.Multer.File[]) {
@@ -326,9 +365,10 @@ export class OngsService {
           uploadProfilePic.public_id,
         );
       }
-      return true;
-    } catch (e) {
-      throw new Error("Algo deu errado");
+      return { "status": "success", "message": "Pictures posted" };
+    }
+    catch (e) {
+      return {"status": "failure", "code": 500, "message": e};
     }
   }
 
@@ -340,10 +380,10 @@ export class OngsService {
           type: 'galery',
         },
       });
-      return {"pictures": getPics}
-    } catch (e) {
-      console.log(e);
-      throw new Error("Algo deu errado");
+      return {"status": "success", "pictures": getPics}
+    }
+    catch (e) {
+      return {"status": "failure", "code": 500, "message": e};
     }
   }
 }
