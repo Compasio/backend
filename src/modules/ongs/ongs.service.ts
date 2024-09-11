@@ -114,6 +114,11 @@ export class OngsService {
         },
         include: {
           ong: true,
+          ImageResource: {
+            where: {
+              type: "profile"
+            }
+          }
         },
       });
     } else if (page == 1) {
@@ -124,7 +129,12 @@ export class OngsService {
         },
         include: {
           ong: true,
-        },
+          ImageResource: {
+            where: {
+              type: "profile",
+            },
+          },
+        }
       });
     } else {
       res = await this.prisma.user.findMany({
@@ -135,6 +145,11 @@ export class OngsService {
         },
         include: {
           ong: true,
+          ImageResource: {
+            where: {
+              type: "profile",
+            },
+          }
         },
       });
     }
@@ -152,6 +167,11 @@ export class OngsService {
       },
       include: {
         ong: true,
+        ImageResource: {
+          where: {
+            type: "profile"
+          }
+        }
       },
     });
 
@@ -170,11 +190,16 @@ export class OngsService {
       },
       include: {
         ong: true,
+        ImageResource: {
+          where: {
+            type: "profile"
+          }
+        }
       },
     });
 
-    if (!ongNearest)
-      throw new NotFoundException('ERROR: Nenhuma ong com esse nome');
+    if (!ongNearest) throw new NotFoundException('ERROR: Nenhuma ong com esse nome');
+
     ongNearest.forEach((e) => {
       delete e.password;
       delete e.ong.id_ong;
@@ -199,6 +224,11 @@ export class OngsService {
         },
         include: {
           ong: true,
+          ImageResource: {
+            where: {
+              type: "profile"
+            }
+          }
         },
       });
     } else if (page == 1) {
@@ -210,6 +240,11 @@ export class OngsService {
         },
         include: {
           ong: true,
+          ImageResource: {
+            where: {
+              type: "profile"
+            }
+          }
         },
         take: 8,
       });
@@ -222,14 +257,19 @@ export class OngsService {
         },
         include: {
           ong: true,
+          ImageResource: {
+            where: {
+              type: "profile"
+            }
+          }
         },
         take: 8,
         skip: (page - 1) * 8,
       });
     }
 
-    if (res[0] === undefined)
-      throw new NotFoundException('ERROR: Nenhuma Ong com estes temas');
+    if (res[0] === undefined) throw new NotFoundException('ERROR: Nenhuma Ong com estes temas');
+
     res.forEach((e) => {
       delete e.password;
       delete e.ong.id_ong;
