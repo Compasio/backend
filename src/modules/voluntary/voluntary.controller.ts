@@ -97,9 +97,10 @@ export class VoluntarysController {
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'id', schema: { default: 1 } })
   @ApiOperation({summary: 'Atualiza informações do voluntário com o respectivo id'})
-  async updatevoluntary(@Param('id') id: number, @Body() updatevoluntaryDto: UpdateVoluntaryDto, @Request() req) {
+  @UseInterceptors(FileInterceptor('file'))
+  async updatevoluntary(@Param('id') id: number, @Body() updatevoluntaryDto: UpdateVoluntaryDto, @Request() req, @UploadedFile() profilepic?: Express.Multer.File) {
     let confirmPass = await this.authService.checkIdAndAdminStatus(id, req);
-    return await this.voluntarysService.updateVoluntary(+id, updatevoluntaryDto);
+    return await this.voluntarysService.updateVoluntary(id, updatevoluntaryDto, profilepic);
   }
 
   @UserTypeAuth('admin', 'voluntary')

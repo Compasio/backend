@@ -304,7 +304,7 @@ export class OngsService {
     }
   }
 
-  async updateOng(id: number, updateOngDto: UpdateOngDto) {
+  async updateOng(id: number, updateOngDto: UpdateOngDto, profilepic?: Express.Multer.File) {
     try {
       const ong = await this.prisma.ong.findUnique({
         where: {
@@ -312,7 +312,24 @@ export class OngsService {
         },
       });
 
-      if (!ong) return { 'status': 'failure', 'code': 404, 'message': 'Ong not found' };
+        if (!ong) return { 'status': 'failure', 'code': 404, 'message': 'Ong not found' };
+
+      if(profilepic) {
+        const oldPic = await this.prisma.imageResouce.deleteMany({
+          where: {
+            user: ong.id_ong,
+            type: "profile",
+          },
+        });
+        let uploadProfilePic =
+          await this.cloudinary.uploadFileToCloudinary(profilepic);
+        let registerPic = await this.cloudinary.registerPicInDb(
+          uploadProfilePic.url,
+          ong.id_ong,
+          'profile',
+          uploadProfilePic.public_id,
+        );
+      }
 
       let update = await this.prisma.ong.update({
         data: {

@@ -289,7 +289,7 @@ export class VoluntaryService {
     }
   }
 
-  async updateVoluntary(id: number, updateUserDto: UpdateVoluntaryDto) {
+  async updateVoluntary(id: number, updateUserDto: UpdateVoluntaryDto, profilepic?: Express.Multer.File) {
     try {
       const user = await this.prisma.voluntary.findUnique({
         where: {
@@ -298,6 +298,24 @@ export class VoluntaryService {
       });
 
       if (!user) return {"status": "failure", "code": 404, "message": "Voluntary not found"};
+
+      if (profilepic) {
+        const oldPic = await this.prisma.imageResouce.deleteMany({
+          where: {
+            user: user.id_voluntary,
+            type: 'profile',
+          },
+        });
+
+        let uploadProfilePic =
+          await this.cloudinary.uploadFileToCloudinary(profilepic);
+        let registerPic = await this.cloudinary.registerPicInDb(
+          uploadProfilePic.url,
+          user.id_voluntary,
+          'profile',
+          uploadProfilePic.public_id,
+        );
+      }
 
       let update = await this.prisma.voluntary.update({
         data: {

@@ -98,9 +98,10 @@ export class OngsController {
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'id', schema: { default: 1 } })
   @ApiOperation({summary: 'Atualiza informações da ong com o respectivo id'})
-  async updateOng(@Param('id') id: number, @Body() updateOngDto: UpdateOngDto, @Request() req) {
+  @UseInterceptors(FileInterceptor('file'))
+  async updateOng(@Param('id') id: number, @Body() updateOngDto: UpdateOngDto, @Request() req, @UploadedFile() profilepic?: Express.Multer.File) {
     let confirmPass = await this.authService.checkIdAndAdminStatus(id, req);
-    return await this.ongsService.updateOng(+id, updateOngDto);
+    return await this.ongsService.updateOng(id, updateOngDto, profilepic);
   }
 
   @UserTypeAuth('admin', 'ong')
@@ -111,7 +112,7 @@ export class OngsController {
   @ApiOperation({summary: 'Remove ong com o respectivo id'})
   async removeOng(@Param('id') id: number, @Request() req) {
     let confirmPass = await this.authService.checkIdAndAdminStatus(id, req);
-    return this.ongsService.removeOng(+id);
+    return await this.ongsService.removeOng(+id);
   }
 
   @UserTypeAuth('admin', 'ong', 'ongAssociated')
@@ -128,7 +129,7 @@ export class OngsController {
     else {
       let confirmPass = await this.authService.checkIfOngAssociateIsFromOngAndItsPermission(dto.id, req, 'projects');
     }
-    return this.ongsService.postPicture(dto.id, files);
+    return await this.ongsService.postPicture(dto.id, files);
   }
 
   @Public()
@@ -137,6 +138,6 @@ export class OngsController {
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiOperation({summary: 'Pegar fotos da galeria'})
   async getPictures(@Param('id') id: number) {
-    return this.ongsService.getPictures(id);
+    return await this.ongsService.getPictures(id);
   }
 }

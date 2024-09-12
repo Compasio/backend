@@ -12,7 +12,7 @@ export class CloudinaryService {
   ) {}
 
   async uploadFileToCloudinary(file: Express.Multer.File): Promise<CloudinaryResponse> {
-    if(file.size > 500000) {
+    if(file.size > 5000000) {
       throw new ConflictException("ERROR: arquivo muito grande");
     }
 
