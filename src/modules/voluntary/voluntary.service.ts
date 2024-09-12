@@ -270,7 +270,7 @@ export class VoluntaryService {
     return {"response": res, "totalCount": count};
   }
 
-  async updateVoluntary(id: number, updateUserDto: UpdateVoluntaryDto) {
+  async updateVoluntary(id: number, updateUserDto: UpdateVoluntaryDto, profilepic?: Express.Multer.File) {
     const user = await this.prisma.voluntary.findUnique({
       where: {
         id_voluntary: id,
@@ -278,6 +278,24 @@ export class VoluntaryService {
     })
     
     if(!user) throw new NotFoundException('ERROR: Usuário não encontrado');
+
+    if(profilepic) {
+      const oldPic = await this.prisma.imageResouce.deleteMany({
+        where: {
+          user: user.id_voluntary,
+          type: "profile",
+        },
+      });
+
+      let uploadProfilePic =
+        await this.cloudinary.uploadFileToCloudinary(profilepic);
+      let registerPic = await this.cloudinary.registerPicInDb(
+        uploadProfilePic.url,
+        user.id_voluntary,
+        'profile',
+        uploadProfilePic.public_id,
+      );
+    }
     
     return this.prisma.voluntary.update({
       data: {
