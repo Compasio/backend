@@ -154,6 +154,7 @@ model Project {
   voluntaryRelations VoluntaryRelations[]
   relationRequests   RelationRequests[]
   theme              Themes_ONG[]
+  ImageResource      ImageResouce[]
   id_ong             Ong                  @relation(fields: [ong], references: [id_ong], onDelete: Cascade)
 }
 
@@ -236,10 +237,12 @@ model ImageResouce {
   id        Int     @id @default(autoincrement())
   url       String
   user      Int
+  project   Int?
   type      ImgType
   cloudName String
 
-  userid User? @relation(fields: [user], references: [id], onDelete: Cascade)
+  projectid Project? @relation(fields: [project], references: [id_project], onDelete: Cascade)
+  userid    User?    @relation(fields: [user], references: [id], onDelete: Cascade)
 }
 
 //=======================

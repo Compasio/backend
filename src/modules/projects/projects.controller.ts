@@ -1,4 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Request } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Request,
+  UseInterceptors,
+  UploadedFile
+} from "@nestjs/common";
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
@@ -15,6 +26,7 @@ import { CreateVoluntaryDto } from '../voluntary/dto/create-voluntary.dto';
 import { Public } from '../../auth/decorators/public.decorator';
 import { UserTypeAuth } from '../../auth/decorators/userTypeAuth.decorator';
 import { AuthService } from '../../auth/auth.service';
+import { FileInterceptor } from "@nestjs/platform-express";
 
 @Controller('projects')
 @ApiBearerAuth()
@@ -31,14 +43,16 @@ export class ProjectsController {
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiConflictResponse({ description: 'Projeto já existente', status: 409})
   @ApiOperation({summary: 'Cria um projeto'})
-  async createProject(@Body() createProjectDto: CreateProjectDto, @Request() req) {
+  @UseInterceptors(FileInterceptor('file'))
+  async createProject(@Body() createProjectDto: CreateProjectDto, @Request() req, @UploadedFile() profilepic?: Express.Multer.File) {
     let type = req.user.userType;
     if(type == 'ongAssociated') {
       let confirmPass = await this.authService.checkIfOngAssociateIsFromOngAndItsPermission(createProjectDto.ong, req, 'projects');
     } else {
       let confirmPass = await this.authService.checkIdAndAdminStatus(createProjectDto.ong, req);
     }
-    return this.projectsService.createProject(createProjectDto);
+    createProjectDto.ong = parseInt(String(createProjectDto.ong))
+    return this.projectsService.createProject(createProjectDto, profilepic);
   }
 
   @Public()
