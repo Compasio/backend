@@ -27,11 +27,12 @@ export class CloudinaryService {
     });
   }
 
-  async registerPicInDb(url: string, user: number, type: ImgType, cloudName) {
+  async registerPicInDb(url: string, user: number, type: ImgType, cloudName: string, project?: number) {
     return this.prisma.imageResouce.create({
       data: {
         url,
         user,
+        project,
         type,
         cloudName,
       },

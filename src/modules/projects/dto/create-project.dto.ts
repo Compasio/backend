@@ -15,7 +15,7 @@ export class CreateProjectDto {
 
     @ApiProperty({type: Number, description: "id da ONG", example: 1})
     @IsNotEmpty()
-    @IsNumber()
+    // @IsNumber()
     ong : number
 
     @ApiProperty({type: String, description: "Nome do projeto", example: "Ajuda RS"})
