@@ -9,7 +9,7 @@ import { HttpModule } from "@nestjs/axios";
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 @Module({
-  imports: [HttpModule, JwtModule.register({global: true, secret: process.env.JWTSECRET, signOptions: { expiresIn: '2h' }})],
+  imports: [HttpModule, JwtModule.register({global: true, secret: `${process.env.JWTSECRET}`, signOptions: { expiresIn: '2h' }})],
   providers: [CloudinaryService, AuthService, {provide: APP_GUARD, useClass: AuthGuard}, PrismaService],
   controllers: [AuthController],
   exports: [AuthService],

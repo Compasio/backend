@@ -123,7 +123,7 @@ export class OngsController {
   @UseInterceptors(FilesInterceptor('files', 5))
   async postPicture(@Body() dto: IdDTO, @Request() req, @UploadedFiles() files: Express.Multer.File[]) {
     let type = req.user.userType;
-    if(type == 'ong') {
+    if(type == 'ong' || type == 'admin') {
       let confirmPass = await this.authService.checkIdAndAdminStatus(dto.id, req);
     }
     else {
