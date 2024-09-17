@@ -123,13 +123,14 @@ export class OngsController {
   @UseInterceptors(FilesInterceptor('files', 5))
   async postPicture(@Body() dto: IdDTO, @Request() req, @UploadedFiles() files: Express.Multer.File[]) {
     let type = req.user.userType;
+    let id = parseInt(dto.id)
     if(type == 'ong') {
-      let confirmPass = await this.authService.checkIdAndAdminStatus(dto.id, req);
+      let confirmPass = await this.authService.checkIdAndAdminStatus(id, req);
     }
     else {
-      let confirmPass = await this.authService.checkIfOngAssociateIsFromOngAndItsPermission(dto.id, req, 'projects');
+      let confirmPass = await this.authService.checkIfOngAssociateIsFromOngAndItsPermission(id, req, 'projects');
     }
-    return await this.ongsService.postPicture(dto.id, files);
+    return await this.ongsService.postPicture(id, files);
   }
 
   @Public()

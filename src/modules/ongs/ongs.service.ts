@@ -375,7 +375,6 @@ export class OngsService {
       if (!pictures) throw new NotFoundException("Erro: foto não encontrada");
 
       let delFromCloudinray = await this.cloudinary.deletePic([pictures.cloudName]);
-      console.log(delFromCloudinray);
       let delFromDb = await this.prisma.imageResouce.delete({
         where: {
           id,
