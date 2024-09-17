@@ -363,4 +363,25 @@ export class OngsService {
       throw new Error("Algo deu errado");
     }
   }
+
+  async deletePictures(id: number, ong: number) {
+      const pictures = await this.prisma.imageResouce.findFirst({
+        where: {
+          id,
+          user: ong,
+        },
+      });
+
+      if (!pictures) throw new NotFoundException("Erro: foto não encontrada");
+
+      let delFromCloudinray = await this.cloudinary.deletePic([pictures.cloudName]);
+      console.log(delFromCloudinray);
+      let delFromDb = await this.prisma.imageResouce.delete({
+        where: {
+          id,
+        },
+      });
+
+      return true;
+  }
 }

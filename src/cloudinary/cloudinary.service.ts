@@ -39,7 +39,14 @@ export class CloudinaryService {
     });
   }
 
-  async deletePic(publicid) {
-    return cloudinary.api.delete_resources([publicid]).then((result) => {});
+  async deletePic(publicids: string[]) {
+    try {
+      return cloudinary.api.delete_resources(publicids).then((result) => {
+        console.log(result)
+        result
+      });
+    } catch (error) {
+      throw new Error(error);
+    }
   }
 }
