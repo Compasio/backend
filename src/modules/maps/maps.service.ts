@@ -123,7 +123,7 @@ export class MapsService {
     return result;
   }
 
-  async getNearestOgns(userLat: number, userLng: number, radius: number) {
+  async getNearestOngs(userLat: number, userLng: number, radius: number) {
     const query = await this.prisma.$queryRaw<{id_user: number, lat: number, lng: number}[]>`
       SELECT id_user, lat, lng
       FROM "Address"

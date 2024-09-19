@@ -69,7 +69,7 @@ export class MapsController {
   }
 
   @Public()
-  @Get('getNearestOgns/:userLat/:userLng/:radius')
+  @Get('getNearestOngs/:userLat/:userLng/:radius')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
   @ApiParam({ name: 'userLat', schema: { default: -23.571101 } })
@@ -77,7 +77,7 @@ export class MapsController {
   @ApiParam({ name: 'radius', schema: { default: 10 } })
   @ApiOperation({summary: 'Retorna uma lista de 30 ongs correspondentes'})
   async getNearestOgns(@Param('userLat') userLat: number, @Param('userLng') userLng: number, @Param('radius') radius: number) {
-    return this.mapsService.getNearestOgns(userLat, userLng, radius);
+    return this.mapsService.getNearestOngs(userLat, userLng, radius);
   }
 
   @UserTypeAuth('admin', 'voluntary', 'ong', 'ongAssociated')
