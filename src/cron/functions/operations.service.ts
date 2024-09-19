@@ -22,7 +22,7 @@ export class OperationsService {
         });
 
         for(let i of expired) {
-            const deletePics = await this.cloudinary.deletePic(i.imgId);
+            const deletePics = await this.cloudinary.deletePic([i.imgId]);
             const dele = await this.prisma.emailVerifyCode.delete({
                 where: {
                     code: i.code,

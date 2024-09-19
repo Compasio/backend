@@ -123,13 +123,14 @@ export class OngsController {
   @UseInterceptors(FilesInterceptor('files', 5))
   async postPicture(@Body() dto: IdDTO, @Request() req, @UploadedFiles() files: Express.Multer.File[]) {
     let type = req.user.userType;
+    let id = parseInt(dto.id)
     if(type == 'ong') {
-      let confirmPass = await this.authService.checkIdAndAdminStatus(dto.id, req);
+      let confirmPass = await this.authService.checkIdAndAdminStatus(id, req);
     }
     else {
-      let confirmPass = await this.authService.checkIfOngAssociateIsFromOngAndItsPermission(dto.id, req, 'projects');
+      let confirmPass = await this.authService.checkIfOngAssociateIsFromOngAndItsPermission(id, req, 'projects');
     }
-    return await this.ongsService.postPicture(dto.id, files);
+    return await this.ongsService.postPicture(id, files);
   }
 
   @Public()
@@ -139,5 +140,21 @@ export class OngsController {
   @ApiOperation({summary: 'Pegar fotos da galeria'})
   async getPictures(@Param('id') id: number) {
     return await this.ongsService.getPictures(id);
+  }
+
+  @UserTypeAuth('admin', 'ong', 'ongAssociated')
+  @Delete('deletePictures/:ong/:id')
+  @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
+  @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
+  @ApiOperation({summary: 'Deletar foto da galeria'})
+  async deletePictures(@Param('ong') ong: number, @Param('id') id: number,  @Request() req) {
+    let type = req.user.userType;
+    if(type == 'ong') {
+      let confirmPass = await this.authService.checkIdAndAdminStatus(ong, req);
+    }
+    else {
+      let confirmPass = await this.authService.checkIfOngAssociateIsFromOngAndItsPermission(ong, req, 'projects');
+    }
+    return await this.ongsService.deletePictures(id, ong);
   }
 }
