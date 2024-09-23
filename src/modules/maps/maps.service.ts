@@ -121,13 +121,18 @@ export class MapsService {
         user: {
           include: {
             ong: true,
+            ImageResource: {
+              where: {
+                type: "profile",
+              },
+            },
           },
         },
       },
       take: 30,
     });
     if(!ongs) throw new NotFoundException("ERROR: nenhuma Ong encontrada");
-    let result = ongs.map((i) => ({"id_ong": i.id_user, "ong_name": i.user.ong.ong_name, "lat": i.lat, "lng": i.lng, "description": i.ong.description, "themes": i.ong.themes, "profilePic": i.ImageResource[0].url}))
+    let result = ongs.map((i) => ({"id_ong": i.id_user, "ong_name": i.user.ong.ong_name, "lat": i.lat, "lng": i.lng, "description": i.user.ong.description, "themes": i.user.ong.themes, "profilePic": i.user.ImageResource[0].url}))
 
     return result;
   }
