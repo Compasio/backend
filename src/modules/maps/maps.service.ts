@@ -49,22 +49,62 @@ export class MapsService {
     let count = await this.prisma.address.count({})
 
     if (page == 0){
-      requests = await this.prisma.address.findMany({})
+      requests = await this.prisma.address.findMany({
+        include: {
+          user: {
+            include: {
+              ong: true,
+              ImageResource: {
+                where: {
+                  type: "profile",
+                },
+              },
+            },
+          },
+        },
+      });
     }
     
     else if(page == 1){
       requests = await this.prisma.address.findMany({
         take: 20,
+        include: {
+          user: {
+            include: {
+              ong: true,
+              ImageResource: {
+                where: {
+                  type: "profile",
+                },
+              },
+            },
+          },
+        },
       });
     }
     else{
       requests = await this.prisma.address.findMany({
         take: 20,
         skip: (page - 1) * 20,
+        include: {
+          user: {
+            include: {
+              ong: true,
+              ImageResource: {
+                where: {
+                  type: "profile",
+                },
+              },
+            },
+          },
+        },
       });
     }
     if(requests[0] == undefined) return[];
-    return{"requests": requests, "totalCount": count};
+
+    let parsed = requests.map((i) => ({"id_user": i.id_user, "num": i.num, "street": i.street, "neighborhood": i.neighborhood, "city": i.city, "state": i.state, "concat": i.concat, "lat": i.lat, "lng": i.lng, "ong_name": i.user.ong.ong_name, "profilePic": i.user.ImageResource[0].url}));
+
+    return{"requests": parsed, "totalCount": count};
   }
 
   async getAddressFromOng(ongname: string) {
