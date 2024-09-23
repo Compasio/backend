@@ -68,31 +68,40 @@ export class MapsService {
   }
 
   async getAddressFromOng(ongname: string) {
-    const ong = await this.prisma.ong.findMany({
+    const count = await this.prisma.user.count({
       where: {
-        OR: [
-          {ong_name: { contains: ongname, mode: 'insensitive' }},
-        ],
+        NOT: {
+          address: null,
+        },
+      },
+    });
+
+    const ong = await this.prisma.user.findMany({
+      where: {
+        ong: {
+          OR: [
+            {ong_name: { contains: ongname, mode: 'insensitive' }},
+          ],
+        }
+      },
+      include: {
+        address: true,
+        ong: true,
+        ImageResource: {
+          where: {
+            type: "profile",
+          },
+        },
       },
       take: 30,
     });
     
     if(!ong) throw new NotFoundException("ERROR: ong não encontrada");
 
-    let coordinates = [];
-    for(let i = 0; i < ong.length; i++) {
-      let id = ong[i].id_ong;
-      const address = await this.prisma.address.findUnique({
-        where: {
-          id_user: id,
-        },
-      });
-      if(!address) continue;
-      coordinates.push({"ongid": id, "ongname": ong[i].ong_name, "lat": address.lat, "lng": address.lng});
-    }
+    let coordinates = ong.map((i) => ({"ongid": i.id, "ongname": i.ong.ong_name, "lat": i.address.lat, "lng": i.address.lng, "description": i.ong.description, "themes": i.ong.themes, "profilePic": i.ImageResource[0].url}))
     if(coordinates[0] == undefined) return[];
 
-    return coordinates;
+    return {"address": coordinates, "totalCount": count};
   }
 
   async getOngsByPlace(placeOng: string) {
@@ -118,7 +127,7 @@ export class MapsService {
       take: 30,
     });
     if(!ongs) throw new NotFoundException("ERROR: nenhuma Ong encontrada");
-    let result = ongs.map((i) => ({"id_ong": i.id_user, "ong_name": i.user.ong.ong_name, "lat": i.lat, "lng": i.lng}))
+    let result = ongs.map((i) => ({"id_ong": i.id_user, "ong_name": i.user.ong.ong_name, "lat": i.lat, "lng": i.lng, "description": i.ong.description, "themes": i.ong.themes, "profilePic": i.ImageResource[0].url}))
 
     return result;
   }
@@ -141,12 +150,16 @@ export class MapsService {
       include: {
         ong: true,
         address: true,
+        ImageResource: {
+          where: {
+            type: "profile",
+          },
+        },
       },
     });
-
     if(!ongs) return [];
 
-    let result = ongs.map((i) => ({ "id_user": i.id, "ong_name": i.ong.ong_name, "lat": i.address.lat, "lng": i.address.lng }));
+    let result = ongs.map((i) => ({ "id_user": i.id, "ong_name": i.ong.ong_name, "lat": i.address.lat, "lng": i.address.lng, "description": i.ong.description, "themes": i.ong.themes, "profilePic": i.ImageResource[0].url }));
     return result;
 
   }
