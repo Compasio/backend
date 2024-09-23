@@ -287,12 +287,22 @@ export class OngsService {
     if (!ong) throw new NotFoundException('ERROR: Ong não encontrada');
 
     if(profilepic) {
-      const oldPic = await this.prisma.imageResouce.deleteMany({
+      const oldPic = await this.prisma.imageResouce.findFirst({
         where: {
           user: ong.id_ong,
           type: "profile",
         },
       });
+
+      if(oldPic) {
+        const deleteFromCloud = await this.cloudinary.deletePic([oldPic.cloudName]);
+        const deleteFromDb = await this.prisma.imageResouce.delete({
+          where: {
+            id: oldPic.id,
+          },
+        });
+      }
+
       let uploadProfilePic =
         await this.cloudinary.uploadFileToCloudinary(profilepic);
       let registerPic = await this.cloudinary.registerPicInDb(

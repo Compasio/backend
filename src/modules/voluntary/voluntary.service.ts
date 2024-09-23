@@ -280,12 +280,21 @@ export class VoluntaryService {
     if(!user) throw new NotFoundException('ERROR: Usuário não encontrado');
 
     if(profilepic) {
-      const oldPic = await this.prisma.imageResouce.deleteMany({
+      const oldPic = await this.prisma.imageResouce.findFirst({
         where: {
           user: user.id_voluntary,
           type: "profile",
         },
       });
+
+      if(oldPic) {
+        const deleteFromCloud = await this.cloudinary.deletePic([oldPic.cloudName]);
+        const deleteFromDb = await this.prisma.imageResouce.delete({
+          where: {
+            id: oldPic.id,
+          },
+        });
+      }
 
       let uploadProfilePic =
         await this.cloudinary.uploadFileToCloudinary(profilepic);
@@ -296,7 +305,6 @@ export class VoluntaryService {
         uploadProfilePic.public_id,
       );
     }
-    
     return this.prisma.voluntary.update({
       data: {
         ...updateUserDto
