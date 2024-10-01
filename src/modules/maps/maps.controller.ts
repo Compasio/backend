@@ -52,10 +52,10 @@ export class MapsController {
   @Get('getAddressFromOng/:ongname')
   @ApiOkResponse({description: 'Requisição feita com sucesso', status: 201})
   @ApiBadRequestResponse({ description: 'Requisição inválida', status: 400})
-  @ApiParam({ name: 'ongname', schema: { default: "example" } })
+  @ApiParam({ name: 'ong_name', schema: { default: "example" } })
   @ApiOperation({summary: 'Retorna lista de endereçõs com ongs que correspondem ao input'})
-  async getAddressFromOng(@Param('ongname') ongname: string) {
-    return this.mapsService.getAddressFromOng(ongname);
+  async getAddressFromOng(@Param('ong_name') ong_name: string) {
+    return this.mapsService.getAddressFromOng(ong_name);
   }
 
   @Public()
